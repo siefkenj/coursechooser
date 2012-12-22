@@ -1,0 +1,81 @@
+<!doctype html>
+<html class="no-js" lang="en">
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+
+	<title></title>
+	<meta name="description" content="">
+	<meta name="author" content="">
+
+	<meta name="viewport" content="width=device-width">
+
+	<link rel="stylesheet" href="css/style.css">
+	<link rel="stylesheet" href="css/courses.css">
+	<link rel="stylesheet" href="css/coursechooser.css">
+
+	<script src="js/libs/modernizr-2.5.3.min.js"></script>
+
+	<!-- jquery stuff -->
+	<script src="jquery-ui-1.9.2.custom/js/jquery-1.8.3.js"></script>
+	<script src="jquery-ui-1.9.2.custom/js/jquery-ui-1.9.2.custom.min.js"></script>
+	<link rel="stylesheet" href="jquery-ui-1.9.2.custom/css/ui-lightness/jquery-ui-1.9.2.custom.css">
+
+	<!-- <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.js"></script> -->
+	<script src="js/plugins.js"></script>
+	<script src="js/script.js"></script>
+	<script src="js/coursechooser.js"></script>
+</head>
+<body>
+	<header>
+	</header>
+	<div role="main">
+
+	<table id="yearchart">
+		<tr class="year year1 clearfix">
+			<td class="label">Year 1</td>
+			<td class="courses"></td>
+		</tr>
+		<tr class="year year2 clearfix">
+			<td class="label">Year 2</td>
+			<td class="courses"></td>
+		</tr>
+		<tr class="year year3 clearfix">
+			<td class="label">Year 3</td>
+			<td class="courses"></td>
+		</tr>
+		<tr class="year year4 clearfix">
+			<td class="label">Year 4</td>
+			<td class="courses"></td>
+		</tr>
+	</table>
+	<div>
+		Courses from another department
+		<select id='department-list'>
+			<option value='MATH'>Math</option>
+			<option value='CSC'>Computer Science</option>
+		</select>
+		<button id='show-courses'>Show</button>
+		<button id='hide-courses'>Hide</button>
+	</div>
+	<div class='course-info'>
+		<h3>Currently Selected</h3>
+		<div class='course-name'></div>
+		<div class='course-status'>
+			<input type='radio' name='state' value='none' id='course-notincluded' /><label for='course-notincluded'>Not Included</label>
+			<input type='radio' name='state' value='required' id='course-required' /><label for='course-required'>Required</label>
+			<input type='radio' name='state' value='elective' id='course-elective' /><label for='course-elective'>Elective</label>
+		</div>
+		Co-requisites: <div class='coreq-dropbox'>Drop Here</div>
+		Pre-requisites: <div class='prereq-area'></div>
+	</div>
+	
+	<textarea id="dot" rows="20" cols="80">
+	</textarea>
+	</div>
+	<footer>
+	</footer>
+
+
+</body>
+</html>

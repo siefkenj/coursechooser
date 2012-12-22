@@ -1,0 +1,42 @@
+#yearchart {
+	border: 1px solid black;
+	border-radius: 5px;
+	border-collapse: separate;
+}
+
+.year td {
+	border-bottom: 1px dashed;
+	min-height: 2em;
+}
+/*
+.year td:last-child {
+	bottom-border: none;
+}
+*/
+
+.year .label {
+	border-right: 1px solid black;
+	vertical-align: middle;
+	text-align: center;
+	width: 4em;
+}
+/*
+.year .label {
+	position: absolute;
+	float: left;
+	width: 4em;
+	border-right: 1px solid black;
+}
+.year .courses {
+	position: relative;
+	float: left;
+	margin-left: 4em;
+	height: 100%
+}
+*/
+
+.prereq-tree {
+	display: inline-block;
+	padding: 4px;
+	border: 1px solid black;
+}
