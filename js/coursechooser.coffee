@@ -1,8 +1,58 @@
+objToString = (obj) ->
+    ret = '{ '
+    for p,v of obj
+        ret += " #{p}:#{v}, "
+    return ret + "}"
+
+###
+# * Title Caps
+# *
+# * Ported to JavaScript By John Resig - http://ejohn.org/ - 21 May 2008
+# * Original by John Gruber - http://daringfireball.net/ - 10 May 2008
+# * License: http://www.opensource.org/licenses/mit-license.php
+###
+titleCaps = (->
+    lower = (word) ->
+        word.toLowerCase()
+    upper = (word) ->
+        word.substr(0, 1).toUpperCase() + word.substr(1)
+    small = "(a|an|and|as|at|but|by|en|for|if|in|of|on|or|the|to|v[.]?|via|vs[.]?|with)"
+    punct = "([!\"#$%&'()*+,./:;<=>?@[\\\\\\]^_`{|}~-]*)"
+    titleCaps = (title) ->
+        parts = []
+        split = /[:.;?!] |(?: |^)["Ò]/g
+        index = 0
+        loop
+            m = split.exec(title)
+            parts.push title.substring(index, (if m then m.index else title.length)).replace(/\b([A-Za-z][a-z.'Õ]*)\b/g, (all) ->
+                (if /[A-Za-z]\.[A-Za-z]/.test(all) then all else upper(all))
+            # capitalize roman numerals
+            ).replace(/\b(i|v|x|l|c|d|m)+\b/i, (all) ->
+                all.toUpperCase()
+            ).replace(RegExp("\\b" + small + "\\b", "ig"), lower).replace(RegExp("^" + punct + small + "\\b", "ig"), (all, punct, word) ->
+                punct + upper(word)
+            ).replace(RegExp("\\b" + small + punct + "$", "ig"), upper
+            )
+            index = split.lastIndex
+            if m
+                parts.push m[0]
+            else
+                break
+        parts.join("").replace(RegExp(" V(s?)\\. ", "g"), " v$1. ").replace(/(['Õ])S\b/g, "$1s").replace /\b(AT&T|Q&A)\b/g, (all) ->
+            all.toUpperCase()
+    return titleCaps
+)()
 $(document).ready ->
+    ###
     $.ajax
         url: 'MATH_items.json'
         dataType: 'json'
         success: courseDataLoaded
+    ###
+    $('.course-status').buttonset().disableSelection()
+    $('button').button()
+
+    showCoursesFromDep('MATH')
     $('#show-courses').click ->
         dep = $('#department-list option:selected()').val()
         showCoursesFromDep(dep)
@@ -20,7 +70,7 @@ showCoursesFromDep = (dep) ->
     buttonsToBeCreated = {}
     courseDataNeedsLoading = true
     for hash, course of window.courses
-        if course.department is dep
+        if course.subject is dep
             # if we've found a course already in our list, we don't need to fetch it from json
             courseDataNeedsLoading = false
             if course.elm
@@ -32,7 +82,7 @@ showCoursesFromDep = (dep) ->
     if courseDataNeedsLoading
         # we need to load the json corresponding to the course
         $.ajax
-            url: "#{dep}_items.json"
+            url: "course_data/#{dep}.json"
             dataType: 'json'
             success: courseDataLoaded
 
@@ -40,10 +90,10 @@ showCoursesFromDep = (dep) ->
 # that aren't marked as required or as an elective
 hideCoursesFromDep = (dep) ->
     for hash, course of window.courses
-        if course.department is dep and course.state.required is false and course.state.elective is false
+        if course.subject is dep and course.state.required is false and course.state.elective is false
             if course.elm
                 course.$elm.hide()
-            
+
 
 courseDataLoaded = (data, textState, jsXHR) ->
     # set up a global list of all courses by name
@@ -77,9 +127,9 @@ courseDataLoaded = (data, textState, jsXHR) ->
                 evt.currentTarget.course.toggleState()
                 # make sure to do this after the state has been set, otherwise prereqs won't
                 # be computed correctly
+                CourseUtils.updatePrereqTags()
                 evt.currentTarget.course.showCourseInfo($('.course-info')[0])
-                CourseManager.updatePrereqTags()
-                $("#dot").val CourseManager.createDotGraph()
+                $("#dot").val CourseUtils.createDotGraph()
 
 populateYearTable = (courses) ->
     # create a list of courses for each year (based on the first digit of the course number
@@ -99,9 +149,36 @@ populateYearTable = (courses) ->
                 container.append(course.getButton())
 
 ###
+# Class to manage and keep the sync of all course on the webpage
+# and their state.
+###
+class CourseManager
+    constructor: ->
+        @courses = {}
+    # updates the state of all instances of a particular course
+    updateCourseState: (course, state) ->
+        for c in (@courses[course] || [])
+            c.setState(state)
+    addCourse: (course) ->
+        hash = '' + course
+        if not @courses[hash]
+            @courses[hash] = []
+        @courses[hash].push course
+        return course
+    removeCourse: (course) ->
+        hash = '' + course
+        if not @courses[hash]
+            return false
+        index = @courses[hash].indexOf(course)
+        if index >= 0
+            @courses[hash].splice(index, 1)
+    removeAllCourseInstances: (course) ->
+        delete @courses[course]
+
+###
 # Utility functions for dealing with lists of courses and their prereqs
 ###
-CourseManager =
+CourseUtils =
     computePrereqTree: (courses, selected=[]) ->
         if not courses?
             throw new Error("computePrereqTree requires a list of course hash's")
@@ -110,6 +187,7 @@ CourseManager =
             course = window.courses[hash]
             if course.prereqs?
                 pruned = Course.prunePrereqs(course.prereqs, selected)
+                pruned = Course.simplifyPrereqs(pruned)
                 if pruned.data?.length > 0
                     # tag this branch of prereqs so that we know who requires it
                     pruned.requiredBy = course
@@ -122,14 +200,15 @@ CourseManager =
     # adds the prereq class to all class buttons
     # that are an unsatisfied prereq of any class currently selected
     updatePrereqTags: ->
-        selected = CourseManager.getSelectedCourses()
-        prereqs = CourseManager.computePrereqTree(selected, selected)
+        selected = CourseUtils.getSelectedCourses()
+        prereqs = CourseUtils.computePrereqTree(selected, selected)
         unmet = {}
         for c in Course.flattenPrereqs(prereqs)
             unmet[Course.hashCourse(c)] = true
         for hash,c of window.courses
             c.setState({prereq: !!unmet[hash]})
 
+        console.log (k for k of unmet).join(' ')
         return unmet
 
     createDotGraph: ->
@@ -162,24 +241,10 @@ CourseManager =
         # prereq chains to shorter ones
         ret = g.toDot('unpruned') + "\n"
         console.log g.eliminateRedundantEdges()
-        return ret + g.toDot('pruned')
-
-        
-        ret = "digraph x {\n"
-        for e in edges
-            ret += "\t\"#{e[0]}\" -> \"#{e[1]}\"\n"
-        ret += "\n"
-        for i in [1, 2, 3, 4]
-            ret += "\tsubgraph cluster#{i} {\n"
-            ret += "\t\tlabel=\"Year #{i}\"\n\t\t"
-            for c in years[i]
-                ret += "\"#{c.hash}\"; "
-            ret += "\n\t}\n"
-        ret += "}"
-
-        return ret
-                
-
+        titles = {}
+        for t of g.nodes
+            titles[t] = titleCaps((window.courses[t].data.title+"").toLowerCase())
+        return g.toDot('pruned', titles)
 
 ###
 # Object to store course info along with managing a button
@@ -188,11 +253,11 @@ CourseManager =
 ###
 class Course
     @hashCourse: (course) ->
-        return "#{course.department} #{course.number}"
-    
+        return "#{course.subject} #{course.number}"
+
     constructor: (@data) ->
         @hash = Course.hashCourse(@data)
-        {@department, @number, @prereqs} = @data
+        {@subject, @number, @prereqs} = @data
         @elm = null
         @state =
             required: false
@@ -207,7 +272,7 @@ class Course
         if @elm
             return @elm
 
-        @$elm = $("<div class='course'><div class='annotation'></div><div class='number'>#{@department} #{@number}</div></div>")
+        @$elm = $("<div class='course'><div class='annotation'></div><div class='number'>#{@subject} #{@number}</div></div>")
         @elm = @$elm[0]
         @elm.course = @
         # make sure to initialize the state.  We may have changed it before we created the button element!
@@ -215,16 +280,20 @@ class Course
         return @elm
 
     # Set all neccessary classes and update internal state based on the object state
-    setState: (state={}) ->
+    setState: (state={}, forceUpdate=false) ->
+        stateChanged = forceUpdate
         for k,s of state
-            @state[k] = s
-            if s
-                @$elm?.addClass(k)
-            else
-                @$elm?.removeClass(k)
+            if @state[k] != s or forceUpdate
+                stateChanged = true
+                @state[k] = s
+                if s
+                    @$elm?.addClass(k)
+                else
+                    @$elm?.removeClass(k)
         # call all of our callbacks
-        for f in @setStateCallbacks
-            f()
+        if stateChanged
+            for f in @setStateCallbacks
+                f()
         return
     # Cycle the state from none -> required -> elective -> none
     toggleState: ->
@@ -237,19 +306,22 @@ class Course
             state.elective = false
         if not (@state.required or @state.elective)
             state.required = true
-            
+
         @setState(state)
         return
     # display all the course information in the specified infoarea
     showCourseInfo: (infoarea) ->
         $infoarea = $(infoarea)
-        $infoarea.find('.course-name').html "#{@hash} &mdash; #{@data.desc}"
+        $infoarea.find('.course-name').html "#{@hash} &mdash; #{@data.title}"
         $infoarea.find('.prereq-area').html Course.prereqsToDivs(@prereqs)
-        #$infoarea.find('.prereq-area').html Course.prereqsToDivs(CourseManager.computePrereqTree(CourseManager.getSelectedCourses()))
+        #$infoarea.find('.prereq-area').html Course.prereqsToDivs(CourseUtils.computePrereqTree(CourseUtils.getSelectedCourses()))
 
         # make sure to unbind the previous course before we bind ourselves
         @unbindRadioButtons(infoarea)
         @bindRadioButtons(infoarea)
+
+        # force an update of the state since we now should be displayed
+        @setState({}, true)
     # bind to the state radio buttons in infoarea.  When the course state is
     # changed, the radio buttons will be changed and when the radio buttons
     # are changed, the state will be changed
@@ -266,7 +338,7 @@ class Course
         # we need to rember our bound function so we can unbind it later
         infoarea.boundRadioFunction = changeState
         $(infoarea).find('input').bind('change', changeState)
-        
+
         changeToggle = =>
             $(infoarea).find('input').attr('checked', false)
             if @state.required
@@ -275,6 +347,10 @@ class Course
                 $(infoarea).find('input[value=elective]').attr('checked', true)
             else
                 $(infoarea).find('input[value=none]').attr('checked', true)
+            try
+                $('.course-status').buttonset('refresh')
+            catch e
+
         @setStateCallbacks.push changeToggle
         infoarea.boundChangeToggle = [@, changeToggle]
 
@@ -288,11 +364,11 @@ class Course
             index = elm.setStateCallbacks.indexOf(func)
             if index >= 0
                 elm.setStateCallbacks.splice(index, 1)
-    
+
     @prereqsToString: (prereq) ->
         if not prereq?
             return ""
-        if prereq.department
+        if prereq.subject
             return Course.hashCourse(prereq)
         if prereq.op
             # only give a pretty result if our data is formatted correctly
@@ -303,17 +379,30 @@ class Course
         return
 
     @prereqsToDivs: (prereq) ->
-        if not prereq?
-            return ""
-        if prereq.department
-            return Course.hashCourse(prereq)
-        if prereq.op
-            # only give a pretty result if our data is formatted correctly
-            if typeof prereq.op is 'string'
-                return "<ul class='prereq-tree'><li class='prereq-tree'>" + (Course.prereqsToDivs(p) for p in prereq.data).join("</li> #{prereq.op} <li class='prereq-tree'>") + "</ul>"
-            else
+        # create a string representing the dom structure
+        prereqsToDivs = (prereq) ->
+            if not prereq?
                 return ""
-        return
+            if prereq.subject
+                hash = Course.hashCourse(prereq)
+                return "<course id='#{hash}' subject='#{prereq.subject}' number='#{prereq.number}'>#{hash}</course>"
+            if prereq.op
+                # only give a pretty result if our data is formatted correctly
+                if typeof prereq.op is 'string'
+                    return "<ul class='prereq-tree prereq-#{prereq.op}'><li class='prereq-tree prereq-#{prereq.op}'>" + (prereqsToDivs(p) for p in prereq.data).join("</li><li class='prereq-tree prereq-#{prereq.op}'>") + "</ul>"
+                else
+                    return ""
+            return
+        # once we have everything as a dom element, replace all the courses with course
+        # buttons that are clickable
+        divs = $(prereqsToDivs(prereq))
+        for elm in divs.find('course')
+            subject = elm.getAttribute('subject')
+            number = elm.getAttribute('number')
+            course = new CourseShell({subject: subject, number: number})
+            courseElm = course.getButton()
+            elm.parentNode.replaceChild(courseElm, elm)
+        return divs
 
     # returns the prereq pruned so that any branches whose
     # requirements are met are no longer there
@@ -321,9 +410,9 @@ class Course
     @prunePrereqs: (prereq, courses) ->
         if not prereq?
             throw new Error("Yikes.  We errored while pruning the prereqs!")
-        
+
         ret = {op: 'and', data: []}
-        if prereq.department
+        if prereq.subject
             if courses.indexOf(Course.hashCourse(prereq)) is -1
                 ret.data.push prereq
         switch prereq.op
@@ -346,10 +435,21 @@ class Course
                         # if our branch isn't empty, we better keep it around
                         ret.data.push prunedBranch
         return ret
-    
+
+    # Takes prereq object and simplifies it by remove unnecessary 'parens'
+    # eg. (MATH100) and (MATH101) -> MATH100 and MATH101
+    @simplifyPrereqs: (prereq) ->
+        removeParen = (prereq) ->
+            if not prereq.data?
+                return prereq
+            if prereq.data.length == 1
+                return removeParen(prereq.data[0])
+            return {op: prereq.op, data: (removeParen(p) for p in prereq.data)}
+        return removeParen(prereq)
+
     # returns a flat list of all prereqs.
     @flattenPrereqs: (prereq) ->
-        if prereq?.department
+        if prereq?.subject
             return [prereq]
         if prereq?.op
             ret = []
@@ -359,8 +459,19 @@ class Course
         return []
         throw new Error('Error flattening prereqs')
 
+###
+# CourseShell looks like a Course button, but it is empty inside.
+# Instead, by setting just the subject and number, CourseShell can
+# be used to add a button that will dynamically load a courses information
+# when clicked
+###
+class CourseShell extends Course
+
+
+###
 # Class to perform operations on a directed graph like
 # searching for multiple paths, finding neighbors, etc.
+###
 class DiGraph
     constructor: (edges, nodes=[]) ->
         @nodes = {}
@@ -434,7 +545,7 @@ class DiGraph
                 # we want to loop through all of our siblings that aren't us
                 if s == n
                     continue
-                # if we can get from n -> s and we know there is an edge from s -> node, 
+                # if we can get from n -> s and we know there is an edge from s -> node,
                 # then we can safely delete the edge n -> s
                 if spanHash[s]
                     @removeEdge([n,node])
@@ -466,7 +577,7 @@ class DiGraph
         # these hashs are now invalid!
         @forwardNeighborHash = null
         @backwardNeighborHash = null
-        
+
     @edgesEqual: (e1, e2) ->
         return (e1[0] == e2[0]) and (e1[1] == e2[1])
 
@@ -479,7 +590,7 @@ class DiGraph
             subgraphNodes = {}
             for n in nodes
                 subgraphNodes[n] = true
-        
+
         @_generateForwardNeighborHash()
         ret = {}
         for n of subgraphNodes
@@ -496,7 +607,7 @@ class DiGraph
             subgraphNodes = {}
             for n in nodes
                 subgraphNodes[n] = true
-        
+
         @_generateBackwardNeighborHash()
         ret = {}
         for n of subgraphNodes
@@ -515,17 +626,19 @@ class DiGraph
 
     # returns a string representing the graph in
     # graphviz dot format
-    toDot: (name) ->
+    toDot: (name, titles={}) ->
         ret = "digraph #{name} {\n"
+        ret += "\tnode [shape=box,style=rounded]\n"
         for e in @edges
             ret += "\t\"#{e[0]}\" -> \"#{e[1]}\"\n"
         ret += "\n"
         for i in [1, 2, 3, 4]
             if @years
-                ret += "\tsubgraph cluster#{i} {\n"
-                ret += "\t\tlabel=\"Year #{i}\"\n\t\t"
+                ret += "\tsubgraph year#{i} {\n"
+                ret += "\t\trank=same\n"
+                ret += "\t\tlabel=\"Year #{i}\"\n"
                 for c in @years[i]
-                    ret += "\"#{c}\"; "
+                    ret += "\t\t\t\"#{c.hash}\" [label=<<font color=\"red\">#{c.hash}</font><br/><font color=\"blue\">#{titles[c]}</font>>]\n"
                 ret += "\n\t}\n"
         ret += "}"
 
@@ -553,7 +666,7 @@ class DiGraph
                 if ranks[child]
                     max_rank = Math.min(ranks[child], max_rank)
             ranks[n] = (min_rank + max_rank) / 2
-        # our ranks are floating point numbers at the moment.  
+        # our ranks are floating point numbers at the moment.
         # We need to order them and make them all integers for the
         # next part of the dot algorithm
         rankFracs = (v for k,v of ranks)
@@ -577,7 +690,7 @@ class DiGraph
 
         expandTightTree = (tailNode, headNode, treeNodes={}, edges=[]) ->
             # if where we're looking has already been included in the tree,
-            # we shouldn't try to grow the tree in that direction, lest we add a 
+            # we shouldn't try to grow the tree in that direction, lest we add a
             # cycle
             if treeNodes[headNode]
                 return treeNodes
@@ -601,7 +714,7 @@ class DiGraph
 
         maximalTree = expandTightTree(sources[0], sources[0])
         return maximalTree
-    
+
     ###
     # returns the minimum difference in ranks between
     # node and its ancestors.
@@ -636,7 +749,7 @@ class DiGraph
     getIncidentEdgeOfMinimumSlack: (ranks, tree, graph=this) ->
         DEFAULT_DELTA = 1
         minRankDelta = graph.minRankDelta || {}
-        
+
         incidentEdges = (e for e in graph.edges when (tree[e[0]] ^ tree[e[1]])) # ^ is xor
         giveSlack = (edge) ->
             rankDiff = Math.abs(ranks[edge[0]] - ranks[edge[1]])
@@ -660,7 +773,7 @@ class DiGraph
         # all the vertices, we're done.
         while Object.keys(tree.treeNodes).length < numNodes
             [slack, edge] = graph.getIncidentEdgeOfMinimumSlack(ranks, tree.treeNodes)
-    
 
-                    
+
+
 

@@ -2,41 +2,93 @@
 	border: 1px solid black;
 	border-radius: 5px;
 	border-collapse: separate;
+	/*width: 500px;*/
 }
 
+/*
 .year td {
 	border-bottom: 1px dashed;
 	min-height: 2em;
 }
-/*
 .year td:last-child {
 	bottom-border: none;
 }
 */
 
+/*
 .year .label {
 	border-right: 1px solid black;
 	vertical-align: middle;
 	text-align: center;
 	width: 4em;
 }
-/*
+*/
+.year1,.year3 {
+	background: #dcdbd1;
+	background: #e8e7e0;
+}
+.year2,.year4 {
+	background: #eeede8;
+	background: #f5f5f2;
+}
+.year {
+	position: relative; /* needed so things inside can have height 100% */
+	box-shadow: 0 -7px 7px -7px black; /* shadow that only appears on the top of the div */
+}
 .year .label {
+	height: 100%;
 	position: absolute;
 	float: left;
 	width: 4em;
+	padding-left: .5em;
+	padding-top: 1em;
 	border-right: 1px solid black;
+	-moz-box-sizing: border-box;
+	box-sizing: border-box;
 }
 .year .courses {
 	position: relative;
 	float: left;
 	margin-left: 4em;
 	height: 100%
+	border-left: 1px solid black;
+	padding-bottom: 5px;
 }
-*/
 
+ul.prereq-tree {
+	padding: 0px;
+	margin: 0px;
+}
+li.prereq-tree {
+	padding: .2em;
+}
 .prereq-tree {
 	display: inline-block;
-	padding: 4px;
+	vertical-align: top;
+}
+
+ul.prereq-or:before {
+	content: 'Any of';
+	padding-left: .4em;
+	font-style: italic;
+	color: #333;
+}
+ul.prereq-or {
 	border: 1px solid black;
+	border-radius: 5px;
+}
+li.prereq-or {
+	display: block;
+}
+li.prereq-and:before {
+	content: ' and ';
+	padding: .2em;
+	font-style: italic;
+	color: #333;
+}
+li.prereq-and:first-child:before {
+	content: '';
+}
+li.prereq-and:first-child {
+	padding-left: 0px;
 }

@@ -31,6 +31,25 @@
 	</header>
 	<div role="main">
 
+	<div id="yearchart">
+		<div class="year year1 clearfix">
+			<div class="label">Year 1</div>
+			<div class="courses"></div>
+		</div>
+		<div class="year year2 clearfix">
+			<div class="label">Year 2</div>
+			<div class="courses"></div>
+		</div>
+		<div class="year year3 clearfix">
+			<div class="label">Year 3</div>
+			<div class="courses"></div>
+		</div>
+		<div class="year year4 clearfix">
+			<div class="label">Year 4</div>
+			<div class="courses"></div>
+		</div>
+	</div>
+	<!--
 	<table id="yearchart">
 		<tr class="year year1 clearfix">
 			<td class="label">Year 1</td>
@@ -49,11 +68,141 @@
 			<td class="courses"></td>
 		</tr>
 	</table>
+	-->
 	<div>
 		Courses from another department
 		<select id='department-list'>
 			<option value='MATH'>Math</option>
 			<option value='CSC'>Computer Science</option>
+			<option value='SENG'>Software Engineering</option>
+			<option value='ACAN'>ACAN</option>
+			<option value='ADMN'>ADMN</option>
+			<option value='AE'>AE</option>
+			<option value='AGEI'>AGEI</option>
+			<option value='ANTH'>ANTH</option>
+			<option value='ART'>ART</option>
+			<option value='ARTS'>ARTS</option>
+			<option value='ASL'>ASL</option>
+			<option value='ASTR'>ASTR</option>
+			<option value='BCMB'>BCMB</option>
+			<option value='BIOC'>BIOC</option>
+			<option value='BIOL'>BIOL</option>
+			<option value='BME'>BME</option>
+			<option value='BUS'>BUS</option>
+			<option value='CD'>CD</option>
+			<option value='CENG'>CENG</option>
+			<option value='CH'>CH</option>
+			<option value='CHEM'>CHEM</option>
+			<option value='COM'>COM</option>
+			<option value='CS'>CS</option>
+			<option value='CSC'>CSC</option>
+			<option value='CSPT'>CSPT</option>
+			<option value='CW'>CW</option>
+			<option value='CYC'>CYC</option>
+			<option value='CYCB'>CYCB</option>
+			<option value='CYCI'>CYCI</option>
+			<option value='DR'>DR</option>
+			<option value='DSST'>DSST</option>
+			<option value='ECON'>ECON</option>
+			<option value='ED-D'>ED-D</option>
+			<option value='ED-P'>ED-P</option>
+			<option value='EDCI'>EDCI</option>
+			<option value='EDUC'>EDUC</option>
+			<option value='ELEC'>ELEC</option>
+			<option value='ENGL'>ENGL</option>
+			<option value='ENGR'>ENGR</option>
+			<option value='ENT'>ENT</option>
+			<option value='ENTC'>ENTC</option>
+			<option value='ENTD'>ENTD</option>
+			<option value='EOS'>EOS</option>
+			<option value='EPHE'>EPHE</option>
+			<option value='ER'>ER</option>
+			<option value='ES'>ES</option>
+			<option value='EUS'>EUS</option>
+			<option value='FA'>FA</option>
+			<option value='FORB'>FORB</option>
+			<option value='FRAN'>FRAN</option>
+			<option value='FREN'>FREN</option>
+			<option value='GEOG'>GEOG</option>
+			<option value='GER'>GER</option>
+			<option value='GERS'>GERS</option>
+			<option value='GMST'>GMST</option>
+			<option value='GREE'>GREE</option>
+			<option value='GRS'>GRS</option>
+			<option value='GS'>GS</option>
+			<option value='HA'>HA</option>
+			<option value='HDCC'>HDCC</option>
+			<option value='HINF'>HINF</option>
+			<option value='HIST'>HIST</option>
+			<option value='HLTH'>HLTH</option>
+			<option value='HOS'>HOS</option>
+			<option value='HSD'>HSD</option>
+			<option value='HSM'>HSM</option>
+			<option value='HUMA'>HUMA</option>
+			<option value='IA'>IA</option>
+			<option value='IB'>IB</option>
+			<option value='IED'>IED</option>
+			<option value='IET'>IET</option>
+			<option value='IGOV'>IGOV</option>
+			<option value='INGH'>INGH</option>
+			<option value='INTD'>INTD</option>
+			<option value='INTS'>INTS</option>
+			<option value='IS'>IS</option>
+			<option value='ITAL'>ITAL</option>
+			<option value='KINE'>KINE</option>
+			<option value='LAS'>LAS</option>
+			<option value='LATI'>LATI</option>
+			<option value='LAW'>LAW</option>
+			<option value='LING'>LING</option>
+			<option value='MATH'>MATH</option>
+			<option value='MBA'>MBA</option>
+			<option value='MBME'>MBME</option>
+			<option value='MBMS'>MBMS</option>
+			<option value='ME'>ME</option>
+			<option value='MECH'>MECH</option>
+			<option value='MEDI'>MEDI</option>
+			<option value='MEDS'>MEDS</option>
+			<option value='MEST'>MEST</option>
+			<option value='MGB'>MGB</option>
+			<option value='MICR'>MICR</option>
+			<option value='MRNE'>MRNE</option>
+			<option value='MUS'>MUS</option>
+			<option value='NRSC'>NRSC</option>
+			<option value='NUED'>NUED</option>
+			<option value='NUHI'>NUHI</option>
+			<option value='NUNP'>NUNP</option>
+			<option value='NURA'>NURA</option>
+			<option value='NURP'>NURP</option>
+			<option value='NURS'>NURS</option>
+			<option value='PAAS'>PAAS</option>
+			<option value='PHIL'>PHIL</option>
+			<option value='PHSP'>PHSP</option>
+			<option value='PHYS'>PHYS</option>
+			<option value='POLI'>POLI</option>
+			<option value='PORT'>PORT</option>
+			<option value='PSYC'>PSYC</option>
+			<option value='RHED'>RHED</option>
+			<option value='RS'>RS</option>
+			<option value='RUSS'>RUSS</option>
+			<option value='SCIE'>SCIE</option>
+			<option value='SDH'>SDH</option>
+			<option value='SENG'>SENG</option>
+			<option value='SJS'>SJS</option>
+			<option value='SLAV'>SLAV</option>
+			<option value='SLST'>SLST</option>
+			<option value='SMGT'>SMGT</option>
+			<option value='SOCI'>SOCI</option>
+			<option value='SOCW'>SOCW</option>
+			<option value='SOSC'>SOSC</option>
+			<option value='SPAN'>SPAN</option>
+			<option value='SPP'>SPP</option>
+			<option value='STAT'>STAT</option>
+			<option value='THEA'>THEA</option>
+			<option value='TS'>TS</option>
+			<option value='UKR'>UKR</option>
+			<option value='WKEX'>WKEX</option>
+			<option value='WRIT'>WRIT</option>
+			<option value='WS'>WS</option>
 		</select>
 		<button id='show-courses'>Show</button>
 		<button id='hide-courses'>Hide</button>
