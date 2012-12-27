@@ -34,6 +34,7 @@
 .year {
 	position: relative; /* needed so things inside can have height 100% */
 	box-shadow: 0 -7px 7px -7px black; /* shadow that only appears on the top of the div */
+	min-height: 3em;
 }
 .year .label {
 	height: 100%;
@@ -53,6 +54,9 @@
 	height: 100%
 	border-left: 1px solid black;
 	padding-bottom: 5px;
+}
+.year.highlight {
+	background: rgb(255, 255, 202);
 }
 
 ul.prereq-tree {

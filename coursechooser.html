@@ -20,6 +20,8 @@
 	<script src="jquery-ui-1.9.2.custom/js/jquery-1.8.3.js"></script>
 	<script src="jquery-ui-1.9.2.custom/js/jquery-ui-1.9.2.custom.min.js"></script>
 	<link rel="stylesheet" href="jquery-ui-1.9.2.custom/css/ui-lightness/jquery-ui-1.9.2.custom.css">
+	<script src="js/jquery.ui.combobox.js"></script>
+	<link rel="stylesheet" href="css/jquery.ui.combobox.css">
 
 	<!-- <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.js"></script> -->
 	<script src="js/plugins.js"></script>
@@ -49,32 +51,10 @@
 			<div class="courses"></div>
 		</div>
 	</div>
-	<!--
-	<table id="yearchart">
-		<tr class="year year1 clearfix">
-			<td class="label">Year 1</td>
-			<td class="courses"></td>
-		</tr>
-		<tr class="year year2 clearfix">
-			<td class="label">Year 2</td>
-			<td class="courses"></td>
-		</tr>
-		<tr class="year year3 clearfix">
-			<td class="label">Year 3</td>
-			<td class="courses"></td>
-		</tr>
-		<tr class="year year4 clearfix">
-			<td class="label">Year 4</td>
-			<td class="courses"></td>
-		</tr>
-	</table>
-	-->
 	<div>
 		Courses from another department
+		<div class="clearfix" style="display: inline-block;">
 		<select id='department-list'>
-			<option value='MATH'>Math</option>
-			<option value='CSC'>Computer Science</option>
-			<option value='SENG'>Software Engineering</option>
 			<option value='ACAN'>ACAN</option>
 			<option value='ADMN'>ADMN</option>
 			<option value='AE'>AE</option>
@@ -204,16 +184,19 @@
 			<option value='WRIT'>WRIT</option>
 			<option value='WS'>WS</option>
 		</select>
+		</div>
 		<button id='show-courses'>Show</button>
 		<button id='hide-courses'>Hide</button>
 	</div>
 	<div class='course-info'>
 		<h3>Currently Selected</h3>
 		<div class='course-name'></div>
-		<div class='course-status'>
-			<input type='radio' name='state' value='none' id='course-notincluded' /><label for='course-notincluded'>Not Included</label>
-			<input type='radio' name='state' value='required' id='course-required' /><label for='course-required'>Required</label>
-			<input type='radio' name='state' value='elective' id='course-elective' /><label for='course-elective'>Elective</label>
+		<div class='course-state'>
+			<div class='course-status'>
+				<input type='radio' name='state' value='none' id='course-notincluded' /><label for='course-notincluded'>Not Included</label>
+				<input type='radio' name='state' value='required' id='course-required' /><label for='course-required'>Required</label>
+				<input type='radio' name='state' value='elective' id='course-elective' /><label for='course-elective'>Elective</label>
+			</div>
 		</div>
 		Co-requisites: <div class='coreq-dropbox'>Drop Here</div>
 		Pre-requisites: <div class='prereq-area'></div>

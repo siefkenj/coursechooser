@@ -4,6 +4,13 @@ objToString = (obj) ->
         ret += " #{p}:#{v}, "
     return ret + "}"
 
+attachedToDom = (elm) ->
+    if not elm or not elm.parentNode?
+        return false
+    else if elm.parentNode is document
+        return true
+    return attachedToDom(elm.parentNode)
+
 ###
 # * Title Caps
 # *
@@ -43,111 +50,59 @@ titleCaps = (->
     return titleCaps
 )()
 $(document).ready ->
-    ###
-    $.ajax
-        url: 'MATH_items.json'
-        dataType: 'json'
-        success: courseDataLoaded
-    ###
+    window.courseManager = new CourseManager
+    window.courses = window.courseManager.courses
+
     $('.course-status').buttonset().disableSelection()
     $('button').button()
+    $('#department-list').combobox()
 
-    showCoursesFromDep('MATH')
+    window.courseManager.showCoursesOfSubject('MATH')
     $('#show-courses').click ->
-        dep = $('#department-list option:selected()').val()
-        showCoursesFromDep(dep)
+        subjects = []
+        courses = []
+        try
+            val = $('#department-list').combobox('value').toUpperCase()
+            for v in val.split(/,\s*/)
+                # see if it is a course and not just a subject
+                # by checking if it has a number in it
+                if v.match(/\d/)
+                    # identify the subject and the number in such a way
+                    # that they can be written with or without a space e.g. "math 100" or "math100"
+                    subject = v.match(/[a-zA-Z]+/)?[0]
+                    number = v.match(/\d\w+/)?[0]
+                    courses.push {subject:subject, number:number}
+                else
+                    subjects.push v
+        catch e
+            subjects.push $('#department-list option:selected()').val()
+        console.log subjects,courses
+        for v in subjects
+            window.courseManager.showCoursesOfSubject(v)
+        for c in courses
+            # we need a closure here.  we are first making sure the subject of each course is loaded
+            # and then we use a callback to show the course
+            ((c) ->
+                window.courseManager.loadSubjectData(c.subject, -> window.courseManager.ensureDisplayedInYearChart(c))
+            )(c)
     $('#hide-courses').click ->
-        dep = $('#department-list option:selected()').val()
-        hideCoursesFromDep(dep)
+        subjects = []
+        try
+            val = $('#department-list').combobox('value')
+            for v in val.split(/,\s*/)
+                subjects.push v.toUpperCase()
+        catch e
+            subjects.push $('#department-list option:selected()').val()
+        for v in subjects
+            window.courseManager.hideCoursesOfSubject(v)
 
-window.courses = {}
-
-# shows courses from a particular department.  If buttons
-# already exist for the department, those buttons are made visible.
-# If not, the buttons are created
-showCoursesFromDep = (dep) ->
-    # create a list of all departments that already have buttons
-    buttonsToBeCreated = {}
-    courseDataNeedsLoading = true
-    for hash, course of window.courses
-        if course.subject is dep
-            # if we've found a course already in our list, we don't need to fetch it from json
-            courseDataNeedsLoading = false
-            if course.elm
-                course.$elm.show()
-            else
-                buttonsToBeCreated[hash] = course
-    populateYearTable(buttonsToBeCreated)
-
-    if courseDataNeedsLoading
-        # we need to load the json corresponding to the course
-        $.ajax
-            url: "course_data/#{dep}.json"
-            dataType: 'json'
-            success: courseDataLoaded
-
-# hide all courses from a particular department
-# that aren't marked as required or as an elective
-hideCoursesFromDep = (dep) ->
-    for hash, course of window.courses
-        if course.subject is dep and course.state.required is false and course.state.elective is false
-            if course.elm
-                course.$elm.hide()
-
-
-courseDataLoaded = (data, textState, jsXHR) ->
-    # set up a global list of all courses by name
-    for c in data
-        course = new Course(c)
-        window.courses[course.hash] = course
-
-    populateYearTable(window.courses)
-
-    # make all the buttons draggable
-    $('.courses').sortable(
-        connectWith: '.courses'
-        distance: 25
-        deactivate: (event, ui) ->
-            # if we've just been dragged, we don't want a click event fired
-            ui.item.addClass('noclick')
-    ).disableSelection()
-    # make all the buttons clickable
-    for elm in $('.course')
-        if not elm.course.bound
-            elm.course.bound = true
-            $(elm).click (evt) ->
-                # make sure nobody else is selected but us
-                for hash, course of window.courses
-                    course.setState({selected: false})
-                evt.currentTarget.course.setState({selected: true})
-                # check to see if we've just been dragged by seeing if we have a noclick class
-                if $(evt.currentTarget).hasClass('noclick')
-                    $(evt.currentTarget).removeClass('noclick')
-                    return
-                evt.currentTarget.course.toggleState()
-                # make sure to do this after the state has been set, otherwise prereqs won't
-                # be computed correctly
-                CourseUtils.updatePrereqTags()
-                evt.currentTarget.course.showCourseInfo($('.course-info')[0])
-                $("#dot").val CourseUtils.createDotGraph()
-
-populateYearTable = (courses) ->
-    # create a list of courses for each year (based on the first digit of the course number
-    years = {}
-    for k,c of courses
-        year = c.number.charAt(0)
-        if not years[year]?
-            years[year] = []
-        years[year].push [c.hash, c]
-
-    # sort the course lists and show years 1-4
-    for year,list of years
-        if year in ['1','2','3','4']
-            list.sort()
-            container = $(".year#{year} .courses")
-            for [hash, course] in list
-                container.append(course.getButton())
-
+    # make the years droppable
+    $('.year').droppable
+        hoverClass: 'highlight'
+        drop: (event, ui) ->
+            courses = this.getElementsByClassName('courses')[0]
+            courses.appendChild(ui.draggable[0])
+            window.courseManager.selectCourse(ui.draggable[0].course)
 ###
 # Class to manage and keep the sync of all course on the webpage
 # and their state.
@@ -155,6 +110,10 @@ populateYearTable = (courses) ->
 class CourseManager
     constructor: ->
         @courses = {}
+        @courseData = {}
+        @sortableCourses = {}   # all the courses that are displayed in the year chart (and so are sortable)
+        @sortableCoursesStateButtons = {}
+        @loadedSubjects = {}
     # updates the state of all instances of a particular course
     updateCourseState: (course, state) ->
         for c in (@courses[course] || [])
@@ -174,29 +133,293 @@ class CourseManager
             @courses[hash].splice(index, 1)
     removeAllCourseInstances: (course) ->
         delete @courses[course]
+    cleanupUnattachedButtons: (course, buttonType=CourseButton) ->
+        clean = =>
+            if @needsCleaning = false
+                return
+            @needsCleaning = false
+            courses = []
+            if not course
+                for k,v of @courses
+                    courses = courses.concat(v)
+            else
+                hash = BasicCourse.hashCourse(course)
+                courses = @courses[hash] || []
+            for c in courses
+                if c instanceof buttonType and not attachedToDom(c.elm)
+                    c.removeButton()
+                    @removeCourse(c)
+            return
+        @needsCleaning = true
+        # this operation takes a bit of time, so do it asyncronously
+        window.setTimeout(clean, 1000)
+    # out of sortableCourses, ensures only course has the selected state
+    selectCourse: (course) ->
+        # identify the selected course and set its state
+        selectedCourse = null
+        for hash,c of @sortableCourses
+            if c.state.selected
+                c.setState({selected: false})
+            if c.subject is course.subject and c.number is course.number
+                c.setState({selected: true})
+                selectedCourse = c
+        if not selectedCourse
+            return
+
+        # set up the course info area for the selected course
+        stateButtons = @sortableCoursesStateButtons[selectedCourse]
+        if not stateButtons
+            stateButtons = @createCourseStateButton(selectedCourse)
+        $('.course-info .course-name').html "#{selectedCourse.hash} &mdash; #{titleCaps(('' + selectedCourse.data.title).toLowerCase())}"
+        # if we don't detach first, jquery removes all bound events and ui widgets, etc.
+        $('.course-info .course-state').children().detach()
+        $('.course-info .course-state').html stateButtons.elm
+        $('.course-info .prereq-area').html PrereqUtils.prereqsToDivs(stateButtons.prereqs, @)
+        #TODO this shouldn't be done with a timeout.  it should be done in a robust way!!
+        window.setTimeout((=> $('#dot').val @createDotGraph()), 0)
+        @cleanupUnattachedButtons()
+
+
+    # returns a CourseButton for the desired course.  If the course
+    # hasn't been loaded yet, it will be loaded and the CourseButton's data will
+    # be updated accordingly
+    createCourseButton: (course, ops={}) ->
+        # if we've already been loaded, our job is easy
+        if @courseData[course]
+            course = new CourseButton(@courseData[course], true)
+        else
+            # if the course hasn't been loaded, we return a functioning course
+            # button whose data will be updated upon load
+            course = new CourseButton(course)
+            updateCourse = =>
+                if not @courseData[course]
+                    if course.elm
+                        course.$elm.addClass('defunct')
+                    return
+                    #throw new Error("Course #{course} was loaded in dep. #{course.subject}, but wasn't available")
+                course.update(@courseData[course])
+                course.wasSynced = true
+            @loadSubjectData(course.subject, updateCourse)
+        if ops.clickable
+            @makeCourseButtonClickable(course, ops)
+        if ops.draggable
+            @makeCourseButtonDraggable(course, ops)
+        @addCourse(course)
+        @initButtonState(course)
+        return course
+    # makes it so that when you click the button,
+    # it cycles through the states and ensures all instances
+    # are appropriately synced
+    makeCourseButtonClickable: (button, ops={}) ->
+        $(button.getButton()).click (evt) =>
+            # defunct classes also cannot be clicked
+            if $(evt.currentTarget).hasClass('defunct')
+                return
+            if ops.selectable and not button.state.selected
+                # if we click on a button and it results in the selection changing,
+                # we don't want to toggle the state at all.  We just want to update
+                # the display area
+                @selectCourse(button)
+                return
+            # check to see if we've just been dragged by seeing if we have a noclick class
+            if $(evt.currentTarget).hasClass('noclick')
+                $(evt.currentTarget).removeClass('noclick')
+                return
+            newState = CourseManager.toggleState(button.state)
+            # we need to make sure that the course appears in the yearchart if this option
+            # is set
+            if ops.insertOnClick
+                @ensureDisplayedInYearChart(button)
+            @updateCourseState(button, newState)
+    makeCourseButtonDraggable: (button, ops={}) ->
+        $(button.getButton()).draggable
+            appendTo: 'body'
+            helper: 'clone'
+            revert: 'invalid'
+            distance: '25'
+            opacity: 0.7
+
+    # returns a CourseStateButton for the desired course.  If the course
+    # hasn't been loaded yet, it will be loaded and the CourseButton's data will
+    # be updated accordingly
+    createCourseStateButton: (course) ->
+        # if we've already been loaded, our job is easy
+        if @courseData[course]
+            course = new CourseStateButton(@courseData[course], true)
+        else
+            # if the course hasn't been loaded, we return a functioning course
+            # button whose data will be updated upon load
+            course = new CourseStateButton(course)
+            updateCourse = =>
+                if not @courseData[course]
+                    throw new Error("Course #{course} was loaded in dep. #{course.subject}, but wasn't available")
+                course.update(@courseData[course])
+                course.wasSynced = true
+            @loadSubjectData(course.subject, updateCourse)
+        @sortableCoursesStateButtons[course] = course
+        @makeCourseStateButtonClickable(course)
+        @addCourse(course)
+        @initButtonState(course)
+        return course
+    # makes it so that when you click the button,
+    # the appropriate state is broadcast
+    makeCourseStateButtonClickable: (button) ->
+        button.$elm.find('input').bind 'change', (evt) =>
+            val = $(evt.currentTarget).parent().find('input:checked').val()
+            if not val? or val is 'none'
+                state = {required: false, elective: false}
+            if val is 'required'
+                state = {required: true, elective: false}
+            if val is 'elective'
+                state = {required: false, elective: true}
+            @updateCourseState(button, state)
+    # computes an updated state that cycles from none -> required -> elective -> none
+    # Does not specify selected or prereq
+    @toggleState: (state) ->
+        ret =
+            required: false
+            elective: false
+        if state.required
+            ret.elective = true
+        if state.elective
+            ret.elective = false
+        if not (state.required or state.elective)
+            ret.required = true
+        return ret
+    # sets the button state to match the state of
+    # the other course buttons currently being managed.
+    # If the course isn't currently being managed, nothing is done
+    initButtonState: (button) ->
+        if not @courses[button] or @courses[button].length is 0
+            return
+        c = @courses[button][0]
+        state = {required:c.state.required, elective:c.state.elective}
+        button.setState(state, {forceUpdate: true})
+    getSelectedCourses: ->
+        ret = []
+        for hash,list of @courses
+            if list[0]?.state.required or list[0]?.state.elective
+                ret.push list[0]
+        return ret
+
+    loadSubjectData: (subject, callback, force=false) ->
+        if @loadedSubjects[subject] and not force
+            callback()
+        $.ajax
+            url: "course_data/#{subject}.json"
+            dataType: 'json'
+            success: @courseDataLoaded
+            error: (e) ->
+                console.log 'ajax error'
+                throw e
+            complete: callback
+    courseDataLoaded: (data, textState, jsXHR) =>
+        for c in data
+            @courseData[BasicCourse.hashCourse(c)] = c
+            @loadedSubjects[c.subject] = true
+    # shows courses from a particular department.  If buttons
+    # already exist for the department, those buttons are made visible.
+    # If not, the buttons are created
+    showCoursesOfSubject: (subject) ->
+        showCourses = =>
+            for hash,course of @sortableCourses
+                if course.subject is subject
+                    course.$elm.show()
+        if @loadedSubjects[subject]
+            @populateYearChartWithSubject(subject)
+            showCourses()
+        else
+            # TODO fix potential endless loop
+            @loadSubjectData(subject, => @showCoursesOfSubject(subject))
+        return
+    # hide all courses from a particular department
+    # that aren't marked as required or as an elective
+    hideCoursesOfSubject: (subject) ->
+        for hash,course of @sortableCourses
+            if course.subject is subject and course.state.required is false and course.state.elective is false
+                if course.elm
+                    course.$elm.hide()
+        return
+    populateYearChartWithSubject: (subject) ->
+        years = {}
+        for hash,data of @courseData
+            # find everything of match subject for which a button hasn't already been created
+            if data.subject is subject and not @sortableCourses[hash]
+                leadingNumber = data.number.charAt(0)
+                years[leadingNumber] = years[leadingNumber] || []
+                years[leadingNumber].push data
+        for year in ['1','2','3','4']
+            list = years[year] || []
+            list.sort()
+            container = $(".year#{year} .courses")
+            for data in list
+                course = @createCourseButton(data, {clickable: true, selectable: true, draggable: true})
+                #course.$elm.hide()
+                @sortableCourses[course] = course
+                container.append(course.getButton())
+        return
+    ensureDisplayedInYearChart: (course) ->
+        hash = BasicCourse.hashCourse(course)
+        # this is a course that cannot be added since it doesn't exist in a subject
+        if not @courseData[hash] and @loadedSubjects[course.subject]
+            throw new Error("#{hash} cannot be loaded.  Does not appear to exist...")
+        if not @courseData[hash]
+            @loadSubjectData(course.subject, => @ensureDisplayedInYearChart(course))
+
+        if @sortableCourses[hash]
+            @sortableCourses[hash].$elm.show()
+            return
+        leadingNumber = @courseData[hash].number.charAt(0)
+        if leadingNumber in ['1','2','3','4']
+            course = @createCourseButton(@courseData[hash], {clickable: true, selectable: true, draggable: true})
+            @sortableCourses[course] = course
+            $(".year#{leadingNumber} .courses").append(course.getButton())
+    # returns a string formatted in graphviz's dot language
+    # consisting of all the selected courses of each year and
+    # with prereqs given by arrows
+    createDotGraph: ->
+        # get a list of courses by year
+        years = {1:[],2:[],3:[],4:[]}
+        for i in [1, 2, 3, 4]
+            elms = $(".year#{i} .courses").children()
+            for e in elms
+                subject = e.getAttribute('subject')
+                number = e.getAttribute('number')
+                hash = BasicCourse.hashCourse({subject:subject, number:number})
+                if @sortableCourses[hash].state.required or @sortableCourses[hash].state.elective
+                    years[i].push @sortableCourses[hash]
+        allCourses = years[1].concat(years[2]).concat(years[3]).concat(years[4])
+        allCoursesHash = (c.hash for c in allCourses)
+        # put the display courses in a hash table for quick lookup
+        courseHashLookup = {}
+        for hash in allCoursesHash
+            courseHashLookup[hash] = true
+
+        # find all edges given by prerequisites
+        edges = []
+        for course in allCourses
+            if course.prereqs?
+                prereqs = (BasicCourse.hashCourse(c) for c in PrereqUtils.flattenPrereqs(course.prereqs))
+                for p in prereqs
+                    if courseHashLookup[p]
+                        edges.push [p, course.hash]
+
+        # put the info into a graph so we can do some pruning operations
+        g = new DiGraph(edges, allCourses)
+        g.years = years
+        # prune the edges in the graph to prefer longer
+        # prereq chains to shorter ones
+        console.log g.eliminateRedundantEdges()
+        titles = {}
+        for t of g.nodes
+            titles[t] = titleCaps((''+@sortableCourses[t].data.title).toLowerCase())
+        return g.toDot('pruned', titles)
+
 
 ###
 # Utility functions for dealing with lists of courses and their prereqs
 ###
 CourseUtils =
-    computePrereqTree: (courses, selected=[]) ->
-        if not courses?
-            throw new Error("computePrereqTree requires a list of course hash's")
-        ret = {op: 'and', data: []}
-        for hash in courses
-            course = window.courses[hash]
-            if course.prereqs?
-                pruned = Course.prunePrereqs(course.prereqs, selected)
-                pruned = Course.simplifyPrereqs(pruned)
-                if pruned.data?.length > 0
-                    # tag this branch of prereqs so that we know who requires it
-                    pruned.requiredBy = course
-                    ret.data.push pruned
-        return ret
-
-    getSelectedCourses: ->
-        return (hash for hash,c of window.courses when c.state.required or c.state.elective)
-
     # adds the prereq class to all class buttons
     # that are an unsatisfied prereq of any class currently selected
     updatePrereqTags: ->
@@ -211,161 +434,8 @@ CourseUtils =
         console.log (k for k of unmet).join(' ')
         return unmet
 
-    createDotGraph: ->
-        # get a list of courses by year
-        years = {1:[],2:[],3:[],4:[]}
-        for i in [1, 2, 3, 4]
-            elms = $(".year#{i} .courses").children()
-            for e in elms
-                years[i].push e.course if (e.course.state.required || e.course.state.elective)
-        allCourses = years[1].concat(years[2]).concat(years[3]).concat(years[4])
-        allCoursesHash = (c.hash for c in allCourses)
-        # put the display courses in a hash table for quick lookup
-        courseHashLookup = {}
-        for hash in allCoursesHash
-            courseHashLookup[hash] = true
-
-        # find all edges given by prerequisites
-        edges = []
-        for course in allCourses
-            if course.prereqs?
-                prereqs = (Course.hashCourse(c) for c in Course.flattenPrereqs(course.prereqs))
-                for p in prereqs
-                    if courseHashLookup[p]
-                        edges.push [p, course.hash]
-
-        # put the info into a graph so we can do some pruning operations
-        g = new DiGraph(edges, allCourses)
-        g.years = years
-        # prune the edges in the graph to prefer longer
-        # prereq chains to shorter ones
-        ret = g.toDot('unpruned') + "\n"
-        console.log g.eliminateRedundantEdges()
-        titles = {}
-        for t of g.nodes
-            titles[t] = titleCaps((window.courses[t].data.title+"").toLowerCase())
-        return g.toDot('pruned', titles)
-
-###
-# Object to store course info along with managing a button
-# relating to a particular course and all of its state,
-# prereqs, etc.
-###
-class Course
-    @hashCourse: (course) ->
-        return "#{course.subject} #{course.number}"
-
-    constructor: (@data) ->
-        @hash = Course.hashCourse(@data)
-        {@subject, @number, @prereqs} = @data
-        @elm = null
-        @state =
-            required: false
-            elective: false
-            selected: false
-            prereq: false
-    toString: ->
-        return @hash
-    # list of functions to be called each time setState is called
-    setStateCallbacks: []
-    getButton: ->
-        if @elm
-            return @elm
-
-        @$elm = $("<div class='course'><div class='annotation'></div><div class='number'>#{@subject} #{@number}</div></div>")
-        @elm = @$elm[0]
-        @elm.course = @
-        # make sure to initialize the state.  We may have changed it before we created the button element!
-        @setState(@state)
-        return @elm
-
-    # Set all neccessary classes and update internal state based on the object state
-    setState: (state={}, forceUpdate=false) ->
-        stateChanged = forceUpdate
-        for k,s of state
-            if @state[k] != s or forceUpdate
-                stateChanged = true
-                @state[k] = s
-                if s
-                    @$elm?.addClass(k)
-                else
-                    @$elm?.removeClass(k)
-        # call all of our callbacks
-        if stateChanged
-            for f in @setStateCallbacks
-                f()
-        return
-    # Cycle the state from none -> required -> elective -> none
-    toggleState: ->
-        state =
-            required: false
-            elective: false
-        if @state.required
-            state.elective = true
-        if @state.elective
-            state.elective = false
-        if not (@state.required or @state.elective)
-            state.required = true
-
-        @setState(state)
-        return
-    # display all the course information in the specified infoarea
-    showCourseInfo: (infoarea) ->
-        $infoarea = $(infoarea)
-        $infoarea.find('.course-name').html "#{@hash} &mdash; #{@data.title}"
-        $infoarea.find('.prereq-area').html Course.prereqsToDivs(@prereqs)
-        #$infoarea.find('.prereq-area').html Course.prereqsToDivs(CourseUtils.computePrereqTree(CourseUtils.getSelectedCourses()))
-
-        # make sure to unbind the previous course before we bind ourselves
-        @unbindRadioButtons(infoarea)
-        @bindRadioButtons(infoarea)
-
-        # force an update of the state since we now should be displayed
-        @setState({}, true)
-    # bind to the state radio buttons in infoarea.  When the course state is
-    # changed, the radio buttons will be changed and when the radio buttons
-    # are changed, the state will be changed
-    bindRadioButtons: (infoarea) ->
-        # bound function that will change our state when the toggle buttons change
-        changeState = (evt) =>
-            val = $(evt.currentTarget).parent().find('input:checked').val()
-            if not val? or val is 'none'
-                @setState({required: false, elective: false})
-            if val is 'required'
-                @setState({required: true, elective: false})
-            if val is 'elective'
-                @setState({required: false, elective: true})
-        # we need to rember our bound function so we can unbind it later
-        infoarea.boundRadioFunction = changeState
-        $(infoarea).find('input').bind('change', changeState)
-
-        changeToggle = =>
-            $(infoarea).find('input').attr('checked', false)
-            if @state.required
-                $(infoarea).find('input[value=required]').attr('checked', true)
-            else if @state.elective
-                $(infoarea).find('input[value=elective]').attr('checked', true)
-            else
-                $(infoarea).find('input[value=none]').attr('checked', true)
-            try
-                $('.course-status').buttonset('refresh')
-            catch e
-
-        @setStateCallbacks.push changeToggle
-        infoarea.boundChangeToggle = [@, changeToggle]
-
-    unbindRadioButtons: (infoarea) ->
-        # remove the function that binds toggle switches to our button
-        $(infoarea).find('input').unbind('change', infoarea.boundRadioFunction)
-        # remove the function that binds our button to the toggle switches
-        if infoarea.boundChangeToggle
-            elm = infoarea.boundChangeToggle[0]
-            func = infoarea.boundChangeToggle[1]
-            index = elm.setStateCallbacks.indexOf(func)
-            if index >= 0
-                elm.setStateCallbacks.splice(index, 1)
-
-    @prereqsToString: (prereq) ->
+PrereqUtils =
+    prereqsToString: (prereq) ->
         if not prereq?
             return ""
         if prereq.subject
@@ -373,47 +443,20 @@ class Course
         if prereq.op
             # only give a pretty result if our data is formatted correctly
             if typeof prereq.op is 'string'
-                return "(" + (Course.prereqsToString(p) for p in prereq.data).join(" #{prereq.op} ") + ")"
+                return "(" + (PrereqUtils.prereqsToString(p) for p in prereq.data).join(" #{prereq.op} ") + ")"
             else
                 return ""
         return
-
-    @prereqsToDivs: (prereq) ->
-        # create a string representing the dom structure
-        prereqsToDivs = (prereq) ->
-            if not prereq?
-                return ""
-            if prereq.subject
-                hash = Course.hashCourse(prereq)
-                return "<course id='#{hash}' subject='#{prereq.subject}' number='#{prereq.number}'>#{hash}</course>"
-            if prereq.op
-                # only give a pretty result if our data is formatted correctly
-                if typeof prereq.op is 'string'
-                    return "<ul class='prereq-tree prereq-#{prereq.op}'><li class='prereq-tree prereq-#{prereq.op}'>" + (prereqsToDivs(p) for p in prereq.data).join("</li><li class='prereq-tree prereq-#{prereq.op}'>") + "</ul>"
-                else
-                    return ""
-            return
-        # once we have everything as a dom element, replace all the courses with course
-        # buttons that are clickable
-        divs = $(prereqsToDivs(prereq))
-        for elm in divs.find('course')
-            subject = elm.getAttribute('subject')
-            number = elm.getAttribute('number')
-            course = new CourseShell({subject: subject, number: number})
-            courseElm = course.getButton()
-            elm.parentNode.replaceChild(courseElm, elm)
-        return divs
-
     # returns the prereq pruned so that any branches whose
     # requirements are met are no longer there
     # courses should be a list of course hashes
-    @prunePrereqs: (prereq, courses) ->
+    prunePrereqs: (prereq, courses) ->
         if not prereq?
             throw new Error("Yikes.  We errored while pruning the prereqs!")
 
         ret = {op: 'and', data: []}
         if prereq.subject
-            if courses.indexOf(Course.hashCourse(prereq)) is -1
+            if courses.indexOf(BasicCourse.hashCourse(prereq)) is -1
                 ret.data.push prereq
         switch prereq.op
             when 'or'
@@ -421,7 +464,7 @@ class Course
                 for course in prereq.data
                     # if we're in an 'or' list and we've found one of our items,
                     # we're done!  Return an empty list
-                    prunedBranch = Course.prunePrereqs(course, courses)
+                    prunedBranch = PrereqUtils.prunePrereqs(course, courses)
                     if prunedBranch.data?.length == 0
                         return {op: 'and', data: []}
                     # if our branch isn't empty, we better keep it around
@@ -430,15 +473,14 @@ class Course
                 for course in prereq.data
                     # if we're in an 'and' list, we need to keep any branches
                     # that have not been fully met
-                    prunedBranch = Course.prunePrereqs(course, courses)
+                    prunedBranch = PrereqUtils.prunePrereqs(course, courses)
                     if prunedBranch.data?.length != 0
                         # if our branch isn't empty, we better keep it around
                         ret.data.push prunedBranch
         return ret
-
     # Takes prereq object and simplifies it by remove unnecessary 'parens'
     # eg. (MATH100) and (MATH101) -> MATH100 and MATH101
-    @simplifyPrereqs: (prereq) ->
+    simplifyPrereqs: (prereq) ->
         removeParen = (prereq) ->
             if not prereq.data?
                 return prereq
@@ -446,27 +488,171 @@ class Course
                 return removeParen(prereq.data[0])
             return {op: prereq.op, data: (removeParen(p) for p in prereq.data)}
         return removeParen(prereq)
-
     # returns a flat list of all prereqs.
-    @flattenPrereqs: (prereq) ->
+    flattenPrereqs: (prereq) ->
         if prereq?.subject
             return [prereq]
         if prereq?.op
             ret = []
             for c in prereq.data
-                ret = ret.concat(Course.flattenPrereqs(c))
+                ret = ret.concat(PrereqUtils.flattenPrereqs(c))
             return ret
         return []
-        throw new Error('Error flattening prereqs')
+
+    # creates a dom element with all the prereqs as buttons synced with manager (instace of CourseManager)
+    prereqsToDivs: (prereq, manager) ->
+        # create a string representing the dom structure
+        prereqsToDivs = (prereq) ->
+            if not prereq?
+                return ""
+            if prereq.subject
+                hash = BasicCourse.hashCourse(prereq)
+                return "<course id='#{hash}' subject='#{prereq.subject}' number='#{prereq.number}'>#{hash}</course>"
+            if prereq.op
+                # only give a pretty result if our data is formatted correctly
+                if typeof prereq.op is 'string'
+                    return "<ul class='prereq-tree prereq-#{prereq.op}'><li class='prereq-tree prereq-#{prereq.op}'>" + (prereqsToDivs(p) for p in prereq.data).join("</li><li class='prereq-tree prereq-#{prereq.op}'>") + "</ul>"
+                else
+                    return ""
+            return
+        # first create the structure for all the prereqs.  We will then go and replace
+        # all the <course/> tags with CourseButton s if a manager (CourseManager) is present
+        divs = $(prereqsToDivs(prereq))
+        if not manager
+            return divs
+        for elm in divs.find('course')
+            subject = elm.getAttribute('subject')
+            number = elm.getAttribute('number')
+            course = manager.createCourseButton({subject:subject, number:number}, {clickable:true, insertOnClick:true})
+            courseElm = course.getButton()
+            elm.parentNode.replaceChild(courseElm, elm)
+        return divs
+    # given a list of courses and a list of selected courses, returns a tree of prereqs
+    # unmet by the selected courses
+    computePrereqTree: (courses, selected=[]) ->
+        if not courses?
+            throw new Error("computePrereqTree requires a list of course hash's")
+        ret = {op: 'and', data: []}
+        for course in courses
+            if typeof course is 'string'
+                throw new Error("cannot computePrereqTree with courses given as strings")
+            if not course.wasSynced
+                throw new Error("attempting to compute prereqs of #{course} when data isn't synced")
+            if course.prereqs?
+                pruned = PrereqUtils.prunePrereqs(course.prereqs, selected)
+                if pruned.data?.length > 0
+                    # tag this branch of prereqs so that we know who requires it
+                    pruned.requiredBy = course
+                    ret.data.push pruned
+        ret = PrereqUtils.simplifyPrereqs(ret)
+        return ret
 
 ###
-# CourseShell looks like a Course button, but it is empty inside.
-# Instead, by setting just the subject and number, CourseShell can
-# be used to add a button that will dynamically load a courses information
-# when clicked
+# Parent class of various course buttons
 ###
-class CourseShell extends Course
+class BasicCourse
+    @hashCourse: (course) ->
+        return "#{course.subject} #{course.number}"
+    constructor: (@data, synced=false) ->
+        @hash = BasicCourse.hashCourse(@data)
+        {@subject, @number, @prereqs} = @data
+        @state =
+            required: false
+            elective: false
+            selected: false
+            prereq: false
+        @wasSynced = synced  # false if the course only has @subject and @number, true if it has the rest of the course details
+    toString: ->
+        return @hash
+    update: (@data) ->
+        @prereqs = @data.prereqs
 
+    # set the course's state and return only
+    # the items in the state that changed
+    setState: (state) ->
+        ret = {}
+        for s,v of state
+            if @state[s] != v
+                ret[s] = v
+                @state[s] = v
+        return ret
+
+###
+# Rectangular button that displays a course's number and state
+###
+class CourseButton extends BasicCourse
+    constructor: (data) ->
+        super(data)
+        @getButton()
+    setState: (state, ops={}) ->
+        changedState = super(state)
+        if not ops.forceUpdate
+            state = changedState
+        # update the classes on the button if it exists
+        if not @elm
+            return state
+        for s,v of state
+            if v
+                @$elm.addClass(s)
+            else
+                @$elm.removeClass(s)
+        return state
+    getButton: ->
+        if @elm
+            return @elm
+        @$elm = $("<div class='course' subject='#{@subject}' number='#{@number}'><div class='annotation'></div><div class='number'>#{@subject} #{@number}</div></div>")
+        @$elm.disableSelection()
+        @elm = @$elm[0]
+        @elm.course = @
+        # make sure to initialize the state.  We may have changed it before we created the button element!
+        @setState(@state)
+        return @elm
+    removeButton: ->
+        if not @elm
+            return
+        @elm.course = null  #make sure we remove the circular ref so we can be garbage collected
+        @$elm.remove()
+        @elm = @$elm = null
+###
+# Set of three toggle buttons that change (and reflect) the state of a course
+###
+class CourseStateButton extends BasicCourse
+    constructor: (data) ->
+        super(data)
+        @getButton()
+    getButton: ->
+        @$elm = $("""<div class='course-status'>
+                <input type='radio' name='state' value='none' id='course-notincluded' /><label for='course-notincluded'>Not Included</label>
+                <input type='radio' name='state' value='required' id='course-required' /><label for='course-required'>Required</label>
+                <input type='radio' name='state' value='elective' id='course-elective' /><label for='course-elective'>Elective</label>
+        </div>""")
+        @$elm.buttonset()
+        @elm = @$elm[0]
+    setState: (state, ops={}) ->
+        changedState = super(state)
+        if not ops.forceUpdate
+            state = changedState
+        # update the classes on the button if it exists
+        if (not @elm or Object.keys(state).length is 0) and not ops.forceUpdate
+            return state
+        @$elm.find('input').attr('checked', false)
+        if @state.required
+            @$elm.find('input[value=required]').attr('checked', true)
+        else if @state.elective
+            @$elm.find('input[value=elective]').attr('checked', true)
+        else
+            @$elm.find('input[value=none]').attr('checked', true)
+        #@$elm.buttonset('refresh')
+        #TODO I don't know why i need to do this...
+        window.setTimeout((=> @$elm.buttonset('refresh')), 0)
+
+        return state
+    removeButton: ->
+        if not @elm
+            return
+        @elm.course = null  #make sure we remove the circular ref so we can be garbage collected
+        @$elm.remove()
+        @elm = @$elm = null
 
 ###
 # Class to perform operations on a directed graph like
@@ -643,137 +829,3 @@ class DiGraph
         ret += "}"
 
         return ret
-    ###
-    # Functions for doing rankings and orderings of graphs
-    # to implement the dot graph layout algorithm
-    ###
-
-    # generates a ranking such that no neighbors ranks are equal
-    # and children always have a higher rank than parents
-    generateFeasibleRank: (graph=this) ->
-        graph._generateForwardNeighborHash()
-        graph._generateBackwardNeighborHash()
-        ranks = {}
-        for n of @nodes
-            # figure out the maximum and minimum ranks of our parents
-            # and our children, so we can choose a rank between them
-            min_rank = 0
-            max_rank = 1
-            for parent in (graph.backwardNeighborHash[n] || [])
-                if ranks[parent]
-                    min_rank = Math.max(ranks[parent], min_rank)
-            for child in (graph.forwardNeighborHash[n] || [])
-                if ranks[child]
-                    max_rank = Math.min(ranks[child], max_rank)
-            ranks[n] = (min_rank + max_rank) / 2
-        # our ranks are floating point numbers at the moment.
-        # We need to order them and make them all integers for the
-        # next part of the dot algorithm
-        rankFracs = (v for k,v of ranks)
-        rankFracs.sort()
-        rankFracHash = {}
-        for d,i in rankFracs
-            rankFracHash[d] = i
-        for k,v of ranks
-            ranks[k] = rankFracHash[v]
-        return ranks
-    # given the ranks, returns the vertices of a tree
-    # containing rootNode that is maximal and has the property
-    # that the difference between the ranks of neighboring
-    # nodes is equal to that edge's minRankDelta.
-    #
-    # This function assumes the graph is directed with only one source.  If
-    # rootNode is set, it is assumed rootNode is a source
-    findMaximalTightTree: (ranks, rootNode, graph=this) ->
-        DEFAULT_DELTA = 1
-        minRankDelta = graph.minRankDelta || {}
-
-        expandTightTree = (tailNode, headNode, treeNodes={}, edges=[]) ->
-            # if where we're looking has already been included in the tree,
-            # we shouldn't try to grow the tree in that direction, lest we add a
-            # cycle
-            if treeNodes[headNode]
-                return treeNodes
-
-            edgeDelta = minRankDelta[[tailNode, headNode]] || DEFAULT_DELTA
-            # if we are a tight edge, or if we are the base case where we start with headNode==tailNode,
-            # proceed to add branches to the tree
-            if ranks[headNode] - ranks[tailNode] == edgeDelta or headNode == tailNode
-                treeNodes[headNode] = true
-                edges.push [tailNode, headNode] if tailNode != headNode
-                for c in (graph.forwardNeighborHash[headNode] || [])
-                    expandTightTree(headNode, c, treeNodes, edges)
-            return {nodes: treeNodes, edges: edges}
-
-        if not rootNode
-            sources = graph.findSources()
-            if sources.length == 0
-                throw new Error("Tried to find a Maximal and Tight tree on a graph with no sources!")
-        else
-            sources = [rootNode]
-
-        maximalTree = expandTightTree(sources[0], sources[0])
-        return maximalTree
-
-    ###
-    # returns the minimum difference in ranks between
-    # node and its ancestors.
-    getRankDiff: (ranks, node, graph=this) ->
-        graph._generateBackwardNeighborHash()
-        ancestors = graph.backwardNeighborHash[node] || []
-        diff = Infinity
-        for n in ancestors
-            diff = Math.min(diff, ranks[node] - ranks[n])
-        return diff
-
-    # returns the minimum difference in ranks among node
-    # and its ancestors minus the minimum allowed rank delta
-    getSlack: (ranks, node, graph=this) ->
-        DEFAULT_DELTA = 1
-        minRankDelta = graph.minRankDelta || {}
-
-        graph._generateBackwardNeighborHash()
-        ancestors = graph.backwardNeighborHash[node] || []
-        diff = Infinity
-        tail = null
-        for n in ancestors
-            rankDiff = ranks[node] - ranks[n] - (minRankDelta[[n,node]] || 0)
-            if rankDiff < diff
-                diff = rankDiff
-                tail = n
-        return {slack: diff, edge: [tail, node]}
-    ###
-
-    # returns an edge with one node in tree and one node not in tree
-    # with the slack minimum
-    getIncidentEdgeOfMinimumSlack: (ranks, tree, graph=this) ->
-        DEFAULT_DELTA = 1
-        minRankDelta = graph.minRankDelta || {}
-
-        incidentEdges = (e for e in graph.edges when (tree[e[0]] ^ tree[e[1]])) # ^ is xor
-        giveSlack = (edge) ->
-            rankDiff = Math.abs(ranks[edge[0]] - ranks[edge[1]])
-            return rankDiff - (minRankDelta[edge] || 0)
-
-        slacks = ([giveSlack(e),e] for e in incidentEdges)
-        slacks.sort()
-        return slacks[0]
-
-    # produces a set of ranks and a feasible spanning tree
-    # derived from those ranks for use in the dot algorithm
-    findFeasibleSpanningTree: (graph=this) ->
-        # generate a valid ranking for all the nodes.
-        # This may not be tight, but we will tighten it.
-        ranks = graph.generateFeasibleRank()
-
-        tree = graph.findMaximalTightTree(ranks)
-        numNodes = Object.keys(graph.nodes).length
-        # findMaximalTightTree will return the largest feasible tree
-        # possible starting at the source node.  If this tree ever includes
-        # all the vertices, we're done.
-        while Object.keys(tree.treeNodes).length < numNodes
-            [slack, edge] = graph.getIncidentEdgeOfMinimumSlack(ranks, tree.treeNodes)
-
-
-
-
