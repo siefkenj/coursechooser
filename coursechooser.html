@@ -188,7 +188,7 @@
 		<button id='show-courses'>Show</button>
 		<button id='hide-courses'>Hide</button>
 	</div>
-	<div class='course-info'>
+	<div class='course-info' style="display:inline-block;">
 		<h3>Currently Selected</h3>
 		<div class='course-name'></div>
 		<div class='course-state'>
@@ -198,12 +198,22 @@
 				<input type='radio' name='state' value='elective' id='course-elective' /><label for='course-elective'>Elective</label>
 			</div>
 		</div>
-		Co-requisites: <div class='coreq-dropbox'>Drop Here</div>
+		Co-requisites: <div class='coreq-dropbox dropbox'>Drop Here</div>
 		Pre-requisites: <div class='prereq-area'></div>
 	</div>
+	<div id='electives-editor' style="display:inline-block;">
+		<h3>Electives Editor</h3>
+		<div class='title'>Title: <input type='text' value='Electives'></input></div>
+		<div class='requirements'>At least <input type='text' value='2'></input> units</div>
+		Co-requisites: <div class='dropbox'>Drop Here</div>
+	</div>
 	
-	<textarea id="dot" rows="20" cols="80">
-	</textarea>
+		<div>
+		<textarea id="dot" rows="20" cols="80">
+		</textarea>
+		<textarea id="dot2" rows="20" cols="80">
+		</textarea>
+		</div>
 	</div>
 	<footer>
 	</footer>

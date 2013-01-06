@@ -23,7 +23,7 @@ titleCaps = (->
         word.toLowerCase()
     upper = (word) ->
         word.substr(0, 1).toUpperCase() + word.substr(1)
-    small = "(a|an|and|as|at|but|by|en|for|if|in|of|on|or|the|to|v[.]?|via|vs[.]?|with)"
+    small = "(a|an|and|as|at|but|by|en|for|if|in|of|on|or|the|to|v[.]?|via|vs[.]?|with|amp)"
     punct = "([!\"#$%&'()*+,./:;<=>?@[\\\\\\]^_`{|}~-]*)"
     titleCaps = (title) ->
         parts = []
@@ -211,6 +211,39 @@ class CourseManager
     # it cycles through the states and ensures all instances
     # are appropriately synced
     makeCourseButtonClickable: (button, ops={}) ->
+        # if we're selectable we should be keyboard navigatable too
+        if ops.selectable
+            button.$elm.attr({tabindex: 1})
+            button.$elm.focus ->
+                # make sure extra focus events don't trigger extra clicks
+                # (for example, the element is focused, and somebody selects
+                # the webpage titlebar, causing a new focus event to fire)
+                if not @course.state.selected
+                    @course.$elm.trigger('click')
+            button.$elm.keydown (event) ->
+                self = event.currentTarget
+                siblings = event.currentTarget.parentNode.childNodes
+                myIndex = null
+                for node,i in siblings
+                    if node == self
+                        myIndex = i
+                sibs = {}
+                if myIndex + 1 < siblings.length
+                    sibs.right = siblings[myIndex + 1]
+                if myIndex - 1 >= 0
+                    sibs.left = siblings[myIndex - 1]
+                switch event.keyCode
+                    when 37     #left
+                        $(sibs.left).focus() if sibs.left
+                    when 38     #up
+                        ''
+                    when 39     #right
+                        $(sibs.right).focus() if sibs.right
+                    when 40     #down
+                        ''
+                    when 32,13      # space and return
+                        $(self).click()
+
         $(button.getButton()).click (evt) =>
             # defunct classes also cannot be clicked
             if $(evt.currentTarget).hasClass('defunct')
@@ -220,6 +253,11 @@ class CourseManager
                 # we don't want to toggle the state at all.  We just want to update
                 # the display area
                 @selectCourse(button)
+
+                # trigger a focus even on ourselves so we can continue
+                # using keyboard navigation from this element
+                $(evt.currentTarget).focus()
+
                 return
             # check to see if we've just been dragged by seeing if we have a noclick class
             if $(evt.currentTarget).hasClass('noclick')
@@ -409,10 +447,11 @@ class CourseManager
         g.years = years
         # prune the edges in the graph to prefer longer
         # prereq chains to shorter ones
-        console.log g.eliminateRedundantEdges()
         titles = {}
         for t of g.nodes
             titles[t] = titleCaps((''+@sortableCourses[t].data.title).toLowerCase())
+        $('#dot2').val g.toDot('unpruned', titles)
+        console.log g.eliminateRedundantEdges()
         return g.toDot('pruned', titles)
 
 
@@ -621,6 +660,8 @@ class CourseStateButton extends BasicCourse
         super(data)
         @getButton()
     getButton: ->
+        if @elm
+            return @elm
         @$elm = $("""<div class='course-status'>
                 <input type='radio' name='state' value='none' id='course-notincluded' /><label for='course-notincluded'>Not Included</label>
                 <input type='radio' name='state' value='required' id='course-required' /><label for='course-required'>Required</label>
@@ -653,6 +694,86 @@ class CourseStateButton extends BasicCourse
         @elm.course = null  #make sure we remove the circular ref so we can be garbage collected
         @$elm.remove()
         @elm = @$elm = null
+###
+# Holds a group of courses
+###
+class Electives
+    constructor: (data) ->
+        {@title, @requirements, @courses} = data
+        if not @requirements?
+            @requirements={units:2, unitLabel:'units'}
+        if not @courses?
+            @courses = {}
+        @subject = @title
+        @hash = BasicCourse.hashCourse(@)
+    addCourse: (course) ->
+        @courses[course] = course
+    removeCourse: (course) ->
+        delete @courses[course]
+    setState: (state) ->
+        ret = {}
+        for s,v of state
+            if @state[s] != v
+                ret[s] = v
+                @state[s] = v
+        return ret
+    update: (data) ->
+        for k,v in data
+            @[k] = v
+        @subject = @title
+        @hash = BasicCourse.hashCourse(@)
+
+class ElectivesButton extends Electives
+    constructor: (data, @manager) ->
+        super(data)
+        @getButton()
+    setState: (state, ops={}) ->
+        changedState = super(state)
+        if not ops.forceUpdate
+            state = changedState
+        # update the classes on the button if it exists
+        if not @elm
+            return state
+        for s,v of state
+            if v
+                @$elm.addClass(s)
+            else
+                @$elm.removeClass(s)
+        return state
+    getButton: ->
+        if @elm
+            return @elm
+        @$elm = $("""<div class="electives-block">
+		<div class="title">#{@title}</div>
+		<div class="requirement">At least #{@requirements.units} #{@requirements.unitLabel}</div>
+		<div class="courses-list"></div>
+	</div>""")
+        @elm = @$elm[0]
+        @$coursesdiv = @$elm.find('.courses-list')
+        
+        # populate with all the courses in our course list, creating buttons
+        # if they have none
+        for hash,course of @courses
+            @addCourse(course)
+        return @elm
+
+    addCourse: (course) ->
+        super(course)
+        if not course.elm
+            course = @courses[BasicCourse.hashCourse(course)] = new CourseButton(course.data)
+        @$coursesdiv.append(course.elm)
+
+    removeCourse: (course, ops={detach: true}) ->
+        if ops.detach
+            $elm = @courses[BasicCourse.hashCourse(course)].$elm
+            $elm.detach() if $elm
+        super(course)
+    update: (data) ->
+        super(data)
+        @$elm.find('.title').html @title
+        @$elm.find('.requirement').html "At least #{@requirements.units} #{@requirements.unitLabel}"
+
+
 
 ###
 # Class to perform operations on a directed graph like
@@ -814,6 +935,7 @@ class DiGraph
     # graphviz dot format
     toDot: (name, titles={}) ->
         ret = "digraph #{name} {\n"
+        ret += "\trankdir=LR\n"
         ret += "\tnode [shape=box,style=rounded]\n"
         for e in @edges
             ret += "\t\"#{e[0]}\" -> \"#{e[1]}\"\n"

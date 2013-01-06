@@ -4,25 +4,6 @@
 	border-collapse: separate;
 	/*width: 500px;*/
 }
-
-/*
-.year td {
-	border-bottom: 1px dashed;
-	min-height: 2em;
-}
-.year td:last-child {
-	bottom-border: none;
-}
-*/
-
-/*
-.year .label {
-	border-right: 1px solid black;
-	vertical-align: middle;
-	text-align: center;
-	width: 4em;
-}
-*/
 .year1,.year3 {
 	background: #dcdbd1;
 	background: #e8e7e0;
@@ -95,4 +76,11 @@ li.prereq-and:first-child:before {
 }
 li.prereq-and:first-child {
 	padding-left: 0px;
+}
+
+.dropbox {
+	margin: .5em;
+	padding: .5em;
+	border: 1px dashed black;
+	border-radius: 5px;
 }
