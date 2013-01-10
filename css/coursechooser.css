@@ -36,7 +36,8 @@
 	border-left: 1px solid black;
 	padding-bottom: 5px;
 }
-.year.highlight {
+/*.year.highlight {*/
+.highlight {
 	background: rgb(255, 255, 202);
 }
 

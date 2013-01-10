@@ -11,6 +11,10 @@ attachedToDom = (elm) ->
         return true
     return attachedToDom(elm.parentNode)
 
+objValsToArray = (obj) ->
+    return (v for k,v of obj)
+
+#TODO capitalizes "Math: Educ &amp; Liberal Arts" incorrectly (capitalizing the amp)
 ###
 # * Title Caps
 # *
@@ -103,6 +107,19 @@ $(document).ready ->
             courses = this.getElementsByClassName('courses')[0]
             courses.appendChild(ui.draggable[0])
             window.courseManager.selectCourse(ui.draggable[0].course)
+
+    # setup the electives area
+    $('#create-new-electives').click ->
+        elective = new ElectivesButtonEditor({title:'Electives'}, window.courseManager)
+        electiveButton = new ElectivesButton(elective)
+        $('#electives-list').append(elective.getButton())
+        $('.year1 .courses').append(electiveButton.getButton())
+        window.courseManager.addCourse(electiveButton)
+        window.courseManager.sortableCourses[electiveButton] = electiveButton
+        window.courseManager.addCourse(elective)
+        window.courseManager.makeCourseButtonDraggable(electiveButton)
+        window.courseManager.makeElectivesButtonDroppable(electiveButton)
+
 ###
 # Class to manage and keep the sync of all course on the webpage
 # and their state.
@@ -153,14 +170,26 @@ class CourseManager
         @needsCleaning = true
         # this operation takes a bit of time, so do it asyncronously
         window.setTimeout(clean, 1000)
+        
+    updateElectivesButton: (button) ->
+        data = button.getValues()
+        for electiveButton in (@courses[button] || [])
+            console.log electiveButton
+            if electiveButton instanceof ElectivesButton
+                window.xxx = electiveButton
+            electiveButton.update(data)
+
     # out of sortableCourses, ensures only course has the selected state
+    #TODO make sure this works for Electives aswell
     selectCourse: (course) ->
+        if not course
+            return
         # identify the selected course and set its state
         selectedCourse = null
         for hash,c of @sortableCourses
             if c.state.selected
                 c.setState({selected: false})
-            if c.subject is course.subject and c.number is course.number
+            if c.subject is course?.subject and c.number is course?.number
                 c.setState({selected: true})
                 selectedCourse = c
         if not selectedCourse
@@ -276,6 +305,21 @@ class CourseManager
             revert: 'invalid'
             distance: '25'
             opacity: 0.7
+    
+    # makes the drop area of an ElectivesButton a drop target. If
+    # clone is truthy instead of moving the course, a copy of the
+    # course will be created.
+    makeElectivesButtonDroppable: (button, ops={clone: false}) ->
+        button.getButton()
+        button.$coursesDiv.droppable
+            #TODO this seems to mess up the parent sometimes!
+            greedy: true
+            hoverClass: 'highlight'
+            drop: (event, ui) ->
+                button.$coursesDiv.append(ui.draggable[0])
+                button.update()     # call with no arguments to update the internal courses list
+                window.courseManager.selectCourse(ui.draggable[0].course)
+
 
     # returns a CourseStateButton for the desired course.  If the course
     # hasn't been loaded yet, it will be loaded and the CourseButton's data will
@@ -416,6 +460,16 @@ class CourseManager
     # consisting of all the selected courses of each year and
     # with prereqs given by arrows
     createDotGraph: ->
+        # returns whether or not a single course should be inlcuded in the graph
+        # and if given a list, will filter the list so only courses that should be displayed remain
+        filterDisplayable = (list) ->
+            if not list
+                return list
+            if not list.length?
+                return list.state?.required or list.state?.elective
+            return (c for c in list when filterDisplayable(c))
+
+        clusters = []
         # get a list of courses by year
         years = {1:[],2:[],3:[],4:[]}
         for i in [1, 2, 3, 4]
@@ -424,8 +478,12 @@ class CourseManager
                 subject = e.getAttribute('subject')
                 number = e.getAttribute('number')
                 hash = BasicCourse.hashCourse({subject:subject, number:number})
-                if @sortableCourses[hash].state.required or @sortableCourses[hash].state.elective
+                if @sortableCourses[hash] instanceof Electives
+                    years[i] = years[i].concat(filterDisplayable(objValsToArray(@sortableCourses[hash].courses)))
+                    clusters.push {info: @sortableCourses[hash], nodes:filterDisplayable(objValsToArray(@sortableCourses[hash].courses))}
+                if filterDisplayable(@sortableCourses[hash])
                     years[i].push @sortableCourses[hash]
+
         allCourses = years[1].concat(years[2]).concat(years[3]).concat(years[4])
         allCoursesHash = (c.hash for c in allCourses)
         # put the display courses in a hash table for quick lookup
@@ -450,9 +508,10 @@ class CourseManager
         titles = {}
         for t of g.nodes
             titles[t] = titleCaps((''+@sortableCourses[t].data.title).toLowerCase())
-        $('#dot2').val g.toDot('unpruned', titles)
+        $('#dot2').val g.toDot('unpruned', titles, clusters)
         console.log g.eliminateRedundantEdges()
-        return g.toDot('pruned', titles)
+        console.log clusters
+        return g.toDot('pruned', titles, clusters)
 
 
 ###
@@ -699,13 +758,17 @@ class CourseStateButton extends BasicCourse
 ###
 class Electives
     constructor: (data) ->
-        {@title, @requirements, @courses} = data
+        {@title, @requirements, @courses, @number} = data
+        @state = {}
         if not @requirements?
-            @requirements={units:2, unitLabel:'units'}
+            @requirements={units:1.5, unitLabel:'units'}
         if not @courses?
             @courses = {}
         @subject = @title
+        @number = @number || Math.random().toFixed(8) # give us a random number so we never hash-collide with other electives blocks with the same name
         @hash = BasicCourse.hashCourse(@)
+    toString: ->
+        return @hash
     addCourse: (course) ->
         @courses[course] = course
     removeCourse: (course) ->
@@ -718,10 +781,13 @@ class Electives
                 @state[s] = v
         return ret
     update: (data) ->
-        for k,v in data
+        for k,v of data
             @[k] = v
-        @subject = @title
+        # we'd like to keep the subject fixed for hashing purposes
+        #@subject = @title
         @hash = BasicCourse.hashCourse(@)
+    getValues: ->
+        return {@title, @requirements, @courses}
 
 class ElectivesButton extends Electives
     constructor: (data, @manager) ->
@@ -743,14 +809,14 @@ class ElectivesButton extends Electives
     getButton: ->
         if @elm
             return @elm
-        @$elm = $("""<div class="electives-block">
+        @$elm = $("""<div class="electives-block" subject="#{@subject}" number="#{@number}">
 		<div class="title">#{@title}</div>
 		<div class="requirement">At least #{@requirements.units} #{@requirements.unitLabel}</div>
 		<div class="courses-list"></div>
 	</div>""")
         @elm = @$elm[0]
-        @$coursesdiv = @$elm.find('.courses-list')
-        
+        @$coursesDiv = @$elm.find('.courses-list')
+
         # populate with all the courses in our course list, creating buttons
         # if they have none
         for hash,course of @courses
@@ -761,7 +827,7 @@ class ElectivesButton extends Electives
         super(course)
         if not course.elm
             course = @courses[BasicCourse.hashCourse(course)] = new CourseButton(course.data)
-        @$coursesdiv.append(course.elm)
+        @$coursesDiv.append(course.elm)
 
     removeCourse: (course, ops={detach: true}) ->
         if ops.detach
@@ -770,9 +836,78 @@ class ElectivesButton extends Electives
         super(course)
     update: (data) ->
         super(data)
+        # make soure our internal courses list is up to date
+        @courses = {}
+        for elm in @$elm.find('.courses-list').children()
+            if elm.course
+                @courses[elm.course] = elm.course
         @$elm.find('.title').html @title
         @$elm.find('.requirement').html "At least #{@requirements.units} #{@requirements.unitLabel}"
+        @$elm.attr({@subject, @number})
 
+class ElectivesButtonEditor extends Electives
+    constructor: (data, @manager) ->
+        super(data)
+        @getButton()
+    setState: (state, ops={}) ->
+        changedState = super(state)
+        if not ops.forceUpdate
+            state = changedState
+        # update the classes on the button if it exists
+        if not @elm
+            return state
+        for s,v of state
+            if v
+                @$elm.addClass(s)
+            else
+                @$elm.removeClass(s)
+        return state
+    getButton: ->
+        if @elm
+            return @elm
+        @$elm = $("""<div class='elective-editable'>
+                    <div class='title'>Title: <input type='text' value='#{@title}'></input></div>
+                    <div class='requirements'>At least <input type='text' value='#{@requirements.units}'></input> #{@requirements.unitLabel}</div>
+                    Elective Courses: <div class='dropbox courses-list'>Drop Here</div>
+                </div>""")
+        @elm = @$elm[0]
+        @$coursesDiv = @$elm.find('.courses-list')
+
+        # populate with all the courses in our course list, creating buttons
+        # if they have none
+        for hash,course of @courses
+            @addCourse(course)
+
+        # set up callbacks for when we've been edited
+        update = (event) =>
+            if @manager
+                @manager.updateElectivesButton(@)
+        @$elm.find('.title input').change update
+        @$elm.find('.requirements input').change update
+
+        return @elm
+
+    addCourse: (course) ->
+        super(course)
+        if not course.elm
+            course = @courses[BasicCourse.hashCourse(course)] = new CourseButton(course.data)
+        @$coursesDiv.append(course.elm)
+
+    removeCourse: (course, ops={detach: true}) ->
+        if ops.detach
+            $elm = @courses[BasicCourse.hashCourse(course)].$elm
+            $elm.detach() if $elm
+        super(course)
+    update: (data) ->
+        super(data)
+        @$elm.find('.title input').val @title
+        @$elm.find('.requirements .input').val @requirements.units
+    # returns the values of @title and @requirement, updating
+    # them if they differ from the values in @elm
+    getValues: ->
+        @title = @$elm.find('.title input').val()
+        @requirements.units = @$elm.find('.requirements input').val()
+        return super()
 
 
 ###
@@ -933,13 +1068,21 @@ class DiGraph
 
     # returns a string representing the graph in
     # graphviz dot format
-    toDot: (name, titles={}) ->
+    toDot: (name, titles={}, clusters=[]) ->
         ret = "digraph #{name} {\n"
         ret += "\trankdir=LR\n"
         ret += "\tnode [shape=box,style=rounded]\n"
         for e in @edges
             ret += "\t\"#{e[0]}\" -> \"#{e[1]}\"\n"
         ret += "\n"
+        # put each of the clusters as subgraphs
+        for clust,i in clusters
+            ret += "\tsubgraph cluster#{i} {\n"
+            for c in clust.nodes
+                ret += "\t\t\t\"#{c.hash}\"\n" #[label=<<font color=\"red\">#{c.hash}</font><br/><font color=\"blue\">#{titles[c]}</font>>]\n"
+            ret += "\t}\n"
+
+        # ensure classes of each year appear on the proper rank
         for i in [1, 2, 3, 4]
             if @years
                 ret += "\tsubgraph year#{i} {\n"

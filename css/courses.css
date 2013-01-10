@@ -75,6 +75,9 @@
 	min-width: 2em;
 	box-shadow: 0px 0px 5px black;
 }
+.electives-block .courses-list.highlight {
+	background: rgb(255, 255, 202);
+}
 .electives-block .title {
 	font-size: 1.1em;
 	font-weight: bold;
