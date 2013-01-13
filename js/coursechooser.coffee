@@ -14,45 +14,71 @@ attachedToDom = (elm) ->
 objValsToArray = (obj) ->
     return (v for k,v of obj)
 
-#TODO capitalizes "Math: Educ &amp; Liberal Arts" incorrectly (capitalizing the amp)
-###
-# * Title Caps
-# *
-# * Ported to JavaScript By John Resig - http://ejohn.org/ - 21 May 2008
-# * Original by John Gruber - http://daringfireball.net/ - 10 May 2008
-# * License: http://www.opensource.org/licenses/mit-license.php
-###
-titleCaps = (->
-    lower = (word) ->
-        word.toLowerCase()
+# returns the things in obj1 missing from obj2 and the things in obj2 missing from obj1
+symmetricDiffObjects = (obj1, obj2) ->
+    ret1 = {}
+    ret2 = {}
+    for k of obj1
+        if not obj2[k]
+            ret1[k] = obj1[k]
+    for k of obj2
+        if not obj1[k]
+            ret2[k] = obj2[k]
+    return {missing: ret1, excess: ret2}
+objKeysEqual = (obj1, obj2) ->
+    for k of obj1
+        if not obj2[k]?
+            return false
+    for k of obj2
+        if not obj1[k]?
+            return false
+    return true
+# do a shallow copy of obj
+dupObject = (obj) ->
+    ret = {}
+    for k,v in obj
+        ret[k] = v
+    return ret
+# escape <,>,& in a string
+htmlEncode = (str) ->
+    return str.replace('&','&amp;','g').replace('<','&lt;','g').replace('>','&gt;','g')
+
+titleCaps = (str) ->
     upper = (word) ->
-        word.substr(0, 1).toUpperCase() + word.substr(1)
-    small = "(a|an|and|as|at|but|by|en|for|if|in|of|on|or|the|to|v[.]?|via|vs[.]?|with|amp)"
-    punct = "([!\"#$%&'()*+,./:;<=>?@[\\\\\\]^_`{|}~-]*)"
-    titleCaps = (title) ->
-        parts = []
-        split = /[:.;?!] |(?: |^)["Ò]/g
-        index = 0
-        loop
-            m = split.exec(title)
-            parts.push title.substring(index, (if m then m.index else title.length)).replace(/\b([A-Za-z][a-z.'Õ]*)\b/g, (all) ->
-                (if /[A-Za-z]\.[A-Za-z]/.test(all) then all else upper(all))
-            # capitalize roman numerals
-            ).replace(/\b(i|v|x|l|c|d|m)+\b/i, (all) ->
-                all.toUpperCase()
-            ).replace(RegExp("\\b" + small + "\\b", "ig"), lower).replace(RegExp("^" + punct + small + "\\b", "ig"), (all, punct, word) ->
-                punct + upper(word)
-            ).replace(RegExp("\\b" + small + punct + "$", "ig"), upper
-            )
-            index = split.lastIndex
-            if m
-                parts.push m[0]
-            else
-                break
-        parts.join("").replace(RegExp(" V(s?)\\. ", "g"), " v$1. ").replace(/(['Õ])S\b/g, "$1s").replace /\b(AT&T|Q&A)\b/g, (all) ->
-            all.toUpperCase()
-    return titleCaps
-)()
+        return word.charAt(0).toUpperCase() + word.slice(1)
+    exceptionalWords = /^(a|an|and|as|at|but|by|en|for|if|in|of|on|or|the|to|v[.]?|via|vs[.]?|with|amp|gt|lt)$/
+
+    str = str.toLowerCase()
+    tokens = ('' + str).split(/\b/)
+    ret = ''
+    firstWord = true
+    for word,i in tokens
+        # all words should be capitalized by default
+        shouldCapitalize = true
+        # if they are exceptional words, don't capitalize
+        if word.match(exceptionalWords)
+            shouldCapitalize = false
+        # but if we are the first word in the sentence, capitalize
+        if firstWord
+            shouldCapitalize = true
+        # if we are surrounded by &;, we are an html escape sequence, we should never be captialized
+        if tokens[i-1]?.slice(-1) == '&' and tokens[i+1]?.charAt(0) == ';'
+            shouldCapitalize = false
+
+        # As soon as we encounter a non-whitespace word, we have seen the first
+        # word in the sentence, so we don't need to worry about capitalizing it any longer
+        if firstWord and word.match(/\b/)
+            firstWord = false
+
+        # check to see if we are a roman numeral.  If we are, capitalize specially, or else check if we
+        # should capitalize the first letter
+        if word.match(/^(i|v|x|l|c|d|m)+$/i)
+            word = word.toUpperCase()
+        else if shouldCapitalize
+            word = upper(word)
+        ret += word
+    return ret
+
 $(document).ready ->
     window.courseManager = new CourseManager
     window.courses = window.courseManager.courses
@@ -60,6 +86,7 @@ $(document).ready ->
     $('.course-status').buttonset().disableSelection()
     $('button').button()
     $('#department-list').combobox()
+    $('#tabs').tabs()
 
     window.courseManager.showCoursesOfSubject('MATH')
     $('#show-courses').click ->
@@ -80,7 +107,6 @@ $(document).ready ->
                     subjects.push v
         catch e
             subjects.push $('#department-list option:selected()').val()
-        console.log subjects,courses
         for v in subjects
             window.courseManager.showCoursesOfSubject(v)
         for c in courses
@@ -107,12 +133,14 @@ $(document).ready ->
             courses = this.getElementsByClassName('courses')[0]
             courses.appendChild(ui.draggable[0])
             window.courseManager.selectCourse(ui.draggable[0].course)
+            window.courseManager.courseMoved(ui.draggable[0].course)
 
     # setup the electives area
     $('#create-new-electives').click ->
         elective = new ElectivesButtonEditor({title:'Electives'}, window.courseManager)
         electiveButton = new ElectivesButton(elective)
         $('#electives-list').append(elective.getButton())
+        $('#electives-list').append("<hr />")
         $('.year1 .courses').append(electiveButton.getButton())
         window.courseManager.addCourse(electiveButton)
         window.courseManager.sortableCourses[electiveButton] = electiveButton
@@ -135,6 +163,9 @@ class CourseManager
     updateCourseState: (course, state) ->
         for c in (@courses[course] || [])
             c.setState(state)
+        # update the prereqs list asyncronously with a little delay so it isn't
+        # so surprising to the user
+        window.setTimeout((=> @showUnmetPrereqs()), 500)
     addCourse: (course) ->
         hash = '' + course
         if not @courses[hash]
@@ -170,13 +201,24 @@ class CourseManager
         @needsCleaning = true
         # this operation takes a bit of time, so do it asyncronously
         window.setTimeout(clean, 1000)
-        
+
+    # makes all electivesButtons have the same state as button (including
+    # making the list of elective courses the same)
     updateElectivesButton: (button) ->
         data = button.getValues()
+        # we will sync the courses manually, we don't want to have a shallow copy of the courses object!
+        delete data.courses
+
         for electiveButton in (@courses[button] || [])
-            console.log electiveButton
-            if electiveButton instanceof ElectivesButton
-                window.xxx = electiveButton
+            # make sure each ElectivesButton has a list of the courses that button does
+            # and only those courses
+            diff = symmetricDiffObjects(button.courses, electiveButton.courses)
+            for hash,course of diff['missing']
+                newCourse = @createCourseButton(course, {clickable: true})
+                electiveButton.addCourse(newCourse)
+            for hash,course of diff['excess']
+                electiveButton.removeCourse(course)
+
             electiveButton.update(data)
 
     # out of sortableCourses, ensures only course has the selected state
@@ -199,7 +241,8 @@ class CourseManager
         stateButtons = @sortableCoursesStateButtons[selectedCourse]
         if not stateButtons
             stateButtons = @createCourseStateButton(selectedCourse)
-        $('.course-info .course-name').html "#{selectedCourse.hash} &mdash; #{titleCaps(('' + selectedCourse.data.title).toLowerCase())}"
+        $('.course-info .course-name .course-number').html selectedCourse.hash
+        $('.course-info .course-name .course-title').html titleCaps(('' + selectedCourse.data.title).toLowerCase())
         # if we don't detach first, jquery removes all bound events and ui widgets, etc.
         $('.course-info .course-state').children().detach()
         $('.course-info .course-state').html stateButtons.elm
@@ -305,7 +348,7 @@ class CourseManager
             revert: 'invalid'
             distance: '25'
             opacity: 0.7
-    
+
     # makes the drop area of an ElectivesButton a drop target. If
     # clone is truthy instead of moving the course, a copy of the
     # course will be created.
@@ -315,11 +358,25 @@ class CourseManager
             #TODO this seems to mess up the parent sometimes!
             greedy: true
             hoverClass: 'highlight'
-            drop: (event, ui) ->
-                button.$coursesDiv.append(ui.draggable[0])
-                button.update()     # call with no arguments to update the internal courses list
+            drop: (event, ui) =>
+                button.addCourse(ui.draggable[0].course)
+                # calling the courseMoved method will ensure that
+                # all electivesButtons are synced up and updated with
+                # their new contents
+                @courseMoved(ui.draggable[0].course)
                 window.courseManager.selectCourse(ui.draggable[0].course)
+                # when we drop a course on an electives block, assume
+                # we want it automatically to be marked as an elective
+                @updateCourseState(ui.draggable[0].course, {required:false, elective:true})
 
+    # this method is called whenever a course changes levels or
+    # gets added or removed from an elective's block
+    courseMoved: (course) ->
+        # see if any of our electivesButtons have changed
+        # and if so, update them
+        for hash,course of @sortableCourses
+            if course instanceof ElectivesButton
+                @updateElectivesButton(course)
 
     # returns a CourseStateButton for the desired course.  If the course
     # hasn't been loaded yet, it will be loaded and the CourseButton's data will
@@ -456,6 +513,16 @@ class CourseManager
             course = @createCourseButton(@courseData[hash], {clickable: true, selectable: true, draggable: true})
             @sortableCourses[course] = course
             $(".year#{leadingNumber} .courses").append(course.getButton())
+    showUnmetPrereqs: ->
+        # we need a list of courses that are required or electives to find their prereqs
+        activeCourses = []
+        for hash, course of @sortableCourses
+            if course.state.required or course.state.elective
+                activeCourses.push course
+        prereqs = PrereqUtils.computePrereqTree(activeCourses, activeCourses)
+        div = PrereqUtils.prereqsToDivs(prereqs, @)
+        $('#unmet-prereq-list').html div
+
     # returns a string formatted in graphviz's dot language
     # consisting of all the selected courses of each year and
     # with prereqs given by arrows
@@ -510,7 +577,6 @@ class CourseManager
             titles[t] = titleCaps((''+@sortableCourses[t].data.title).toLowerCase())
         $('#dot2').val g.toDot('unpruned', titles, clusters)
         console.log g.eliminateRedundantEdges()
-        console.log clusters
         return g.toDot('pruned', titles, clusters)
 
 
@@ -614,8 +680,11 @@ PrereqUtils =
                     return ""
             return
         # first create the structure for all the prereqs.  We will then go and replace
-        # all the <course/> tags with CourseButton s if a manager (CourseManager) is present
-        divs = $(prereqsToDivs(prereq))
+        # all the <course/> tags with CourseButton s if a manager (CourseManager) is present.
+        # We wrap everything in an extra div so that jQuery.find('course') will find the course
+        # tag even if prereqsToDivs returns "<course />" (also, this ensures every <course/> has
+        # a parent)
+        divs = $("<div>#{prereqsToDivs(prereq)}</div>")
         if not manager
             return divs
         for elm in divs.find('course')
@@ -629,7 +698,13 @@ PrereqUtils =
     # unmet by the selected courses
     computePrereqTree: (courses, selected=[]) ->
         if not courses?
-            throw new Error("computePrereqTree requires a list of course hash's")
+            throw new Error("computePrereqTree requires a list of course hashes")
+        # selected should be a list of hashes, so if it's not, convert it!
+        hashify = (s) ->
+            if typeof s is 'string'
+                return s
+            return BasicCourse.hashCourse(s)
+        selected = (hashify(s) for s in selected)
         ret = {op: 'and', data: []}
         for course in courses
             if typeof course is 'string'
@@ -758,12 +833,14 @@ class CourseStateButton extends BasicCourse
 ###
 class Electives
     constructor: (data) ->
-        {@title, @requirements, @courses, @number} = data
+        {@title, @requirements, @number} = data
+        # make sure we don't just use the courses object that was passed in,
+        # we want to shallow copy so we actually have an internal copy!
+        @courses = dupObject(data.courses || {})
+
         @state = {}
         if not @requirements?
             @requirements={units:1.5, unitLabel:'units'}
-        if not @courses?
-            @courses = {}
         @subject = @title
         @number = @number || Math.random().toFixed(8) # give us a random number so we never hash-collide with other electives blocks with the same name
         @hash = BasicCourse.hashCourse(@)
@@ -787,7 +864,7 @@ class Electives
         #@subject = @title
         @hash = BasicCourse.hashCourse(@)
     getValues: ->
-        return {@title, @requirements, @courses}
+        return {@title, @requirements, @number, @courses}
 
 class ElectivesButton extends Electives
     constructor: (data, @manager) ->
@@ -812,7 +889,7 @@ class ElectivesButton extends Electives
         @$elm = $("""<div class="electives-block" subject="#{@subject}" number="#{@number}">
 		<div class="title">#{@title}</div>
 		<div class="requirement">At least #{@requirements.units} #{@requirements.unitLabel}</div>
-		<div class="courses-list"></div>
+		<div class="courses-list"><span class="droptext">Drop Here to Add Courses</span></div>
 	</div>""")
         @elm = @$elm[0]
         @$coursesDiv = @$elm.find('.courses-list')
@@ -828,12 +905,14 @@ class ElectivesButton extends Electives
         if not course.elm
             course = @courses[BasicCourse.hashCourse(course)] = new CourseButton(course.data)
         @$coursesDiv.append(course.elm)
+        @updateDropTextVisibility()
 
     removeCourse: (course, ops={detach: true}) ->
         if ops.detach
             $elm = @courses[BasicCourse.hashCourse(course)].$elm
             $elm.detach() if $elm
         super(course)
+        @updateDropTextVisibility()
     update: (data) ->
         super(data)
         # make soure our internal courses list is up to date
@@ -844,6 +923,13 @@ class ElectivesButton extends Electives
         @$elm.find('.title').html @title
         @$elm.find('.requirement').html "At least #{@requirements.units} #{@requirements.unitLabel}"
         @$elm.attr({@subject, @number})
+        @updateDropTextVisibility()
+    # hides the drop text if we have children and shows it otherwise
+    updateDropTextVisibility: ->
+        if Object.keys(@courses).length == 0
+            @$elm.find('.droptext').show()
+        else
+            @$elm.find('.droptext').hide()
 
 class ElectivesButtonEditor extends Electives
     constructor: (data, @manager) ->
@@ -868,7 +954,7 @@ class ElectivesButtonEditor extends Electives
         @$elm = $("""<div class='elective-editable'>
                     <div class='title'>Title: <input type='text' value='#{@title}'></input></div>
                     <div class='requirements'>At least <input type='text' value='#{@requirements.units}'></input> #{@requirements.unitLabel}</div>
-                    Elective Courses: <div class='dropbox courses-list'>Drop Here</div>
+                    Elective Courses: <div class='dropbox courses-list'><span class='droptext'>Use the Year Chart to Add Courses</span></div>
                 </div>""")
         @elm = @$elm[0]
         @$coursesDiv = @$elm.find('.courses-list')
@@ -892,22 +978,31 @@ class ElectivesButtonEditor extends Electives
         if not course.elm
             course = @courses[BasicCourse.hashCourse(course)] = new CourseButton(course.data)
         @$coursesDiv.append(course.elm)
+        @updateDropTextVisibility()
 
     removeCourse: (course, ops={detach: true}) ->
         if ops.detach
             $elm = @courses[BasicCourse.hashCourse(course)].$elm
             $elm.detach() if $elm
         super(course)
+        @updateDropTextVisibility()
     update: (data) ->
         super(data)
         @$elm.find('.title input').val @title
         @$elm.find('.requirements .input').val @requirements.units
+        @updateDropTextVisibility()
     # returns the values of @title and @requirement, updating
     # them if they differ from the values in @elm
     getValues: ->
         @title = @$elm.find('.title input').val()
         @requirements.units = @$elm.find('.requirements input').val()
         return super()
+    # hides the drop text if we have children and shows it otherwise
+    updateDropTextVisibility: ->
+        if Object.keys(@courses).length == 0
+            @$elm.find('.droptext').show()
+        else
+            @$elm.find('.droptext').hide()
 
 
 ###
@@ -1065,31 +1160,83 @@ class DiGraph
             if not @backwardNeighborHash[n]
                 ret.push n
         return ret
+    # given a list of nodes, breakIntoTerms will attempt
+    # to split them into at most maxTerms number of levels based
+    # on arrow direction and returns the stratification.
+    # e.g. "a->b->c, d" would split into [a,d] then [b] then [c]
+    breakIntoTerms: (list, maxTerms=3) ->
+        @_generateForwardNeighborHash()
+        ranks = {}
+        updateRanks = (updateHash) =>
+            for k of ranks
+                if updateHash[k]
+                    ranks[k] += 1
+            return
+        giveNodesOfRank = (rank) =>
+            return (n for n,v of ranks when v == rank)
+        getForwardNeighbordsOfRank = (rank) =>
+            forwardNeighbors = {}
+            for c in giveNodesOfRank(rank)
+                for n in (@forwardNeighborHash[c]|| [])
+                    forwardNeighbors[n] = true
+            return forwardNeighbors
+
+        # initialize all ranks
+        for c in list
+            ranks[c] = 0
+        # bump up the ranks of things iteratively
+        for i in [0...maxTerms-1]
+            forwardNeighbors = getForwardNeighbordsOfRank(i)
+            updateRanks(forwardNeighbors)
+        ret = []
+        for i in [0..maxTerms]
+            nodes = giveNodesOfRank(i)
+            ret.push nodes if nodes.length > 0
+        return ret
+
 
     # returns a string representing the graph in
     # graphviz dot format
     toDot: (name, titles={}, clusters=[]) ->
         ret = "digraph #{name} {\n"
         ret += "\trankdir=LR\n"
+
+        # put each of the clusters as subgraphs.  This needs to be done first
+        # so these nodes get the appropriate style
+        for clust,i in clusters
+            ret += "\tsubgraph cluster#{i} {\n"
+            # node styles
+            ret += "\tnode [shape=box,style=\"rounded,filled\",color=white]\n"
+            # cluster styles
+            ret += "\t\tstyle=\"rounded,filled\"\n"
+            ret += "\t\tcolor=gray\n"
+            ret += """\t\tlabel=<<table><tr><td align="left">#{htmlEncode(clust.info.title)}</td>"""
+            ret += """<td align="right">(At least #{htmlEncode(clust.info.requirements.units)} #{clust.info.requirements.unitLabel})</td></tr></table>>\n"""
+            console.log clust
+            for c in clust.nodes
+                ret += "\t\t\"#{htmlEncode(c.hash)}\"\n" #[label=<<font color=\"red\">#{c.hash}</font><br/><font color=\"blue\">#{titles[c]}</font>>]\n"
+            ret += "\t}\n"
+
+        ret += "\n"
         ret += "\tnode [shape=box,style=rounded]\n"
         for e in @edges
             ret += "\t\"#{e[0]}\" -> \"#{e[1]}\"\n"
         ret += "\n"
-        # put each of the clusters as subgraphs
-        for clust,i in clusters
-            ret += "\tsubgraph cluster#{i} {\n"
-            for c in clust.nodes
-                ret += "\t\t\t\"#{c.hash}\"\n" #[label=<<font color=\"red\">#{c.hash}</font><br/><font color=\"blue\">#{titles[c]}</font>>]\n"
-            ret += "\t}\n"
 
         # ensure classes of each year appear on the proper rank
         for i in [1, 2, 3, 4]
             if @years
                 ret += "\tsubgraph year#{i} {\n"
-                ret += "\t\trank=same\n"
-                ret += "\t\tlabel=\"Year #{i}\"\n"
-                for c in @years[i]
-                    ret += "\t\t\t\"#{c.hash}\" [label=<<font color=\"red\">#{c.hash}</font><br/><font color=\"blue\">#{titles[c]}</font>>]\n"
+                for clust in @breakIntoTerms (c.hash for c in @years[i])
+                    ret += "\t\tsubgraph {\n"
+                    ret += "\t\t\trank=same\n"
+                    for c in clust
+                        ret += "\t\t\t\"#{c}\" [label=<<font color=\"red\">#{c}</font><br/><font color=\"blue\">#{titles[c]}</font>>]\n"
+                    ret += "\t\t}\n"
+                #ret += "\t\trank=same\n"
+                #ret += "\t\tlabel=\"Year #{i}\"\n"
+                #for c in @years[i]
+                #    ret += "\t\t\t\"#{c.hash}\" [label=<<font color=\"red\">#{c.hash}</font><br/><font color=\"blue\">#{titles[c]}</font>>]\n"
                 ret += "\n\t}\n"
         ret += "}"
 

@@ -85,3 +85,26 @@ li.prereq-and:first-child {
 	border: 1px dashed black;
 	border-radius: 5px;
 }
+
+
+/* main page layout */
+#main {
+	width: 60%;
+	float: left;
+}
+#right {
+	float: right;
+	width: 40%;
+}
+
+.course-number {
+	font-weight: bold;
+}
+.course-title {
+	font-variant: small-caps;
+}
+.course-name {
+	margin-bottom: 1em;
+	margin-top: 1em;
+	text-align: center;
+}
