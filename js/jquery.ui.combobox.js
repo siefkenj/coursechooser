@@ -20,17 +20,26 @@
                 wrapper = this.wrapper = $( "<span>" )
                     .addClass( "ui-combobox" )
                     .insertAfter( select );
+                // Make a hash of all the values in the option box.
+                // We assume that these values don't ever change once the widgit is
+                // initialized
+                selectValues = [];
+                select.children( "option" ).each(function() {
+                    selectValues.push($( this ).text());
+                });
+
 
             function removeIfInvalid(element) {
                 var value = $( element ).val(),
                     matcher = new RegExp( "^" + $.ui.autocomplete.escapeRegex( value ) + "$", "i" ),
                     valid = false;
-                select.children( "option" ).each(function() {
-                    if ( $( this ).text().match( matcher ) ) {
-                        this.selected = valid = true;
-                        return false;
+                // see if value matches anything in our list
+                for (var i=0, len=selectValues.length; i< len; i++) {
+                    if (selectValues[i].match(matcher)) {
+                        valid = true;
+                        break;
                     }
-                });
+                }
                 if ( !valid ) {
                     // remove invalid value, as it didn't match anything
                     $( element )
