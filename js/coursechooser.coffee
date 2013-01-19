@@ -41,7 +41,12 @@ dupObject = (obj) ->
     return ret
 # escape <,>,& in a string
 htmlEncode = (str) ->
-    return str.replace('&','&amp;','g').replace('<','&lt;','g').replace('>','&gt;','g')
+    str = '' + str
+    try
+        str = str.replace('&','&amp;','g').replace('<','&lt;','g').replace('>','&gt;','g')
+    catch e
+        console.log 'error, expected string, got', str
+    return str
 
 titleCaps = (str) ->
     upper = (word) ->
@@ -547,7 +552,7 @@ class CourseManager
                 hash = BasicCourse.hashCourse({subject:subject, number:number})
                 if @sortableCourses[hash] instanceof Electives
                     years[i] = years[i].concat(filterDisplayable(objValsToArray(@sortableCourses[hash].courses)))
-                    clusters.push {info: @sortableCourses[hash], nodes:filterDisplayable(objValsToArray(@sortableCourses[hash].courses))}
+                    clusters.push {year: i, info: @sortableCourses[hash], nodes:filterDisplayable(objValsToArray(@sortableCourses[hash].courses))}
                 if filterDisplayable(@sortableCourses[hash])
                     years[i].push @sortableCourses[hash]
 
@@ -575,9 +580,9 @@ class CourseManager
         titles = {}
         for t of g.nodes
             titles[t] = titleCaps((''+@sortableCourses[t].data.title).toLowerCase())
-        $('#dot2').val g.toDot('unpruned', titles, clusters)
+        $('#dot2').val g.toDot('unpruned', titles, clusters, {title:$('#program-info input').val()})
         console.log g.eliminateRedundantEdges()
-        return g.toDot('pruned', titles, clusters)
+        return g.toDot('pruned', titles, clusters, {title:$('#program-info input').val()})
 
 
 ###
@@ -1197,25 +1202,34 @@ class DiGraph
 
     # returns a string representing the graph in
     # graphviz dot format
-    toDot: (name, titles={}, clusters=[]) ->
+    toDot: (name, titles={}, clusters=[], ops={}) ->
         ret = "digraph #{name} {\n"
         ret += "\trankdir=LR\n"
 
         # put each of the clusters as subgraphs.  This needs to be done first
         # so these nodes get the appropriate style
+        clusterYears = {1:[], 2:[], 3:[], 4:[]}
         for clust,i in clusters
-            ret += "\tsubgraph cluster#{i} {\n"
-            # node styles
-            ret += "\tnode [shape=box,style=\"rounded,filled\",color=white]\n"
-            # cluster styles
-            ret += "\t\tstyle=\"rounded,filled\"\n"
-            ret += "\t\tcolor=gray\n"
-            ret += """\t\tlabel=<<table><tr><td align="left">#{htmlEncode(clust.info.title)}</td>"""
-            ret += """<td align="right">(At least #{htmlEncode(clust.info.requirements.units)} #{clust.info.requirements.unitLabel})</td></tr></table>>\n"""
-            console.log clust
-            for c in clust.nodes
-                ret += "\t\t\"#{htmlEncode(c.hash)}\"\n" #[label=<<font color=\"red\">#{c.hash}</font><br/><font color=\"blue\">#{titles[c]}</font>>]\n"
-            ret += "\t}\n"
+            # if the cluster has no children, we make it a special node instead
+            if (clust.nodes || []).length is 0
+                nodeId = 'clust' + Math.random().toFixed(8).slice(2)
+                ret += "\t#{nodeId} [style=\"rounded,filled\", shape=box, color=invis, fillcolor=gray, "
+                ret += """label=<#{htmlEncode(clust.info.title)} """
+                ret += """(At least #{htmlEncode(clust.info.requirements.units)} #{clust.info.requirements.unitLabel})>]\n"""
+                clusterYears[clust.year].push nodeId
+            else
+                ret += "\tsubgraph cluster#{i} {\n"
+                # node styles
+                ret += "\tnode [shape=box,style=\"rounded,filled\",color=white]\n"
+                # cluster styles
+                ret += "\t\tstyle=\"rounded,filled\"\n"
+                ret += "\t\tcolor=gray\n"
+                ret += """\t\tlabel=<<table><tr><td align="left">#{htmlEncode(clust.info.title)}</td>"""
+                ret += """<td align="right">(At least #{htmlEncode(clust.info.requirements.units)} #{clust.info.requirements.unitLabel})</td></tr></table>>\n"""
+                console.log clust
+                for c in clust.nodes
+                    ret += "\t\t\"#{htmlEncode(c.hash)}\"\n" #[label=<<font color=\"red\">#{c.hash}</font><br/><font color=\"blue\">#{titles[c]}</font>>]\n"
+                ret += "\t}\n"
 
         ret += "\n"
         ret += "\tnode [shape=box,style=rounded]\n"
@@ -1230,14 +1244,24 @@ class DiGraph
                 for clust in @breakIntoTerms (c.hash for c in @years[i])
                     ret += "\t\tsubgraph {\n"
                     ret += "\t\t\trank=same\n"
-                    for c in clust
+                    for c,j in clust
                         ret += "\t\t\t\"#{c}\" [label=<<font color=\"red\">#{c}</font><br/><font color=\"blue\">#{titles[c]}</font>>]\n"
+                        # empty clusers were turned into nodes.  These nodes have already
+                        # had their label set, so we just need to include them in the appropriate year
+                        if j == 0
+                            for n in clusterYears[i]
+                                ret += "\t\t\t#{n}\n"
                     ret += "\t\t}\n"
                 #ret += "\t\trank=same\n"
                 #ret += "\t\tlabel=\"Year #{i}\"\n"
                 #for c in @years[i]
                 #    ret += "\t\t\t\"#{c.hash}\" [label=<<font color=\"red\">#{c.hash}</font><br/><font color=\"blue\">#{titles[c]}</font>>]\n"
                 ret += "\n\t}\n"
+
+        # put the title last so it doesn't try to apply to all subgraphs
+        if ops.title
+            ret += "\tlabel=<<font point-size=\"30\">#{ops.title}</font>>\n"
+            ret += "\tlabelloc=t\n" #label position top
         ret += "}"
 
         return ret

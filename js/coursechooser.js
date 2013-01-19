@@ -82,7 +82,13 @@ dupObject = function(obj) {
 };
 
 htmlEncode = function(str) {
-  return str.replace('&', '&amp;', 'g').replace('<', '&lt;', 'g').replace('>', '&gt;', 'g');
+  str = '' + str;
+  try {
+    str = str.replace('&', '&amp;', 'g').replace('<', '&lt;', 'g').replace('>', '&gt;', 'g');
+  } catch (e) {
+    console.log('error, expected string, got', str);
+  }
+  return str;
 };
 
 titleCaps = function(str) {
@@ -814,6 +820,7 @@ CourseManager = (function() {
         if (this.sortableCourses[hash] instanceof Electives) {
           years[i] = years[i].concat(filterDisplayable(objValsToArray(this.sortableCourses[hash].courses)));
           clusters.push({
+            year: i,
             info: this.sortableCourses[hash],
             nodes: filterDisplayable(objValsToArray(this.sortableCourses[hash].courses))
           });
@@ -866,9 +873,13 @@ CourseManager = (function() {
     for (t in g.nodes) {
       titles[t] = titleCaps(('' + this.sortableCourses[t].data.title).toLowerCase());
     }
-    $('#dot2').val(g.toDot('unpruned', titles, clusters));
+    $('#dot2').val(g.toDot('unpruned', titles, clusters, {
+      title: $('#program-info input').val()
+    }));
     console.log(g.eliminateRedundantEdges());
-    return g.toDot('pruned', titles, clusters);
+    return g.toDot('pruned', titles, clusters, {
+      title: $('#program-info input').val()
+    });
   };
 
   return CourseManager;
@@ -1849,31 +1860,48 @@ DiGraph = (function() {
     return ret;
   };
 
-  DiGraph.prototype.toDot = function(name, titles, clusters) {
-    var c, clust, e, i, ret, _i, _j, _k, _l, _len, _len1, _len2, _len3, _len4, _len5, _m, _n, _ref, _ref1, _ref2, _ref3;
+  DiGraph.prototype.toDot = function(name, titles, clusters, ops) {
+    var c, clust, clusterYears, e, i, j, n, nodeId, ret, _i, _j, _k, _l, _len, _len1, _len2, _len3, _len4, _len5, _len6, _m, _n, _o, _ref, _ref1, _ref2, _ref3, _ref4;
     if (titles == null) {
       titles = {};
     }
     if (clusters == null) {
       clusters = [];
     }
+    if (ops == null) {
+      ops = {};
+    }
     ret = "digraph " + name + " {\n";
     ret += "\trankdir=LR\n";
+    clusterYears = {
+      1: [],
+      2: [],
+      3: [],
+      4: []
+    };
     for (i = _i = 0, _len = clusters.length; _i < _len; i = ++_i) {
       clust = clusters[i];
-      ret += "\tsubgraph cluster" + i + " {\n";
-      ret += "\tnode [shape=box,style=\"rounded,filled\",color=white]\n";
-      ret += "\t\tstyle=\"rounded,filled\"\n";
-      ret += "\t\tcolor=gray\n";
-      ret += "\t\tlabel=<<table><tr><td align=\"left\">" + (htmlEncode(clust.info.title)) + "</td>";
-      ret += "<td align=\"right\">(At least " + (htmlEncode(clust.info.requirements.units)) + " " + clust.info.requirements.unitLabel + ")</td></tr></table>>\n";
-      console.log(clust);
-      _ref = clust.nodes;
-      for (_j = 0, _len1 = _ref.length; _j < _len1; _j++) {
-        c = _ref[_j];
-        ret += "\t\t\"" + (htmlEncode(c.hash)) + "\"\n";
+      if ((clust.nodes || []).length === 0) {
+        nodeId = 'clust' + Math.random().toFixed(8).slice(2);
+        ret += "\t" + nodeId + " [style=\"rounded,filled\", shape=box, color=invis, fillcolor=gray, ";
+        ret += "label=<" + (htmlEncode(clust.info.title)) + " ";
+        ret += "(At least " + (htmlEncode(clust.info.requirements.units)) + " " + clust.info.requirements.unitLabel + ")>]\n";
+        clusterYears[clust.year].push(nodeId);
+      } else {
+        ret += "\tsubgraph cluster" + i + " {\n";
+        ret += "\tnode [shape=box,style=\"rounded,filled\",color=white]\n";
+        ret += "\t\tstyle=\"rounded,filled\"\n";
+        ret += "\t\tcolor=gray\n";
+        ret += "\t\tlabel=<<table><tr><td align=\"left\">" + (htmlEncode(clust.info.title)) + "</td>";
+        ret += "<td align=\"right\">(At least " + (htmlEncode(clust.info.requirements.units)) + " " + clust.info.requirements.unitLabel + ")</td></tr></table>>\n";
+        console.log(clust);
+        _ref = clust.nodes;
+        for (_j = 0, _len1 = _ref.length; _j < _len1; _j++) {
+          c = _ref[_j];
+          ret += "\t\t\"" + (htmlEncode(c.hash)) + "\"\n";
+        }
+        ret += "\t}\n";
       }
-      ret += "\t}\n";
     }
     ret += "\n";
     ret += "\tnode [shape=box,style=rounded]\n";
@@ -1902,14 +1930,25 @@ DiGraph = (function() {
           clust = _ref3[_m];
           ret += "\t\tsubgraph {\n";
           ret += "\t\t\trank=same\n";
-          for (_n = 0, _len5 = clust.length; _n < _len5; _n++) {
-            c = clust[_n];
+          for (j = _n = 0, _len5 = clust.length; _n < _len5; j = ++_n) {
+            c = clust[j];
             ret += "\t\t\t\"" + c + "\" [label=<<font color=\"red\">" + c + "</font><br/><font color=\"blue\">" + titles[c] + "</font>>]\n";
+            if (j === 0) {
+              _ref4 = clusterYears[i];
+              for (_o = 0, _len6 = _ref4.length; _o < _len6; _o++) {
+                n = _ref4[_o];
+                ret += "\t\t\t" + n + "\n";
+              }
+            }
           }
           ret += "\t\t}\n";
         }
         ret += "\n\t}\n";
       }
+    }
+    if (ops.title) {
+      ret += "\tlabel=<<font point-size=\"30\">" + ops.title + "</font>>\n";
+      ret += "\tlabelloc=t\n";
     }
     ret += "}";
     return ret;
