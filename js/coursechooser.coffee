@@ -36,7 +36,7 @@ objKeysEqual = (obj1, obj2) ->
 # do a shallow copy of obj
 dupObject = (obj) ->
     ret = {}
-    for k,v in obj
+    for k,v of obj
         ret[k] = v
     return ret
 # escape <,>,& in a string
@@ -49,6 +49,8 @@ htmlEncode = (str) ->
     return str
 
 titleCaps = (str) ->
+    if not str
+        return ''
     upper = (word) ->
         return word.charAt(0).toUpperCase() + word.slice(1)
     exceptionalWords = /^(a|an|and|as|at|but|by|en|for|if|in|of|on|or|the|to|v[.]?|via|vs[.]?|with|amp|gt|lt)$/
@@ -84,56 +86,140 @@ titleCaps = (str) ->
         ret += word
     return ret
 
+# parses a string list of courses and returns an object {coures:[...], unknownCoures:[...], subjects:{...}}
+# we parse in an extremely tolerant way. The string
+#     math100,math 102, math 104, "math 202", engl 344,355, 295
+# is paresed as the coureses math 100, math 102, mah 104, math 202, engl 344, engl 355, engl 295
+# The string
+#    math,engl
+# is parsed as the subjects math, engl
+# unknownCoures is a list of coures numbers whose subject could not be determined
+parseCourseListString = (val) ->
+    subjects = {}
+    courses = []
+    unknownCourses = []
+
+    val = val.toUpperCase()
+    val = val.replace(/([A-Z])(\d)/g, "$1 $2")
+    val = val.split(/[^a-zA-Z0-9]+/)
+    subject = null
+    for v,i in val
+        if v.length is 0
+            continue
+        if v.match (/^[a-zA-Z]/)
+            subject = v
+            # subjects contain only subjects for which we load every course.  ie. only lone
+            # subjects. e.g. "math, biol" adds math and biol to the subject list,
+            # but "math 100" shouldn't add math to the subject list
+            if not val[i+1]?.match(/^\d/)
+                subjects[subject] = true
+        else
+            if not subject?
+                unknownCourses.push v
+                continue
+            courses.push {subject: subject, number: v}
+    return {courses: courses, subjects: subjects, unknownCourses: unknownCourses}
+
+# reparents an element with an optional animation
+reparent = (elm, newParent, ops={}) ->
+    if not ops.animate
+        $(elm).appendTo(newParent)
+        return
+
+    elm = $(elm)
+    newParent = $(newParent)
+    oldOffset = ops.origin || elm.offset()
+    elm.appendTo(newParent)
+    newOffset = ops.target || elm.offset()
+
+    tmp = elm.clone().appendTo('body')
+    tmp.css({position: 'absolute', left: oldOffset.left, top: oldOffset.top, 'zIndex': 1000})
+    elm.css({visibility: 'hidden'})
+    tmp.animate {top: newOffset.top, left: newOffset.left},
+        duration: 750
+        easing: 'easeOutCubic'
+        complete: ->
+            elm.show()
+            elm.css({visibility: 'visible'})
+            tmp.remove()
+            if ops.complete and not ops.complete.hasRun
+                ops.complete()
+                ops.complete.hasRun = true
+    return
+
+
 $(document).ready ->
+    $('.course-status').buttonset().disableSelection()
+    $('button').button()
+    $('#department-list').combobox().combobox('value', '')
+    $('#tabs').tabs()
+    ###
+    $(document).tooltip
+        show:
+            effect: 'fade'
+            delay: 1000
+    ###
+    prepareWelcomePage()
+    prepareNavMenu()
+
     window.courseManager = new CourseManager
     window.courses = window.courseManager.courses
 
-    $('.course-status').buttonset().disableSelection()
-    $('button').button()
-    $('#department-list').combobox()
-    $('#tabs').tabs()
 
     window.courseManager.showCoursesOfSubject('MATH')
     $('#show-courses').click ->
-        subjects = []
+        errorMsgHash = {}
+
+        subjects = {}
         courses = []
+        unknownCourses = []
+
         try
-            val = $('#department-list').combobox('value').toUpperCase()
-            for v in val.split(/,\s*/)
-                # see if it is a course and not just a subject
-                # by checking if it has a number in it
-                if v.match(/\d/)
-                    # identify the subject and the number in such a way
-                    # that they can be written with or without a space e.g. "math 100" or "math100"
-                    subject = v.match(/[a-zA-Z]+/)?[0]
-                    number = v.match(/\d\w+/)?[0]
-                    courses.push {subject:subject, number:number}
-                else
-                    subjects.push v
+            {courses, subjects, unknownCourses} = parseCourseListString($('#department-list').combobox('value'))
         catch e
-            subjects.push $('#department-list option:selected()').val()
-        for v in subjects
-            window.courseManager.showCoursesOfSubject(v)
+            subjects[$('#department-list option:selected()').val()] = true
+
+        for v of subjects
+            createErrorCallback = (sub) ->
+                return ->
+                    errorMsgHash["Could not load subject '#{sub}'"] = true
+                    $('#department-list').combobox('showError', (e for e of errorMsgHash).join('<br/>'))
+            try
+                window.courseManager.showCoursesOfSubject(v, {error: createErrorCallback(v), animate: 'slow'})
+            catch e
+                console.log e
+
         for c in courses
-            # we need a closure here.  we are first making sure the subject of each course is loaded
-            # and then we use a callback to show the course
-            ((c) ->
-                window.courseManager.loadSubjectData(c.subject, -> window.courseManager.ensureDisplayedInYearChart(c))
-            )(c)
+            createErrorCallback = (sub) ->
+                return ->
+                    errorMsgHash["Could not load course '#{sub.subject} #{sub.number}'"] = true
+                    $('#department-list').combobox('showError', (e for e of errorMsgHash).join('<br/>'))
+            createDisplayCallback = (c) ->
+                return -> window.courseManager.ensureDisplayedInYearChart(c, {error: createErrorCallback(c), animate: 'slow'})
+            try
+                window.courseManager.loadSubjectData(c.subject, createDisplayCallback(c), {error: createErrorCallback(c), animate: 'slow'})
+            catch e
+                console.log e
+        for c in unknownCourses
+            errorMsgHash["Could not determine subject code for course '#{c}'"] = true
+            $('#department-list').combobox('showError', (e for e of errorMsgHash).join('<br/>'))
     $('#hide-courses').click ->
-        subjects = []
+        subjects = {}
+        courses = []
+        unknownCourses = []
         try
-            val = $('#department-list').combobox('value')
-            for v in val.split(/,\s*/)
-                subjects.push v.toUpperCase()
+            {courses, subjects, unknownCourses} = parseCourseListString($('#department-list').combobox('value'))
         catch e
-            subjects.push $('#department-list option:selected()').val()
-        for v in subjects
-            window.courseManager.hideCoursesOfSubject(v)
+            subjects[$('#department-list option:selected()').val()] = true
+        for v of subjects
+            window.courseManager.hideCoursesOfSubject(v, {animate: 'slow'})
+        for c in courses
+            window.courseManager.hideCourse(c, {animate: 'slow'})
 
     # make the years droppable
     $('.year').droppable
         hoverClass: 'highlight'
+        tolerance: 'pointer'
         drop: (event, ui) ->
             courses = this.getElementsByClassName('courses')[0]
             courses.appendChild(ui.draggable[0])
@@ -152,6 +238,103 @@ $(document).ready ->
         window.courseManager.addCourse(elective)
         window.courseManager.makeCourseButtonDraggable(electiveButton)
         window.courseManager.makeElectivesButtonDroppable(electiveButton)
+        window.courseManager.makeElectivesButtonClickable(electiveButton)
+        window.courseManager.makeElectivesButtonClickable(elective)
+
+prepareWelcomePage = ->
+    makeLinkShow = (link, elm) ->
+        show = ->
+            elm.show()
+            link.html("Hide Details")
+        hide = ->
+            elm.hide()
+            link.html("Show Details")
+        link.toggle(show, hide)
+    for elm in $("#welcome li div.more")
+        $elm = $(elm)
+        $elm.hide()
+        $link = $('<a class="more" href="javascript: void 0;">Show Details</a>').appendTo($elm.parent().find('p')[0])
+        makeLinkShow($link, $elm)
+
+    $('#goto-course-chooser').click ->
+        showPage('#course-chooser', {animate: true, complete: (-> $('#show-courses').trigger('click'))})
+    return
+
+prepareNavMenu = ->
+    makeLinkShow = (link, target) ->
+        link.click ->
+            showPage(target, {animate: false})
+
+    for elm in $('#menu-nav a')
+        elm = $(elm)
+        target = elm.attr('href')
+        elm.attr({href: 'javascript: void 0;'})
+        makeLinkShow(elm, target)
+
+    # when we switch to the preview window, we want to load the viz library
+    $('a[page=#preview]').click ->
+        onPreviewPageShow()
+    return
+
+showPage = (page, ops={}) ->
+    if typeof page isnt 'string'
+        throw new Error("showPage expects page to be a string, not #{page}")
+    # set the nav menu to be properly highlighted
+    for elm in $('#menu-nav a')
+        elm = $(elm)
+        if elm.attr('page') is page
+            elm.addClass('active')
+        else
+            elm.removeClass('active')
+    target = $(page)
+    # if we're not animating, we don't need to do
+    # anything fancy, so just ensure our container elements
+    # are all filled
+    if not ops.animate
+        $('.page').hide()
+        for elm in target.find('.container')
+            id = elm.getAttribute('contains')
+            reparent($(id), elm, ops)
+        target.show()
+        return
+
+    # if we're animating, we need to find the position of each element
+    # that's moving to the new page befor we hide anything
+    currentPageContainers = (elm.getAttribute('contains') for elm in $($('.page:visible')).find('.container'))
+    newPageContainers = (elm.getAttribute('contains') for elm in target.find('.container'))
+    needsAnimation = []
+    doesntNeedAnimation = []
+    for elm in newPageContainers
+        if currentPageContainers.indexOf(elm) >= 0
+            needsAnimation.push elm
+        else
+            doesntNeedAnimation.push elm
+    offsets = {}
+    for elm in needsAnimation
+        offsets[elm] = $(elm).offset()
+
+    for elm in doesntNeedAnimation
+        container = target.find(".container[contains=#{elm}]")
+        reparent(elm, container, ops)
+    $('.page').hide()
+    target.show()
+    for elm in needsAnimation
+        container = target.find(".container[contains=#{elm}]")
+        reparent(elm, container, {animate: true, origin: offsets[elm], complete: ops.complete})
+    return
+
+onPreviewPageShow = ->
+    render = ->
+        dotCode = window.courseManager.createDotGraph()
+        $('#preview').html Viz(dotCode, 'svg')
+
+    if not window.Viz?
+        $('#preview').html 'loading graphviz library'
+        $.getScript 'js/viz.js', ->
+            $('#preview').html 'graphviz library loaded'
+            render()
+    else
+        window.setTimeout(render, 0)
 
 ###
 # Class to manage and keep the sync of all course on the webpage
@@ -164,13 +347,19 @@ class CourseManager
         @sortableCourses = {}   # all the courses that are displayed in the year chart (and so are sortable)
         @sortableCoursesStateButtons = {}
         @loadedSubjects = {}
+        @loadingStatus = {}
+        @onSubjectLoadedCallbacks = {}
     # updates the state of all instances of a particular course
-    updateCourseState: (course, state) ->
+    updateCourseState: (course, state, ops={updatePrereqs: true}) ->
         for c in (@courses[course] || [])
+            if not c.selectable
+                state = dupObject(state)
+                delete state.selected
             c.setState(state)
-        # update the prereqs list asyncronously with a little delay so it isn't
-        # so surprising to the user
-        window.setTimeout((=> @showUnmetPrereqs()), 500)
+        if ops.updatePrereqs
+            # update the prereqs list asyncronously with a little delay so it isn't
+            # so surprising to the user
+            window.setTimeout((=> @showUnmetPrereqs()), 500)
     addCourse: (course) ->
         hash = '' + course
         if not @courses[hash]
@@ -239,22 +428,24 @@ class CourseManager
             if c.subject is course?.subject and c.number is course?.number
                 c.setState({selected: true})
                 selectedCourse = c
+            @updateCourseState(c, c.state, {updatePrereqs: false})
         if not selectedCourse
             return
 
-        # set up the course info area for the selected course
-        stateButtons = @sortableCoursesStateButtons[selectedCourse]
-        if not stateButtons
-            stateButtons = @createCourseStateButton(selectedCourse)
-        $('.course-info .course-name .course-number').html selectedCourse.hash
-        $('.course-info .course-name .course-title').html titleCaps(('' + selectedCourse.data.title).toLowerCase())
-        # if we don't detach first, jquery removes all bound events and ui widgets, etc.
-        $('.course-info .course-state').children().detach()
-        $('.course-info .course-state').html stateButtons.elm
-        $('.course-info .prereq-area').html PrereqUtils.prereqsToDivs(stateButtons.prereqs, @)
-        #TODO this shouldn't be done with a timeout.  it should be done in a robust way!!
-        window.setTimeout((=> $('#dot').val @createDotGraph()), 0)
-        @cleanupUnattachedButtons()
+        if selectedCourse instanceof BasicCourse
+            # set up the course info area for the selected course
+            stateButtons = @sortableCoursesStateButtons[selectedCourse]
+            if not stateButtons
+                stateButtons = @createCourseStateButton(selectedCourse)
+            $('.course-info .course-name .course-number').html selectedCourse.hash
+            $('.course-info .course-name .course-title').html titleCaps(('' + selectedCourse.data.title).toLowerCase())
+            # if we don't detach first, jquery removes all bound events and ui widgets, etc.
+            $('.course-info .course-state').children().detach()
+            $('.course-info .course-state').html stateButtons.elm
+            $('.course-info .prereq-area').html PrereqUtils.prereqsToDivs(stateButtons.prereqs, @)
+            #TODO this shouldn't be done with a timeout.  it should be done in a robust way!!
+            window.setTimeout((=> $('#dot').val @createDotGraph()), 0)
+            @cleanupUnattachedButtons()
 
 
     # returns a CourseButton for the desired course.  If the course
@@ -275,6 +466,7 @@ class CourseManager
                     return
                     #throw new Error("Course #{course} was loaded in dep. #{course.subject}, but wasn't available")
                 course.update(@courseData[course])
+                course.setTooltip(titleCaps(course.data.title))
                 course.wasSynced = true
             @loadSubjectData(course.subject, updateCourse)
         if ops.clickable
@@ -290,6 +482,7 @@ class CourseManager
     makeCourseButtonClickable: (button, ops={}) ->
         # if we're selectable we should be keyboard navigatable too
         if ops.selectable
+            button.selectable = true
             button.$elm.attr({tabindex: 1})
             button.$elm.focus ->
                 # make sure extra focus events don't trigger extra clicks
@@ -325,6 +518,7 @@ class CourseManager
             # defunct classes also cannot be clicked
             if $(evt.currentTarget).hasClass('defunct')
                 return
+            evt.stopPropagation()
             if ops.selectable and not button.state.selected
                 # if we click on a button and it results in the selection changing,
                 # we don't want to toggle the state at all.  We just want to update
@@ -348,11 +542,14 @@ class CourseManager
             @updateCourseState(button, newState)
     makeCourseButtonDraggable: (button, ops={}) ->
         $(button.getButton()).draggable
-            appendTo: 'body'
+            #appendTo: '#course-chooser'
+            containment: '#main'
+            scroll: true
             helper: 'clone'
             revert: 'invalid'
             distance: '25'
             opacity: 0.7
+            zIndex: 1000
 
     # makes the drop area of an ElectivesButton a drop target. If
     # clone is truthy instead of moving the course, a copy of the
@@ -363,7 +560,12 @@ class CourseManager
             #TODO this seems to mess up the parent sometimes!
             greedy: true
             hoverClass: 'highlight'
+            tolerance: 'pointer'
+            accept: (ui) ->
+                return ui[0].course instanceof BasicCourse
             drop: (event, ui) =>
+                if not ui.draggable[0].course
+                    return false
                 button.addCourse(ui.draggable[0].course)
                 # calling the courseMoved method will ensure that
                 # all electivesButtons are synced up and updated with
@@ -373,6 +575,8 @@ class CourseManager
                 # when we drop a course on an electives block, assume
                 # we want it automatically to be marked as an elective
                 @updateCourseState(ui.draggable[0].course, {required:false, elective:true})
+    makeElectivesButtonClickable: (button, ops={}) ->
+        button.$elm.click(=> @selectCourse(button))
 
     # this method is called whenever a course changes levels or
     # gets added or removed from an elective's block
@@ -445,18 +649,37 @@ class CourseManager
             if list[0]?.state.required or list[0]?.state.elective
                 ret.push list[0]
         return ret
+    # performs an ajax call to load a subject.
+    # If loadSubjectData is called multiple times before the ajax call
+    # has finished, the callbacks are queued and executed after the ajax call
+    # finishes. (the ajax call is only made once, so call this function as often as you like)
+    loadSubjectData: (subject, callback, ops={}) ->
+        @onSubjectLoadedCallbacks[subject] = @onSubjectLoadedCallbacks[subject] || []
+        @onSubjectLoadedCallbacks[subject].push callback
+        doAllCallbacks = =>
+            while func = @onSubjectLoadedCallbacks[subject].shift()
+                func()
+            @loadingStatus[subject] = 'loaded'
 
-    loadSubjectData: (subject, callback, force=false) ->
-        if @loadedSubjects[subject] and not force
-            callback()
-        $.ajax
+        if @loadedSubjects[subject] and not ops.force
+            doAllCallbacks()
+            return
+        if @loadingStatus[subject] is 'loading' and not ops.force
+            return
+        @loadingStatus[subject] = 'loading'
+
+        error = (e) ->
+            console.log 'ajax error'
+            throw e
+
+        ajaxArgs =
             url: "course_data/#{subject}.json"
             dataType: 'json'
             success: @courseDataLoaded
-            error: (e) ->
-                console.log 'ajax error'
-                throw e
-            complete: callback
+            error: [(=> @loadingStatus[subject] = 'failed'), (ops.error || error)]
+            complete: doAllCallbacks
+        $.ajax ajaxArgs
+
     courseDataLoaded: (data, textState, jsXHR) =>
         for c in data
             @courseData[BasicCourse.hashCourse(c)] = c
@@ -464,30 +687,41 @@ class CourseManager
     # shows courses from a particular department.  If buttons
     # already exist for the department, those buttons are made visible.
     # If not, the buttons are created
-    showCoursesOfSubject: (subject) ->
+    showCoursesOfSubject: (subject, ops={}) ->
         showCourses = =>
             for hash,course of @sortableCourses
                 if course.subject is subject
-                    course.$elm.show()
+                    course.$elm.show(ops.animate)
         if @loadedSubjects[subject]
-            @populateYearChartWithSubject(subject)
+            @populateYearChartWithSubject(subject, ops)
             showCourses()
         else
-            # TODO fix potential endless loop
-            @loadSubjectData(subject, => @showCoursesOfSubject(subject))
+            ops = dupObject(ops)
+            ops.recursionDepth = (ops.recursionDepth || 0) + 1
+            if ops.recursionDepth < 10
+                @loadSubjectData(subject, (=> @showCoursesOfSubject(subject, ops)), ops)
+            else
+                ops.error() if ops.error
+                console.log Error("Reached maximum recusion depth when loading #{subject}")
         return
     # hide all courses from a particular department
     # that aren't marked as required or as an elective
-    hideCoursesOfSubject: (subject) ->
+    hideCoursesOfSubject: (subject, ops={}) ->
         for hash,course of @sortableCourses
             if course.subject is subject and course.state.required is false and course.state.elective is false
                 if course.elm
-                    course.$elm.hide()
+                    course.$elm.hide(ops.animate)
         return
-    populateYearChartWithSubject: (subject) ->
+    hideCourse: (course, ops={}) ->
+        hash = BasicCourse.hashCourse(course)
+        if @sortableCourses[hash]
+            course = @sortableCourses[hash]
+            if course.state.required is false and course.state.elective is false
+                course.$elm?.hide(ops.animate)
+    populateYearChartWithSubject: (subject, ops) ->
         years = {}
         for hash,data of @courseData
-            # find everything of match subject for which a button hasn't already been created
+            # find everything of matching subject for which a button hasn't already been created
             if data.subject is subject and not @sortableCourses[hash]
                 leadingNumber = data.number.charAt(0)
                 years[leadingNumber] = years[leadingNumber] || []
@@ -501,14 +735,19 @@ class CourseManager
                 #course.$elm.hide()
                 @sortableCourses[course] = course
                 container.append(course.getButton())
+                if ops.animate
+                    course.$elm.hide()
+                    course.$elm.show(ops.animate)
+
         return
-    ensureDisplayedInYearChart: (course) ->
+    ensureDisplayedInYearChart: (course, ops={}) ->
         hash = BasicCourse.hashCourse(course)
         # this is a course that cannot be added since it doesn't exist in a subject
         if not @courseData[hash] and @loadedSubjects[course.subject]
+            ops.error() if ops.error
             throw new Error("#{hash} cannot be loaded.  Does not appear to exist...")
         if not @courseData[hash]
-            @loadSubjectData(course.subject, => @ensureDisplayedInYearChart(course))
+            @loadSubjectData(course.subject, (=> @ensureDisplayedInYearChart(course, ops)), ops)
 
         if @sortableCourses[hash]
             @sortableCourses[hash].$elm.show()
@@ -518,6 +757,9 @@ class CourseManager
             course = @createCourseButton(@courseData[hash], {clickable: true, selectable: true, draggable: true})
             @sortableCourses[course] = course
             $(".year#{leadingNumber} .courses").append(course.getButton())
+            if ops.animate
+                course.$elm?.hide()
+                course.$elm?.show(ops.animate)
     showUnmetPrereqs: ->
         # we need a list of courses that are required or electives to find their prereqs
         activeCourses = []
@@ -580,7 +822,7 @@ class CourseManager
         titles = {}
         for t of g.nodes
             titles[t] = titleCaps((''+@sortableCourses[t].data.title).toLowerCase())
-        $('#dot2').val g.toDot('unpruned', titles, clusters, {title:$('#program-info input').val()})
+        #$('#dot2').val g.toDot('unpruned', titles, clusters, {title:$('#program-info input').val()})
         console.log g.eliminateRedundantEdges()
         return g.toDot('pruned', titles, clusters, {title:$('#program-info input').val()})
 
@@ -779,6 +1021,7 @@ class CourseButton extends BasicCourse
         if @elm
             return @elm
         @$elm = $("<div class='course' subject='#{@subject}' number='#{@number}'><div class='annotation'></div><div class='number'>#{@subject} #{@number}</div></div>")
+        @setTooltip(titleCaps(@data.title))
         @$elm.disableSelection()
         @elm = @$elm[0]
         @elm.course = @
@@ -791,6 +1034,9 @@ class CourseButton extends BasicCourse
         @elm.course = null  #make sure we remove the circular ref so we can be garbage collected
         @$elm.remove()
         @elm = @$elm = null
+    setTooltip: (tip) ->
+        if tip
+            @$elm.attr({title: tip})
 ###
 # Set of three toggle buttons that change (and reflect) the state of a course
 ###
@@ -874,6 +1120,7 @@ class Electives
 class ElectivesButton extends Electives
     constructor: (data, @manager) ->
         super(data)
+        @selectable = true
         @getButton()
     setState: (state, ops={}) ->
         changedState = super(state)
@@ -897,6 +1144,7 @@ class ElectivesButton extends Electives
 		<div class="courses-list"><span class="droptext">Drop Here to Add Courses</span></div>
 	</div>""")
         @elm = @$elm[0]
+        @elm.course = @
         @$coursesDiv = @$elm.find('.courses-list')
 
         # populate with all the courses in our course list, creating buttons
@@ -939,6 +1187,7 @@ class ElectivesButton extends Electives
 class ElectivesButtonEditor extends Electives
     constructor: (data, @manager) ->
         super(data)
+        @selectable = true
         @getButton()
     setState: (state, ops={}) ->
         changedState = super(state)
@@ -957,8 +1206,8 @@ class ElectivesButtonEditor extends Electives
         if @elm
             return @elm
         @$elm = $("""<div class='elective-editable'>
-                    <div class='title'>Title: <input type='text' value='#{@title}'></input></div>
-                    <div class='requirements'>At least <input type='text' value='#{@requirements.units}'></input> #{@requirements.unitLabel}</div>
+                    <div class='title'>Title: <input type='text' value='#{@title}' class='ui-state-default ui-combobox-input ui-widget ui-widget-content ui-corner-all'></input></div>
+                    <div class='requirements'>At least <input type='text' value='#{@requirements.units}' class='ui-state-default ui-combobox-input ui-widget ui-widget-content ui-corner-all'></input> #{@requirements.unitLabel}</div>
                     Elective Courses: <div class='dropbox courses-list'><span class='droptext'>Use the Year Chart to Add Courses</span></div>
                 </div>""")
         @elm = @$elm[0]
@@ -1203,6 +1452,7 @@ class DiGraph
     # returns a string representing the graph in
     # graphviz dot format
     toDot: (name, titles={}, clusters=[], ops={}) ->
+        alreadyAdded = {}   #graphviz is unhappy when we add things too many times with too many rank restrictions
         ret = "digraph #{name} {\n"
         ret += "\trankdir=LR\n"
 
@@ -1226,9 +1476,10 @@ class DiGraph
                 ret += "\t\tcolor=gray\n"
                 ret += """\t\tlabel=<<table><tr><td align="left">#{htmlEncode(clust.info.title)}</td>"""
                 ret += """<td align="right">(At least #{htmlEncode(clust.info.requirements.units)} #{clust.info.requirements.unitLabel})</td></tr></table>>\n"""
-                console.log clust
                 for c in clust.nodes
-                    ret += "\t\t\"#{htmlEncode(c.hash)}\"\n" #[label=<<font color=\"red\">#{c.hash}</font><br/><font color=\"blue\">#{titles[c]}</font>>]\n"
+                    #ret += "\t\t\"#{htmlEncode(c.hash)}\"\n" #[label=<<font color=\"red\">#{c.hash}</font><br/><font color=\"blue\">#{titles[c]}</font>>]\n"
+                    ret += "\t\t\"#{htmlEncode(c.hash)}\" [label=<<font color=\"red\">#{c.hash}</font><br/><font color=\"blue\">#{titles[c]}</font>>]\n"
+                    alreadyAdded[c] = true
                 ret += "\t}\n"
 
         ret += "\n"
@@ -1245,7 +1496,8 @@ class DiGraph
                     ret += "\t\tsubgraph {\n"
                     ret += "\t\t\trank=same\n"
                     for c,j in clust
-                        ret += "\t\t\t\"#{c}\" [label=<<font color=\"red\">#{c}</font><br/><font color=\"blue\">#{titles[c]}</font>>]\n"
+                        if not alreadyAdded[c]
+                            ret += "\t\t\t\"#{c}\" [label=<<font color=\"red\">#{c}</font><br/><font color=\"blue\">#{titles[c]}</font>>, _year=#{i}, _name=\"#{c}\", _title=\"#{titles[c]}\"]\n"
                         # empty clusers were turned into nodes.  These nodes have already
                         # had their label set, so we just need to include them in the appropriate year
                         if j == 0
@@ -1260,8 +1512,9 @@ class DiGraph
 
         # put the title last so it doesn't try to apply to all subgraphs
         if ops.title
-            ret += "\tlabel=<<font point-size=\"30\">#{ops.title}</font>>\n"
+            ret += "\tlabel=\"#{ops.title}\"\n"
             ret += "\tlabelloc=t\n" #label position top
+            ret += "\tlabelfontsize=30\n" #label position top
         ret += "}"
 
         return ret

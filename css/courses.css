@@ -62,9 +62,16 @@
 	background: lightgray;
 	cursor: pointer;
 	display: inline-block;
+	
+	box-sizing: border-box;
+	-moz-box-sizing: border-box;
+	max-width: 50%;
 
 	/* If we don't do this, the annotations will not all algin in a row */
 	vertical-align: top;
+}
+.electives-block.selected {
+	box-shadow: 0px 0px 5px blue;
 }
 .electives-block .courses-list {
 	margin: .5em;
@@ -90,7 +97,7 @@
 }
 .electives-block .requirement:before {
 	content: '(';
-	margin-left: 1em;
+	margin-left: 0.5em;
 }
 .electives-block .requirement:after {
 	content: ')';

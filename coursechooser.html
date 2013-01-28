@@ -4,7 +4,7 @@
 	<meta charset="utf-8">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
 
-	<title></title>
+	<title>Course Mapper</title>
 	<meta name="description" content="">
 	<meta name="author" content="">
 
@@ -17,11 +17,11 @@
 	<script src="js/libs/modernizr-2.5.3.min.js"></script>
 
 	<!-- jquery stuff -->
+	<link rel="stylesheet" href="jquery-ui-1.9.2.custom/css/ui-lightness/jquery-ui-1.9.2.custom.css">
+	<link rel="stylesheet" href="css/jquery.ui.combobox.css">
 	<script src="jquery-ui-1.9.2.custom/js/jquery-1.8.3.js"></script>
 	<script src="jquery-ui-1.9.2.custom/js/jquery-ui-1.9.2.custom.min.js"></script>
-	<link rel="stylesheet" href="jquery-ui-1.9.2.custom/css/ui-lightness/jquery-ui-1.9.2.custom.css">
 	<script src="js/jquery.ui.combobox.js"></script>
-	<link rel="stylesheet" href="css/jquery.ui.combobox.css">
 
 	<!-- <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.js"></script> -->
 	<script src="js/plugins.js"></script>
@@ -29,218 +29,298 @@
 	<script src="js/coursechooser.js"></script>
 </head>
 <body>
-	<header>
-	</header>
-	<div role="main">
-		<div id="main">
-		<div id="program-info">
-			Program Name: <input type="text" value="Unknown"></input>
+	<div id="header">
+		<div id="menu-nav">
+			<a href="#welcome" page="#welcome" class="active">Welcome</a> &gt; <a href="#course-chooser" page="#course-chooser">Course Chooser</a> &gt; <a href="#preview" page="#preview">Preview</a>
 		</div>
-		<div id="yearchart">
-			<div class="year year1 clearfix">
-				<div class="label">Year 1</div>
-				<div class="courses"></div>
-			</div>
-			<div class="year year2 clearfix">
-				<div class="label">Year 2</div>
-				<div class="courses"></div>
-			</div>
-			<div class="year year3 clearfix">
-				<div class="label">Year 3</div>
-				<div class="courses"></div>
-			</div>
-			<div class="year year4 clearfix">
-				<div class="label">Year 4</div>
-				<div class="courses"></div>
-			</div>
-		</div>
-		<div>
-			Courses from another department
-			<div class="clearfix" style="display: inline-block;">
-			<select id='department-list'>
-				<option value='ACAN'>ACAN</option>
-				<option value='ADMN'>ADMN</option>
-				<option value='AE'>AE</option>
-				<option value='AGEI'>AGEI</option>
-				<option value='ANTH'>ANTH</option>
-				<option value='ART'>ART</option>
-				<option value='ARTS'>ARTS</option>
-				<option value='ASL'>ASL</option>
-				<option value='ASTR'>ASTR</option>
-				<option value='BCMB'>BCMB</option>
-				<option value='BIOC'>BIOC</option>
-				<option value='BIOL'>BIOL</option>
-				<option value='BME'>BME</option>
-				<option value='BUS'>BUS</option>
-				<option value='CD'>CD</option>
-				<option value='CENG'>CENG</option>
-				<option value='CH'>CH</option>
-				<option value='CHEM'>CHEM</option>
-				<option value='COM'>COM</option>
-				<option value='CS'>CS</option>
-				<option value='CSC'>CSC</option>
-				<option value='CSPT'>CSPT</option>
-				<option value='CW'>CW</option>
-				<option value='CYC'>CYC</option>
-				<option value='CYCB'>CYCB</option>
-				<option value='CYCI'>CYCI</option>
-				<option value='DR'>DR</option>
-				<option value='DSST'>DSST</option>
-				<option value='ECON'>ECON</option>
-				<option value='ED-D'>ED-D</option>
-				<option value='ED-P'>ED-P</option>
-				<option value='EDCI'>EDCI</option>
-				<option value='EDUC'>EDUC</option>
-				<option value='ELEC'>ELEC</option>
-				<option value='ENGL'>ENGL</option>
-				<option value='ENGR'>ENGR</option>
-				<option value='ENT'>ENT</option>
-				<option value='ENTC'>ENTC</option>
-				<option value='ENTD'>ENTD</option>
-				<option value='EOS'>EOS</option>
-				<option value='EPHE'>EPHE</option>
-				<option value='ER'>ER</option>
-				<option value='ES'>ES</option>
-				<option value='EUS'>EUS</option>
-				<option value='FA'>FA</option>
-				<option value='FORB'>FORB</option>
-				<option value='FRAN'>FRAN</option>
-				<option value='FREN'>FREN</option>
-				<option value='GEOG'>GEOG</option>
-				<option value='GER'>GER</option>
-				<option value='GERS'>GERS</option>
-				<option value='GMST'>GMST</option>
-				<option value='GREE'>GREE</option>
-				<option value='GRS'>GRS</option>
-				<option value='GS'>GS</option>
-				<option value='HA'>HA</option>
-				<option value='HDCC'>HDCC</option>
-				<option value='HINF'>HINF</option>
-				<option value='HIST'>HIST</option>
-				<option value='HLTH'>HLTH</option>
-				<option value='HOS'>HOS</option>
-				<option value='HSD'>HSD</option>
-				<option value='HSM'>HSM</option>
-				<option value='HUMA'>HUMA</option>
-				<option value='IA'>IA</option>
-				<option value='IB'>IB</option>
-				<option value='IED'>IED</option>
-				<option value='IET'>IET</option>
-				<option value='IGOV'>IGOV</option>
-				<option value='INGH'>INGH</option>
-				<option value='INTD'>INTD</option>
-				<option value='INTS'>INTS</option>
-				<option value='IS'>IS</option>
-				<option value='ITAL'>ITAL</option>
-				<option value='KINE'>KINE</option>
-				<option value='LAS'>LAS</option>
-				<option value='LATI'>LATI</option>
-				<option value='LAW'>LAW</option>
-				<option value='LING'>LING</option>
-				<option value='MATH'>MATH</option>
-				<option value='MBA'>MBA</option>
-				<option value='MBME'>MBME</option>
-				<option value='MBMS'>MBMS</option>
-				<option value='ME'>ME</option>
-				<option value='MECH'>MECH</option>
-				<option value='MEDI'>MEDI</option>
-				<option value='MEDS'>MEDS</option>
-				<option value='MEST'>MEST</option>
-				<option value='MGB'>MGB</option>
-				<option value='MICR'>MICR</option>
-				<option value='MRNE'>MRNE</option>
-				<option value='MUS'>MUS</option>
-				<option value='NRSC'>NRSC</option>
-				<option value='NUED'>NUED</option>
-				<option value='NUHI'>NUHI</option>
-				<option value='NUNP'>NUNP</option>
-				<option value='NURA'>NURA</option>
-				<option value='NURP'>NURP</option>
-				<option value='NURS'>NURS</option>
-				<option value='PAAS'>PAAS</option>
-				<option value='PHIL'>PHIL</option>
-				<option value='PHSP'>PHSP</option>
-				<option value='PHYS'>PHYS</option>
-				<option value='POLI'>POLI</option>
-				<option value='PORT'>PORT</option>
-				<option value='PSYC'>PSYC</option>
-				<option value='RHED'>RHED</option>
-				<option value='RS'>RS</option>
-				<option value='RUSS'>RUSS</option>
-				<option value='SCIE'>SCIE</option>
-				<option value='SDH'>SDH</option>
-				<option value='SENG'>SENG</option>
-				<option value='SJS'>SJS</option>
-				<option value='SLAV'>SLAV</option>
-				<option value='SLST'>SLST</option>
-				<option value='SMGT'>SMGT</option>
-				<option value='SOCI'>SOCI</option>
-				<option value='SOCW'>SOCW</option>
-				<option value='SOSC'>SOSC</option>
-				<option value='SPAN'>SPAN</option>
-				<option value='SPP'>SPP</option>
-				<option value='STAT'>STAT</option>
-				<option value='THEA'>THEA</option>
-				<option value='TS'>TS</option>
-				<option value='UKR'>UKR</option>
-				<option value='WKEX'>WKEX</option>
-				<option value='WRIT'>WRIT</option>
-				<option value='WS'>WS</option>
-			</select>
-			</div>
-			<button id='show-courses'>Show</button>
-			<button id='hide-courses'>Hide</button>
+		<div id="menu-loadsave">
+			<a href="#">Save</a> | <a href="#">Load</a>
 		</div>
 	</div>
-	<div id="right">
-		<div id="tabs">
-			<ul>
-				<li><a href="#tab-courseinfo">Course Info</a></li>
-				<li><a href="#tab-electives">Electives</a></li>
-				<li><a href="#tab-prereqs">Prerequisites</a></li>
-			</ul>
-			<div id="tab-courseinfo">
-				<div class='course-info' style="display:inline-block;">
-					<div class='course-name'><span class="course-number"></span> &mdash; <span class="course-title"></span></div>
-					<div class='course-state'>
-						<div class='course-status'>
-							<input type='radio' name='state' value='none' id='course-notincluded' /><label for='course-notincluded'>Not Included</label>
-							<input type='radio' name='state' value='required' id='course-required' /><label for='course-required'>Required</label>
-							<input type='radio' name='state' value='elective' id='course-elective' /><label for='course-elective'>Elective</label>
+	<div id="body">
+		<div id="welcome" class="page">
+			<p>
+				Welcome to <emph>Course Chooser</emph>, the application that allows you to design your
+				program's requirements.
+			</p>
+			<ol id="welcome-steps">
+				<li>
+					<div class="list-label">Step 1:</div>
+					<div class="content">
+						<p>Enter the title of your program</p>
+					</div>
+				</li>
+				<li>
+					<div class="list-label">Step 2:</div>
+					<div class="content">
+						<p>Specify the courses required for your program</p>
+						<div class="more" style="display: none">
+						<p>Type a subject code (e.g. ENGL) into the <emph>Add Courses</emph>
+						box and click <op>Show</op> to display all courses from that subject
+						in the <emph>Year Chart</emph></p>
+						<p>Specify which courses are required by clicking on a course in the
+						<emph>Year Chart</emph> and setting <op>Required</op> in the <emph>Course
+						Info</emph> tab.  Then, if necessary, sort the course into the desired
+						year by dragging and dropping in the <emph>Year Chart</emph>.</p>
+						<p>Add electives blocks by clicking <op>Add New Electives</op>
+						from the <emph>Electives</emph> tab.  Specify the title of the electives
+						block (e.g. "400-level Literature") and the number of required units.
+						Drag and drop courses from the <emph>Year Chart</emph> into your electives
+						block to add explicit course options for electives, or leave the electives
+						block empty if you don't wish to specify all the options.  Finally, drag and
+						drop the electives block to the desired year of your program.</p>
+						<p>Verify you have not accidentally omitted any prerequisites by clicking
+						the <emph>Prerequisites</emph> tab, which shows a list of all prerequisites
+						for the programs required courses that are currently unmet.</p>
 						</div>
 					</div>
-					<!-- Co-requisites: <div class='coreq-dropbox dropbox'>Drop Here</div> -->
-					Pre-requisites: <div class='prereq-area'></div>
-				</div>
-			</div>
-			<div id="tab-electives">
-				<div id='electives-editor' style="display:inline-block;">
-					<div id='electives-list'>
+				</li>
+				<li>
+					<div class="list-label">Step 3:</div>
+					<div class="content">
+						<p>Preview the chart generated for your program</p>
+						<div class="more" style="display: none">
+						<p>Add or remove arrows from your chart by selecting
+						two courses and clicking <op>Add Arrow</op> or <op>Hide Arrow</op>.
+						</p>
+						</div>
 					</div>
-					<button id='create-new-electives'>Create New Electives Block</button>
+				</li>
+				<li>
+					<div class="list-label">Step 4:</div>
+					<div class="content">
+						<p>Save the chart for your program and embed on your program's webpage</p>
+					</div>
+				</li>
+			</ol>
+			<div class="container" contains="#program-info">
+				<div id="program-info" title="Enter the name of your program to be displayed at the top of the final output.">
+					Program Title: <input type="text" value="" class="ui-state-default ui-combobox-input ui-widget ui-widget-content ui-corner-all" ></input>
 				</div>
 			</div>
-			<div id="tab-prereqs">
-				<h3>Unmet Prereqs for Selected Courses</h3>
-				<p>Below is a list of all the unsatisfied prereqs for the currently selected courses.
-				As soon as a prereq becomes satisfied, it disappears from the list. If a new course is selected
-				and has an unmet prereq, it will automatically appear in this list.</p>
-				<div id="unmet-prereq-list">
+			<div class="container" contains="#courses-add">
+					<div id='courses-add'>
+						Subjects to Add:
+						<div class="clearfix" style="display: inline-block;">
+						<select id='department-list' title='Input a subject code (e.g. "BIOL"), a course code (e.g. "BIOL 100") or a comma separted list of subject and course codes.'>
+							<option value='ACAN'>ACAN</option>
+							<option value='ADMN'>ADMN</option>
+							<option value='AE'>AE</option>
+							<option value='AGEI'>AGEI</option>
+							<option value='ANTH'>ANTH</option>
+							<option value='ART'>ART</option>
+							<option value='ARTS'>ARTS</option>
+							<option value='ASL'>ASL</option>
+							<option value='ASTR'>ASTR</option>
+							<option value='BCMB'>BCMB</option>
+							<option value='BIOC'>BIOC</option>
+							<option value='BIOL'>BIOL</option>
+							<option value='BME'>BME</option>
+							<option value='BUS'>BUS</option>
+							<option value='CD'>CD</option>
+							<option value='CENG'>CENG</option>
+							<option value='CH'>CH</option>
+							<option value='CHEM'>CHEM</option>
+							<option value='COM'>COM</option>
+							<option value='CS'>CS</option>
+							<option value='CSC'>CSC</option>
+							<option value='CSPT'>CSPT</option>
+							<option value='CW'>CW</option>
+							<option value='CYC'>CYC</option>
+							<option value='CYCB'>CYCB</option>
+							<option value='CYCI'>CYCI</option>
+							<option value='DR'>DR</option>
+							<option value='DSST'>DSST</option>
+							<option value='ECON'>ECON</option>
+							<option value='ED-D'>ED-D</option>
+							<option value='ED-P'>ED-P</option>
+							<option value='EDCI'>EDCI</option>
+							<option value='EDUC'>EDUC</option>
+							<option value='ELEC'>ELEC</option>
+							<option value='ENGL'>ENGL</option>
+							<option value='ENGR'>ENGR</option>
+							<option value='ENT'>ENT</option>
+							<option value='ENTC'>ENTC</option>
+							<option value='ENTD'>ENTD</option>
+							<option value='EOS'>EOS</option>
+							<option value='EPHE'>EPHE</option>
+							<option value='ER'>ER</option>
+							<option value='ES'>ES</option>
+							<option value='EUS'>EUS</option>
+							<option value='FA'>FA</option>
+							<option value='FORB'>FORB</option>
+							<option value='FRAN'>FRAN</option>
+							<option value='FREN'>FREN</option>
+							<option value='GEOG'>GEOG</option>
+							<option value='GER'>GER</option>
+							<option value='GERS'>GERS</option>
+							<option value='GMST'>GMST</option>
+							<option value='GREE'>GREE</option>
+							<option value='GRS'>GRS</option>
+							<option value='GS'>GS</option>
+							<option value='HA'>HA</option>
+							<option value='HDCC'>HDCC</option>
+							<option value='HINF'>HINF</option>
+							<option value='HIST'>HIST</option>
+							<option value='HLTH'>HLTH</option>
+							<option value='HOS'>HOS</option>
+							<option value='HSD'>HSD</option>
+							<option value='HSM'>HSM</option>
+							<option value='HUMA'>HUMA</option>
+							<option value='IA'>IA</option>
+							<option value='IB'>IB</option>
+							<option value='IED'>IED</option>
+							<option value='IET'>IET</option>
+							<option value='IGOV'>IGOV</option>
+							<option value='INGH'>INGH</option>
+							<option value='INTD'>INTD</option>
+							<option value='INTS'>INTS</option>
+							<option value='IS'>IS</option>
+							<option value='ITAL'>ITAL</option>
+							<option value='KINE'>KINE</option>
+							<option value='LAS'>LAS</option>
+							<option value='LATI'>LATI</option>
+							<option value='LAW'>LAW</option>
+							<option value='LING'>LING</option>
+							<option value='MATH'>MATH</option>
+							<option value='MBA'>MBA</option>
+							<option value='MBME'>MBME</option>
+							<option value='MBMS'>MBMS</option>
+							<option value='ME'>ME</option>
+							<option value='MECH'>MECH</option>
+							<option value='MEDI'>MEDI</option>
+							<option value='MEDS'>MEDS</option>
+							<option value='MEST'>MEST</option>
+							<option value='MGB'>MGB</option>
+							<option value='MICR'>MICR</option>
+							<option value='MRNE'>MRNE</option>
+							<option value='MUS'>MUS</option>
+							<option value='NRSC'>NRSC</option>
+							<option value='NUED'>NUED</option>
+							<option value='NUHI'>NUHI</option>
+							<option value='NUNP'>NUNP</option>
+							<option value='NURA'>NURA</option>
+							<option value='NURP'>NURP</option>
+							<option value='NURS'>NURS</option>
+							<option value='PAAS'>PAAS</option>
+							<option value='PHIL'>PHIL</option>
+							<option value='PHSP'>PHSP</option>
+							<option value='PHYS'>PHYS</option>
+							<option value='POLI'>POLI</option>
+							<option value='PORT'>PORT</option>
+							<option value='PSYC'>PSYC</option>
+							<option value='RHED'>RHED</option>
+							<option value='RS'>RS</option>
+							<option value='RUSS'>RUSS</option>
+							<option value='SCIE'>SCIE</option>
+							<option value='SDH'>SDH</option>
+							<option value='SENG'>SENG</option>
+							<option value='SJS'>SJS</option>
+							<option value='SLAV'>SLAV</option>
+							<option value='SLST'>SLST</option>
+							<option value='SMGT'>SMGT</option>
+							<option value='SOCI'>SOCI</option>
+							<option value='SOCW'>SOCW</option>
+							<option value='SOSC'>SOSC</option>
+							<option value='SPAN'>SPAN</option>
+							<option value='SPP'>SPP</option>
+							<option value='STAT'>STAT</option>
+							<option value='THEA'>THEA</option>
+							<option value='TS'>TS</option>
+							<option value='UKR'>UKR</option>
+							<option value='WKEX'>WKEX</option>
+							<option value='WRIT'>WRIT</option>
+							<option value='WS'>WS</option>
+						</select>
+						</div>
+					</div>
+			</div>
+			<div class="welcome-nav">
+				<button id="goto-course-chooser">Next</button>
+				(You can always return to this screen by clicking <op>Welcome</op> from
+				the top menubar)
+			</div>
+		</div>
+		<div role="main" id="course-chooser" style="display: none;" class="page">
+			<div id="main">
+			<div class="container" contains="#program-info">
+			</div>
+			<div id="yearchart">
+				<div class="year year1 clearfix">
+					<div class="label">Year 1</div>
+					<div class="courses"></div>
+				</div>
+				<div class="year year2 clearfix">
+					<div class="label">Year 2</div>
+					<div class="courses"></div>
+				</div>
+				<div class="year year3 clearfix">
+					<div class="label">Year 3</div>
+					<div class="courses"></div>
+				</div>
+				<div class="year year4 clearfix">
+					<div class="label">Year 4</div>
+					<div class="courses"></div>
+				</div>
+			</div>
+
+			<div>
+				<div class="container" contains="#courses-add" style="display: inline-block;">
+				</div>
+				<button id='show-courses'>Show</button>
+				<button id='hide-courses'>Hide</button>
+			</div>
+		</div>
+		<div id="right">
+			<div id="tabs">
+				<ul>
+					<li><a href="#tab-courseinfo">Course Info</a></li>
+					<li><a href="#tab-electives">Electives</a></li>
+					<li><a href="#tab-prereqs">Prerequisites</a></li>
+				</ul>
+				<div id="tab-courseinfo">
+					<div class='course-info' style="display:inline-block;">
+						<div class='course-name'><span class="course-number"></span> &mdash; <span class="course-title"></span></div>
+						<div class='course-state'>
+							<div class='course-status'>
+								<input type='radio' name='state' value='none' id='course-notincluded' /><label for='course-notincluded'>Not Included</label>
+								<input type='radio' name='state' value='required' id='course-required' /><label for='course-required'>Required</label>
+								<input type='radio' name='state' value='elective' id='course-elective' /><label for='course-elective'>Elective</label>
+							</div>
+						</div>
+						<!-- Co-requisites: <div class='coreq-dropbox dropbox'>Drop Here</div> -->
+						Pre-requisites: <div class='prereq-area'></div>
+					</div>
+				</div>
+				<div id="tab-electives">
+					<div id='electives-editor' style="display:inline-block;">
+						<div id='electives-list'>
+						</div>
+						<button id='create-new-electives'>Create New Electives Block</button>
+					</div>
+				</div>
+				<div id="tab-prereqs">
+					<h3>Unmet Prereqs for Selected Courses</h3>
+					<p>Below is a list of all the unsatisfied prereqs for the currently selected courses.
+					As soon as a prereq becomes satisfied, it disappears from the list. If a new course is selected
+					and has an unmet prereq, it will automatically appear in this list.</p>
+					<div id="unmet-prereq-list">
+					</div>
 				</div>
 			</div>
 		</div>
-	</div>
 
-		<div>
-		<textarea id="dot" rows="20" cols="80">
-		</textarea>
-		<textarea id="dot2" rows="20" cols="80">
-		</textarea>
+			<div>
+			<textarea id="dot" rows="20" cols="80">
+			</textarea>
+			<textarea id="dot2" rows="20" cols="80">
+			</textarea>
+			</div>
+		</div>
+
+		<div id="preview" class="page" style="display: none;">
+			This feature is not yet implimented
 		</div>
 	</div>
-	<footer>
-	</footer>
-
-
 </body>
 </html>

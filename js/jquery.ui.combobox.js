@@ -42,23 +42,29 @@
                 }
                 if ( !valid ) {
                     // remove invalid value, as it didn't match anything
-                    $( element )
+                    elm = $( element );
+                    oldTitle = elm.attr('title');
+                        elm
                         .val( "" )
                         .attr( "title", value + " didn't match any item" )
                         .tooltip( "open" );
                     select.val( "" );
                     setTimeout(function() {
-                        input.tooltip( "close" ).attr( "title", "" );
+                        input.tooltip( "close" ).attr( "title", oldTitle );
                     }, 2500 );
                     input.data( "autocomplete" ).term = "";
                     return false;
                 }
             }
+            
+            errorBox = $( "<span id=\""+select.attr('id')+"-errorbox\" title=\"x\"></span>" )
+                    .tooltip({tooltipClass: "ui-state-highlight"})
+                    .appendTo( wrapper );
 
             input = this.input = $( "<input>" )
                 .appendTo( wrapper )
                 .val( value )
-                .attr( "title", "" )
+                .attr( "title", select.attr('title') )
                 .addClass( "ui-state-default ui-combobox-input" )
                 .autocomplete({
                     delay: 0,
@@ -120,7 +126,7 @@
             $( "<a>" )
                 .attr( "tabIndex", -1 )
                 .attr( "title", "Show All Items" )
-                .tooltip()
+                //.tooltip()
                 .appendTo( wrapper )
                 .button({
                     icons: {
@@ -146,23 +152,37 @@
                     input.focus();
                 });
 
-                input
+                /*input
                     .tooltip({
                         position: {
                             of: this.button
                         },
                         tooltipClass: "ui-state-highlight"
-                    });
+                    });*/
         },
 
-        value: function() {
-            return this.input.val()
+        value: function(str) {
+            if (str == null) {
+                return this.input.val();
+            } else {
+                this.input.val(str);
+            }
+            return this;
         },
 
         destroy: function() {
             this.wrapper.remove();
             this.element.show();
             $.Widget.prototype.destroy.call( this );
+        },
+        
+        showError: function(msg) {
+            if (this.timeout) {
+                window.clearTimeout(this.timeout);
+            }
+            errorBox.tooltip({content: msg}).tooltip('open');
+            this.timeout = window.setTimeout(function(){ errorBox.tooltip('close'); }, 3500);
+            return this;
         }
     });
 })( jQuery );
