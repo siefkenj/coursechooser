@@ -222,6 +222,7 @@ $(document).ready(function() {
               delay: 1000
   */
 
+  window.location.hash = window.location.hash || '#welcome';
   prepareWelcomePage();
   prepareNavMenu();
   window.courseManager = new CourseManager;
@@ -408,14 +409,16 @@ prepareNavMenu = function() {
     elm = _ref[_i];
     elm = $(elm);
     target = elm.attr('href');
-    elm.attr({
-      href: 'javascript: void 0;'
-    });
     makeLinkShow(elm, target);
   }
   $('a[page=#preview]').click(function() {
     return onPreviewPageShow();
   });
+  window.onhashchange = function() {
+    var hash;
+    hash = window.location.hash;
+    return $("a[page=" + hash + "]").click();
+  };
 };
 
 showPage = function(page, ops) {
@@ -504,13 +507,24 @@ showPage = function(page, ops) {
 onPreviewPageShow = function() {
   var render;
   render = function() {
-    var dotCode;
+    var dotCode, error, n, output, preview, _i, _len, _ref;
     dotCode = window.courseManager.createDotGraph();
-    return $('#preview').html(Viz(dotCode, 'svg'));
+    output = $("<div>" + (Viz(dotCode, 'svg')) + "</div>");
+    error = '';
+    _ref = output[0].childNodes;
+    for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+      n = _ref[_i];
+      if (n.nodeType === 3) {
+        error += n.nodeValue;
+        window.n = n;
+      }
+    }
+    preview = $('<div></div>').append(output.find('svg')).append("<div><pre>" + error + "</pre></div>");
+    return $('#preview').html(preview);
   };
   if (!(window.Viz != null)) {
     $('#preview').html('loading graphviz library');
-    return $.getScript('js/viz.js', function() {
+    return $.getScript('js/viz-2.26.3.js', function() {
       $('#preview').html('graphviz library loaded');
       return render();
     });
@@ -2309,8 +2323,8 @@ DiGraph = (function() {
         ret += "\tnode [shape=box,style=\"rounded,filled\",color=white]\n";
         ret += "\t\tstyle=\"rounded,filled\"\n";
         ret += "\t\tcolor=gray\n";
-        ret += "\t\tlabel=<<table><tr><td align=\"left\">" + (htmlEncode(clust.info.title)) + "</td>";
-        ret += "<td align=\"right\">(At least " + (htmlEncode(clust.info.requirements.units)) + " " + clust.info.requirements.unitLabel + ")</td></tr></table>>\n";
+        ret += "\t\tlabel=\"" + (htmlEncode(clust.info.title)) + "  ";
+        ret += "(At least " + (htmlEncode(clust.info.requirements.units)) + " " + clust.info.requirements.unitLabel + ")\"\n";
         _ref = clust.nodes;
         for (_j = 0, _len1 = _ref.length; _j < _len1; _j++) {
           c = _ref[_j];
@@ -2349,7 +2363,7 @@ DiGraph = (function() {
           ret += "\t\t\trank=same\n";
           for (j = _n = 0, _len5 = clust.length; _n < _len5; j = ++_n) {
             c = clust[j];
-            if (!alreadyAdded[c]) {
+            if (!alreadyAdded[c] || true) {
               ret += "\t\t\t\"" + c + "\" [label=<<font color=\"red\">" + c + "</font><br/><font color=\"blue\">" + titles[c] + "</font>>, _year=" + i + ", _name=\"" + c + "\", _title=\"" + titles[c] + "\"]\n";
             }
             if (j === 0) {

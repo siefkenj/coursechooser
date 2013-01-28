@@ -159,6 +159,7 @@ $(document).ready ->
             effect: 'fade'
             delay: 1000
     ###
+    window.location.hash = window.location.hash || '#welcome' # we should start with the welcome hash so the back button works
     prepareWelcomePage()
     prepareNavMenu()
 
@@ -268,12 +269,18 @@ prepareNavMenu = ->
     for elm in $('#menu-nav a')
         elm = $(elm)
         target = elm.attr('href')
-        elm.attr({href: 'javascript: void 0;'})
+        #elm.attr({href: 'javascript: void 0;'})
         makeLinkShow(elm, target)
 
     # when we switch to the preview window, we want to load the viz library
     $('a[page=#preview]').click ->
         onPreviewPageShow()
+
+    # make sure the back button works--that is when the index.html#foo changes,
+    # make the appropriate page display
+    window.onhashchange  = ->
+        hash = window.location.hash
+        $("a[page=#{hash}]").click()
     return
 
 showPage = (page, ops={}) ->
@@ -326,11 +333,18 @@ showPage = (page, ops={}) ->
 onPreviewPageShow = ->
     render = ->
         dotCode = window.courseManager.createDotGraph()
-        $('#preview').html Viz(dotCode, 'svg')
+        output = $("<div>#{Viz(dotCode, 'svg')}</div>")
+        error = ''
+        for n in output[0].childNodes
+            if n.nodeType == 3
+                error += n.nodeValue
+                window.n = n
+        preview = $('<div></div>').append(output.find('svg')).append("<div><pre>#{error}</pre></div>")
+        $('#preview').html preview
 
     if not window.Viz?
         $('#preview').html 'loading graphviz library'
-        $.getScript 'js/viz.js', ->
+        $.getScript 'js/viz-2.26.3.js', ->
             $('#preview').html 'graphviz library loaded'
             render()
     else
@@ -1474,8 +1488,8 @@ class DiGraph
                 # cluster styles
                 ret += "\t\tstyle=\"rounded,filled\"\n"
                 ret += "\t\tcolor=gray\n"
-                ret += """\t\tlabel=<<table><tr><td align="left">#{htmlEncode(clust.info.title)}</td>"""
-                ret += """<td align="right">(At least #{htmlEncode(clust.info.requirements.units)} #{clust.info.requirements.unitLabel})</td></tr></table>>\n"""
+                ret += """\t\tlabel=\"#{htmlEncode(clust.info.title)}  """
+                ret += """(At least #{htmlEncode(clust.info.requirements.units)} #{clust.info.requirements.unitLabel})\"\n"""
                 for c in clust.nodes
                     #ret += "\t\t\"#{htmlEncode(c.hash)}\"\n" #[label=<<font color=\"red\">#{c.hash}</font><br/><font color=\"blue\">#{titles[c]}</font>>]\n"
                     ret += "\t\t\"#{htmlEncode(c.hash)}\" [label=<<font color=\"red\">#{c.hash}</font><br/><font color=\"blue\">#{titles[c]}</font>>]\n"
@@ -1496,7 +1510,7 @@ class DiGraph
                     ret += "\t\tsubgraph {\n"
                     ret += "\t\t\trank=same\n"
                     for c,j in clust
-                        if not alreadyAdded[c]
+                        if not alreadyAdded[c] or true
                             ret += "\t\t\t\"#{c}\" [label=<<font color=\"red\">#{c}</font><br/><font color=\"blue\">#{titles[c]}</font>>, _year=#{i}, _name=\"#{c}\", _title=\"#{titles[c]}\"]\n"
                         # empty clusers were turned into nodes.  These nodes have already
                         # had their label set, so we just need to include them in the appropriate year
