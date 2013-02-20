@@ -48,6 +48,28 @@ htmlEncode = (str) ->
         console.log 'error, expected string, got', str
     return str
 
+parseUrlHash = (hash) ->
+    hash = hash.split(/[&?]/)
+    ret = {hash: null, args: []}
+    for h in hash
+        if m = h.match(/^#[\w-]+/)
+            ret.hash = m[0]
+        if h.match('=')
+            ret.args.push h.split('=')
+    return ret
+
+# Attempts to return the number of en's wide
+# str is by counting capital letters and wide letters
+strWidthInEn = (str='') ->
+    str = '' + str
+    # capitals (excluding I) and m and w are the "wide"
+    numWide = str.match(/[A-HJ-Zmw]/)?.length || 0
+    numSkinny = str.match(/[Iijlt:]/)?.length || 0
+    numSpaces = str.match(/[ ]/)?.length || 0
+    # assume wide letters are 1.2x a normal letter
+    # and skinny letters are .3x a normal letter
+    return str.length + .2*numWide - .7*numSkinny - .2*numSpaces
+
 titleCaps = (str) ->
     if not str
         return ''
@@ -159,6 +181,9 @@ $(document).ready ->
             effect: 'fade'
             delay: 1000
     ###
+
+    # location.hash could have the form '#hash?other,stuff' so filter it out!
+    locHash = parseUrlHash(window.location.hash)
     window.location.hash = window.location.hash || '#welcome' # we should start with the welcome hash so the back button works
     prepareWelcomePage()
     prepareNavMenu()
@@ -167,7 +192,15 @@ $(document).ready ->
     window.courses = window.courseManager.courses
 
 
-    window.courseManager.showCoursesOfSubject('MATH')
+    # based on the url hash arguments, decide to pre-show some subjects
+    preloadSubjects = []
+    for arg in locHash.args
+        if arg[0] is 'load'
+            preloadSubjects = preloadSubjects.concat(arg[1]?.split(/,/) || [])
+    for subject in preloadSubjects
+        window.courseManager.showCoursesOfSubject(subject)
+
+
     $('#show-courses').click ->
         errorMsgHash = {}
 
@@ -242,6 +275,9 @@ $(document).ready ->
         window.courseManager.makeElectivesButtonClickable(electiveButton)
         window.courseManager.makeElectivesButtonClickable(elective)
 
+    # we'd like to show up on the correct tab when we relaod with a hash
+    window.onhashchange?()
+
 prepareWelcomePage = ->
     makeLinkShow = (link, elm) ->
         show = ->
@@ -279,7 +315,7 @@ prepareNavMenu = ->
     # make sure the back button works--that is when the index.html#foo changes,
     # make the appropriate page display
     window.onhashchange  = ->
-        hash = window.location.hash
+        hash = parseUrlHash(window.location.hash).hash
         $("a[page=#{hash}]").click()
     return
 
@@ -333,13 +369,23 @@ showPage = (page, ops={}) ->
 onPreviewPageShow = ->
     render = ->
         dotCode = window.courseManager.createDotGraph()
-        output = $("<div>#{Viz(dotCode, 'svg')}</div>")
-        error = ''
-        for n in output[0].childNodes
-            if n.nodeType == 3
-                error += n.nodeValue
-                window.n = n
-        preview = $('<div></div>').append(output.find('svg')).append("<div><pre>#{error}</pre></div>")
+        xdotCode = Viz(dotCode, 'xdot')
+        # there are some warnings in the xdot code, but they are printed
+        # at the beginning, so filter them away
+        xdotCode = xdotCode.slice(xdotCode.indexOf('digraph {'))
+        ast = DotParser.parse(xdotCode)
+        console.log ast #, astToStr(ast)
+        svgManager = new SVGGraphManager(new SVGDot(ast))
+        #svgGraph = new SVGDot(ast)
+        #svgGraph.render()
+        preview = svgManager.svg
+        #output = $("<div>#{xdotCode}</div>")
+        #error = xdotCode
+        #for n in output[0].childNodes
+        #    if n.nodeType == 3
+        #        error += n.nodeValue
+        #        window.n = n
+        #preview = $('<div></div>').append(output.find('svg')).append("<div><pre>#{error}</pre></div>")
         $('#preview').html preview
 
     if not window.Viz?
@@ -350,11 +396,24 @@ onPreviewPageShow = ->
     else
         window.setTimeout(render, 0)
 
+class SVGGraphManager
+    constructor: (@svgGraph) ->
+        @svgGraph.render()
+        @svg = @svgGraph.svg
+        @$svg = $(@svgGraph.svg)
+        @$svg.find('.node').click (event) =>
+            id = event.currentTarget.getAttribute('id')
+            [subject, number] = id.split('-')
+            @nodeClicked({subject, number})
+    nodeClicked: (course) ->
+        console.log course, course.subject, course.number
+
 ###
 # Class to manage and keep the sync of all course on the webpage
 # and their state.
 ###
 class CourseManager
+    DISPLAYABLE_STATES: ['required', 'elective', 'core']
     constructor: ->
         @courses = {}
         @courseData = {}
@@ -363,6 +422,54 @@ class CourseManager
         @loadedSubjects = {}
         @loadingStatus = {}
         @onSubjectLoadedCallbacks = {}
+        @graphState = new Graph
+    # Based make sure @graphState reflects everything
+    # that is in the year chart.
+    updateGraphState: ->
+        # returns whether or not a single course should be inlcuded in the graph
+        # and if given a list, will filter the list so only courses that should be displayed remain
+        filterDisplayable = (list) =>
+            if not list
+                return list
+            # are we an array?
+            if not list.length?
+                for state in @DISPLAYABLE_STATES
+                    return true if list.state?[state]
+                return false
+            return (c for c in list when filterDisplayable(c))
+        
+        # get a list of all the courses that should show up and what year
+        # they should be showing up
+        courses = {}
+        for year in [1..4]
+            for elm in $(".year#{year} .course")
+                hash = BasicCourse.hashCourse({subject: elm.getAttribute('subject'), number: elm.getAttribute('number')})
+                course = @sortableCourses[hash]
+                if filterDisplayable(course)
+                    courses[hash] =
+                        course: course
+                        year: year
+        # gather all the clusters of electives that should show up
+        clusters = {}
+        for year in [1..4]
+            for cluster in $(".year#{year} .electives-block")
+                clusterHash = BasicCourse.hashCourse({subject: cluster.getAttribute('subject'), number: cluster.getAttribute('number')})
+                clusters[clusterHash] =
+                    cluster: @sortableCourses[clusterHash]
+                    year: year
+                    courses: []
+                for elm in $(cluster).find('.course')
+                    hash = BasicCourse.hashCourse({subject: elm.getAttribute('subject'), number: elm.getAttribute('number')})
+                    course = @sortableCourses[hash]
+                    if filterDisplayable(course)
+                        clusters[clusterHash].courses.push course
+        @graphState.nodes = courses
+        @graphState.clusters = clusters
+        @graphState.pruneOrphanedEdges()
+        @graphState.generateEdges()
+
+        return @graphState
+        
     # updates the state of all instances of a particular course
     updateCourseState: (course, state, ops={updatePrereqs: true}) ->
         for c in (@courses[course] || [])
@@ -838,6 +945,12 @@ class CourseManager
             titles[t] = titleCaps((''+@sortableCourses[t].data.title).toLowerCase())
         #$('#dot2').val g.toDot('unpruned', titles, clusters, {title:$('#program-info input').val()})
         console.log g.eliminateRedundantEdges()
+
+
+        # let's test out the new graph object!
+        @updateGraphState()
+        return @graphState.toDot()
+
         return g.toDot('pruned', titles, clusters, {title:$('#program-info input').val()})
 
 
@@ -1466,69 +1579,482 @@ class DiGraph
     # returns a string representing the graph in
     # graphviz dot format
     toDot: (name, titles={}, clusters=[], ops={}) ->
-        alreadyAdded = {}   #graphviz is unhappy when we add things too many times with too many rank restrictions
-        ret = "digraph #{name} {\n"
-        ret += "\trankdir=LR\n"
-
-        # put each of the clusters as subgraphs.  This needs to be done first
-        # so these nodes get the appropriate style
-        clusterYears = {1:[], 2:[], 3:[], 4:[]}
-        for clust,i in clusters
-            # if the cluster has no children, we make it a special node instead
+        createAnonymousSubgraph = (parent) ->
+            subgraph = graph.addSubgraph(null, parent)
+            subgraph.attrs['rank'] = 'same'
+            return subgraph
+            
+        # Collect all empty clusters since they will become nodes
+        # and split the non-empty clusters' nodes into terms
+        electivesNodes = []
+        electives = []
+        for clust in clusters
             if (clust.nodes || []).length is 0
-                nodeId = 'clust' + Math.random().toFixed(8).slice(2)
-                ret += "\t#{nodeId} [style=\"rounded,filled\", shape=box, color=invis, fillcolor=gray, "
-                ret += """label=<#{htmlEncode(clust.info.title)} """
-                ret += """(At least #{htmlEncode(clust.info.requirements.units)} #{clust.info.requirements.unitLabel})>]\n"""
-                clusterYears[clust.year].push nodeId
+                electivesNodes.push
+                    title: clust.info.title
+                    units: clust.info.requirements.units
+                    unitLabel: clust.info.requirements.unitLabel
+                    year: clust.year
             else
-                ret += "\tsubgraph cluster#{i} {\n"
-                # node styles
-                ret += "\tnode [shape=box,style=\"rounded,filled\",color=white]\n"
-                # cluster styles
-                ret += "\t\tstyle=\"rounded,filled\"\n"
-                ret += "\t\tcolor=gray\n"
-                ret += """\t\tlabel=\"#{htmlEncode(clust.info.title)}  """
-                ret += """(At least #{htmlEncode(clust.info.requirements.units)} #{clust.info.requirements.unitLabel})\"\n"""
-                for c in clust.nodes
-                    #ret += "\t\t\"#{htmlEncode(c.hash)}\"\n" #[label=<<font color=\"red\">#{c.hash}</font><br/><font color=\"blue\">#{titles[c]}</font>>]\n"
-                    ret += "\t\t\"#{htmlEncode(c.hash)}\" [label=<<font color=\"red\">#{c.hash}</font><br/><font color=\"blue\">#{titles[c]}</font>>]\n"
-                    alreadyAdded[c] = true
-                ret += "\t}\n"
+                electives.push clust
 
-        ret += "\n"
-        ret += "\tnode [shape=box,style=rounded]\n"
-        for e in @edges
-            ret += "\t\"#{e[0]}\" -> \"#{e[1]}\"\n"
-        ret += "\n"
-
-        # ensure classes of each year appear on the proper rank
-        for i in [1, 2, 3, 4]
-            if @years
-                ret += "\tsubgraph year#{i} {\n"
-                for clust in @breakIntoTerms (c.hash for c in @years[i])
-                    ret += "\t\tsubgraph {\n"
-                    ret += "\t\t\trank=same\n"
-                    for c,j in clust
-                        if not alreadyAdded[c] or true
-                            ret += "\t\t\t\"#{c}\" [label=<<font color=\"red\">#{c}</font><br/><font color=\"blue\">#{titles[c]}</font>>, _year=#{i}, _name=\"#{c}\", _title=\"#{titles[c]}\"]\n"
-                        # empty clusers were turned into nodes.  These nodes have already
-                        # had their label set, so we just need to include them in the appropriate year
-                        if j == 0
-                            for n in clusterYears[i]
-                                ret += "\t\t\t#{n}\n"
-                    ret += "\t\t}\n"
-                #ret += "\t\trank=same\n"
-                #ret += "\t\tlabel=\"Year #{i}\"\n"
-                #for c in @years[i]
-                #    ret += "\t\t\t\"#{c.hash}\" [label=<<font color=\"red\">#{c.hash}</font><br/><font color=\"blue\">#{titles[c]}</font>>]\n"
-                ret += "\n\t}\n"
-
-        # put the title last so it doesn't try to apply to all subgraphs
+        #
+        # Start creating the graph
+        #
+        graph = new DotGraph()
+        # set up the root properties
+        graph.rootGraph.type = 'digraph'
+        graph.rootGraph.attrs['rankdir'] = 'LR'
         if ops.title
-            ret += "\tlabel=\"#{ops.title}\"\n"
-            ret += "\tlabelloc=t\n" #label position top
-            ret += "\tlabelfontsize=30\n" #label position top
-        ret += "}"
+            graph.rootGraph.attrs['label'] = "#{ops.title}"
+            graph.rootGraph.attrs['_title'] = "#{ops.title}"
+            graph.rootGraph.attrs['labelloc'] = "top"
+            graph.rootGraph.attrs['labelfontsize'] = 30
 
+        #
+        # Initialize each year with 3 terms
+        #
+        yearSubgraphs = {}
+        termSubgraphs = {}
+        for year in [1..4]
+            yearSubgraph = graph.addSubgraph("year#{year}")
+            yearSubgraphs[year] = yearSubgraph
+            termSubgraphs[year] = {}
+            for term in [1..3]
+                termSubgraph = createAnonymousSubgraph(yearSubgraph)
+                termSubgraph.attrs['rank'] = 'same'
+                termSubgraphs[year][term] = termSubgraph
+                # each term has an invisible node to keep the spacing
+                # this node needs to be added before all others so it doesn't interfere
+                marker = "YEAR#{year}TERM#{term}"
+                termSubgraph.nodes[marker] = true
+                graph.nodes[marker] =
+                    attrs:
+                        _year: year
+                        _term: term
+                        style: 'invis'
+                        height: 0
+                        width: 1
+
+        # add the edges
+        for e in @edges
+            graph.edges[e] = [{edge: e}]
+        # add the nodes
+        for year in [1..4]
+            for course in @years[year]
+                graph.nodes[course] =
+                    attrs:
+                        _name: course
+                        _title: titles[course]
+                        _year: year
+                        shape: 'box'
+                        style: 'rounded'
+        # add all the rank=same subgraphs
+        for year in [1..4]
+            for termClust,i in @breakIntoTerms (c.hash for c in @years[year])
+                rankSubgraph = termSubgraphs[year][i+1]     #the term is i+1
+                for course in termClust
+                    rankSubgraph.nodes[course] = true   # subgraphs just have a list of nodes, they never store node attributes
+        
+        # add the single elective nodes
+        for elective in electivesNodes
+            subgraph = termSubgraphs[elective.year][1]  # first term of the year
+            course = 'elective' + Math.random().toFixed(8).slice(2)
+            graph.nodes[course] =
+                attrs:
+                    _elective: true
+                    _title: "#{elective.title} (#{elective.units} #{elective.unitLabel})"
+                    _year: elective.year
+                    shape: 'box'
+                    style: 'rounded,filled'
+                    color: 'invis'
+                    fillcolor: 'gray'
+            subgraph.nodes[course] = true
+        # add elective groups
+        for elective,i in electives
+            subgraph = graph.addSubgraph("cluster#{i}")
+            subgraph.attrs['style'] = 'rounded,filled'
+            subgraph.attrs['color'] = 'gray'
+            title = "#{elective.info.title} (#{elective.info.requirements.units} #{elective.info.requirements.unitLabel})"
+            subgraph.attrs['label'] = title
+            subgraph.attrs['_title'] = title
+            subgraph.attrs['_electivesBlock'] = true
+
+            for course in elective.nodes
+                subgraph.nodes[course] = true
+                graph.nodes[course].attrs['color'] = 'white'
+                graph.nodes[course].attrs['style'] = 'rounded,filled'
+                graph.nodes[course].attrs['_inElectivesBlock'] = true
+        
+        #
+        # clean up any excess term markers.
+        # to ensure proper spacing, an invisible node is placed in
+        # each term.  We should cleanup any term that only has the
+        # marker node in it, lest we have a bunch of blank columns
+        # in our chart.
+        prevMarker = null
+        for year in [1..4]
+            for term in [1..3]
+                termSubgraph = termSubgraphs[year][term]
+                # each term has an invisible node to keep the spacing
+                # this node needs to be added before all others so it doesn't interfere
+                marker = "YEAR#{year}TERM#{term}"
+                if Object.keys(termSubgraph.nodes).length > 1 or term is 1
+                    if prevMarker
+                        edge = [prevMarker, marker]
+                        graph.edges[edge] = [{edge: edge, attrs: {style: 'invis'}}]
+                    prevMarker = marker
+                else
+                    graph.removeNode(marker)
+                    graph.removeSubgraph(termSubgraph)
+
+        # We need to size every node manually since viz.js cannot process html labels.
+        for hash,node of graph.nodes
+            # invisible nodes should be ignored
+            if node.attrs['style']?.match(/invis/)
+                node.attrs['label'] = ''
+                continue
+            node.attrs['height'] = 42 / 72
+            labelWidth = Math.max(strWidthInEn(node.attrs['_title']), strWidthInEn(node.attrs['_name']))
+            node.attrs['width'] = (labelWidth * 6.0 + 20) / 72
+            node.attrs['fixedsize'] = true
+
+        return astToStr(graph.generateAst())
+###
+# Class to hold the state of the current graph.  This object
+# can be used for loading and saving and will preserve
+# invisible and custom-added edges.
+###
+class Graph
+    constructor: () ->
+        @dirty = true   # whether we've regenerated our adjacency matrices since the last update
+        @nodes = {}
+        @edges = {}
+        @clusters = {}
+    toJSON: ->
+        ret =
+            nodes: []
+            edges: []
+            clusters: []
+        for _,node of @nodes
+            ret.nodes.push
+                course:
+                    subject: node.course.subject
+                    number: node.course.number
+                    state: node.course.state
+                year: node.year
+        for _,edge of @edges
+            ret.edges.push
+                edge: [''+edge.edge[0], ''+edge.edge[1]]
+                properties: edge.properties || {}
+        for _,cluster of @clusters
+            ret.clusters.push
+                cluster:
+                    subject: cluster.subject
+                    number: cluster.number
+                    title: 'xx'
+                    units: 'xx'
+                    unitLabel: 'xx'
+                year: cluster.year
+                courses: ({subject: c.subject, number: c.number, state: c.state} for c in cluster.courses)
+        return JSON.stringify(ret)
+    fromJSON: (str, ops={}) ->
+        @dirty = true
+        data = JSON.parse(str)
+        for node in data.nodes
+            hash = BasicCourse.hashCourse(node.course)
+            @nodes[hash] = node
+        for edge in data.edges
+            @edges[edge.edge] = edge
+        for cluster in data.clusters
+            hash = BasicCourse.hashCourse(cluster.cluster)
+            @clusters[hash] = cluster
+        return @
+
+    addNode: (course, ops={}) ->
+        @dirty = true
+        @nodes[course] =
+            course: course
+            year: ops.year
+            term: ops.term
+    removeNode: (course) ->
+        @dirty = true
+        delete @nodes[course]
+    addEdge: (edge, ops={}) ->
+        @dirty = true
+        @edges[edge] =
+            edge: edge
+            properties: ops.properties || {}
+    removeEdge: (edge) ->
+        @dirty = true
+        delete @edges[edge]
+    # @edges and @clusters may be updated dynamically without
+    # changing @edges.  This function finds any edges that refer to nodes
+    # not in @nodes and removes them
+    pruneOrphanedEdges: ->
+        for hash,edge of @edges
+            if (not @nodes[edge.edge[0]]) or (not @nodes[edge.edge[0]])
+                @removeEdge(hash)
+    # generates edges based on the prereqs
+    # of each node.  The generated edges are compared
+    # with the existing edges.  If an edge has properties.autoGenerated falsy
+    # it is preserved.
+    generateEdges: (ops={optimize: true}) ->
+        originalEdges = @edges
+        @edges = {}
+
+        # find all edges given by prerequisites
+        for _,node of @nodes
+            course = node.course
+            if course.prereqs?
+                prereqs = (BasicCourse.hashCourse(c) for c in PrereqUtils.flattenPrereqs(course.prereqs))
+                for p in prereqs
+                    if @nodes[p]
+                        edge = [p, BasicCourse.hashCourse(course)]
+                        @edges[edge] =
+                            edge: edge
+                            properties: {autoGenerated: true}
+        if ops.optimize
+            numDeleted = 0
+            {mat, list} = @_generateAdjacencyMatrix()
+            optimizedMat = @_optimizeEdges(mat)
+            # find everything in our original matrix that isn't
+            # in our optimized matrix and delete it
+            for row,i in mat
+                for v,j in row when v
+                    if not optimizedMat[i][j]
+                        numDeleted += 1
+                        edge = [list[i],list[j]]
+                        delete @edges[edge]
+            console.log numDeleted, 'edges deleted'
+
+        # restore any edges that weren't autogenerated
+        for hash,edge of originalEdges
+            if not edge.properties?.autogenerated
+                @edges[hash] = edge
+        return @edges
+
+    toDot: ->
+        createAnonymousSubgraph = (parent) ->
+            subgraph = graph.addSubgraph(null, parent)
+            subgraph.attrs['rank'] = 'same'
+            return subgraph
+        
+        #
+        # Start creating the graph
+        #
+        graph = new DotGraph()
+        # set up the root properties
+        graph.rootGraph.type = 'digraph'
+        graph.rootGraph.attrs['rankdir'] = 'LR'
+        if @title
+            graph.rootGraph.attrs['label'] = "#{@title}"
+            graph.rootGraph.attrs['_title'] = "#{@title}"
+            graph.rootGraph.attrs['labelloc'] = "top"
+            graph.rootGraph.attrs['labelfontsize'] = 30
+        
+        #
+        # Initialize each year with 3 terms
+        #
+        yearSubgraphs = {}
+        termSubgraphs = {}
+        for year in [1..4]
+            yearSubgraph = graph.addSubgraph("year#{year}")
+            yearSubgraphs[year] = yearSubgraph
+            termSubgraphs[year] = {}
+            for term in [1..3]
+                termSubgraph = createAnonymousSubgraph(yearSubgraph)
+                termSubgraph.attrs['rank'] = 'same'
+                termSubgraphs[year][term] = termSubgraph
+                # each term has an invisible node to keep the spacing
+                # this node needs to be added before all others so it doesn't interfere
+                marker = "YEAR#{year}TERM#{term}"
+                termSubgraph.nodes[marker] = true
+                graph.nodes[marker] =
+                    attrs:
+                        _year: year
+                        _term: term
+                        style: 'invis'
+                        height: 0
+                        width: 1
+        # add the edges
+        for _,edge of @edges
+            graph.edges[edge.edge] = [{edge: edge.edge}]
+        # add the nodes
+        for _,node of @nodes
+            course = node.course
+            console.log course
+            graph.nodes[course] =
+                attrs:
+                    _name: course
+                    _title: titleCaps(course.data.title)
+                    _year: node.year
+                    shape: 'box'
+                    style: 'rounded'
+        # add all the rank=same subgraphs based on the number of terms are required
+        for year in [1..4]
+            {mat, list} = @_generateAdjacencyMatrix({filterByYear: year})
+            levels = @_stratify(mat)
+            for termClust,i in levels
+                rankSubgraph = termSubgraphs[year][i+1]     #the term is i+1
+                for index in termClust
+                    course = list[index]
+                    rankSubgraph.nodes[course] = true   # subgraphs just have a list of nodes, they never store node attributes
+        # add all the clusters
+        for _,cluster of @clusters
+            {year, courses} = cluster
+            elective = cluster.cluster
+            # if we have no children, add ourselves as a regular node
+            if courses.length is 0
+                subgraph = termSubgraphs[year][1]
+                graph.nodes[elective] =
+                    attrs:
+                        _elective: true
+                        _title: "#{elective.title} (#{elective.requirements.units} #{elective.requirements.unitLabel})"
+                        _year: year
+                        shape: 'box'
+                        style: 'rounded,filled'
+                        color: 'invis'
+                        fillcolor: 'gray'
+                subgraph.nodes[elective] = true
+            # if we have children, we must create a new group
+            else
+                subgraph = graph.addSubgraph("cluster#{Math.random().toFixed(8).slice(3)}")
+                subgraph.attrs =
+                    style: 'rounded,filled'
+                    color: 'gray'
+                    label: "#{elective.title} (#{elective.requirements.units} #{elective.requirements.unitLabel})"
+                    _title: "#{elective.title} (#{elective.requirements.units} #{elective.requirements.unitLabel})"
+                    _electivesBlock: true
+
+                for course in courses
+                    subgraph.nodes[course] = true
+                    graph.nodes[course].attrs['color'] = 'white'
+                    graph.nodes[course].attrs['style'] = 'rounded,filled'
+                    graph.nodes[course].attrs['_inElectivesBlock'] = true
+        
+        # clean up any excess term markers.
+        # to ensure proper spacing, an invisible node is placed in
+        # each term.  We should cleanup any term that only has the
+        # marker node in it, lest we have a bunch of blank columns
+        # in our chart.
+        prevMarker = null
+        for year in [1..4]
+            for term in [1..3]
+                termSubgraph = termSubgraphs[year][term]
+                # each term has an invisible node to keep the spacing
+                # this node needs to be added before all others so it doesn't interfere
+                marker = "YEAR#{year}TERM#{term}"
+                if Object.keys(termSubgraph.nodes).length > 1 or term is 1
+                    if prevMarker
+                        edge = [prevMarker, marker]
+                        graph.edges[edge] = [{edge: edge, attrs: {style: 'invis'}}]
+                    prevMarker = marker
+                else
+                    graph.removeNode(marker)
+                    graph.removeSubgraph(termSubgraph)
+
+        # We need to size every node manually since viz.js cannot process html labels.
+        for hash,node of graph.nodes
+            # invisible nodes should be ignored
+            if node.attrs['style']?.match(/invis/)
+                node.attrs['label'] = ''
+                continue
+            node.attrs['height'] = 42 / 72
+            labelWidth = Math.max(strWidthInEn(node.attrs['_title']), strWidthInEn(node.attrs['_name']))
+            node.attrs['width'] = (labelWidth * 6.0 + 20) / 72
+            node.attrs['fixedsize'] = true
+
+        return astToStr(graph.generateAst())
+
+
+    _generateAdjacencyMatrix: (ops={}) ->
+        # returns a row of the adjacency matrix corresponding to 
+        # the object e's keys
+        createRow = (e) ->
+            return ((if e[n] then 1 else 0) for n in nodeList)
+        
+        if ops.filterByYear?
+            nodeList = (n for n of @nodes when @nodes[n].year == ops.filterByYear)
+        else
+            nodeList = (n for n of @nodes)
+        # for each node, generate a list of all the out edges it has
+        outEdges = {}
+        for _,e of @edges
+            edge = e.edge
+            outEdges[edge[0]] = (outEdges[edge[0]] || {})
+            outEdges[edge[0]][edge[1]] = true
+        ret = (createRow(outEdges[n] || {}) for n in nodeList)
+        # if there are no nodes we should still return a 2-dim matrix
+        if ret.length is 0
+            ret.push []
+        return {mat:ret, list:nodeList}
+    # computes powers of the adjacency matrix to find the span of each node
+    _matrixSpan: (mat) ->
+        size = mat[0].length
+        if size <= 1
+            return mat
+        iters = Math.ceil(Math.log(size)/Math.log(2))
+        for i in [0...iters]
+            mat = numeric.add(numeric.dot(mat, mat), mat)
+        return numeric.gt(mat, 0)
+    # returns a pruned adjaency matrix.  If there is more
+    # than one route from a->b, only the longer one is kept
+    _optimizeEdges: (mat) ->
+        ret = numeric.clone(mat)
+        mat_transpose = numeric.transpose(mat)
+        mat_span = @_matrixSpan(mat)
+
+        nodes = [0...mat[0].length]
+        # the idea is, suppose we have a->b->d->c and a->c
+        # If node=c, then we have immediate predicessors a,d, but d
+        # is in the span of a, so the edge a->c is redundent since
+        # there exists a longer path a->..->c
+        for node in nodes
+            predicessors = mat_transpose[node]
+            # loops through our predicessors
+            for v,i in predicessors when (v > 0 and i != node)
+                span = mat_span[i]
+                existsOtherRoute = false
+                for v,j in span when v>0
+                    if predicessors[j] > 0
+                        existsOtherRoute = true
+                        break
+                if existsOtherRoute
+                    ret[i][node] = 0
         return ret
+    # returns a list of lists of nodes
+    # where if a->b then a is in a lower
+    # level than b. We will attempt
+    # to split them into at most maxLevels number of levels based
+    # on arrow direction and returns the stratification.
+    # e.g. "a->b->c, d" would split into [a,d] then [b] then [c]
+    _stratify: (mat, maxLevels=3) ->
+        mat_span = @_matrixSpan(mat)
+        levels = ([] for i in [0...3])
+
+        ranks = (0 for i in [0...mat[0].length])
+        incrementRanks = (nodes) ->
+            for v,i in nodes when v > 0
+                ranks[i] += 1
+        forwardSpan = (nodes) ->
+            ret = (false for i in [0...mat[0].length])
+            for v,i in nodes when v > 0
+                numeric.oreq(ret, mat_span[i])
+            return ret
+
+        # iteratively bump up the level of each relavent node
+        for level in [0...maxLevels-1]
+            nodesOfCurrentLevel = (l == level for l in ranks)
+            needUpdating = forwardSpan(nodesOfCurrentLevel)
+            incrementRanks(needUpdating)
+
+        for rank,i in ranks
+            levels[rank].push i
+        return levels
+
+
+
+
+
+
