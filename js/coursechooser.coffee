@@ -275,6 +275,40 @@ $(document).ready ->
         window.courseManager.makeElectivesButtonClickable(electiveButton)
         window.courseManager.makeElectivesButtonClickable(elective)
 
+    # set up the load and save buttons
+    $('#save').click ->
+        window.courseManager.updateGraphState()
+        baseName = (window.courseManager.graphState.title || "course-map")
+        # if we are currently looking at a preview, save a visual version, otherwise save
+        # the json
+        name = baseName + ".json"
+        data = window.courseManager.graphState.toJSON()
+        mimeType = 'application/json'
+        if $('a[page=#preview]').hasClass('active')
+            name = baseName + '.svg'
+            window.courseManager.svgManager.svgGraph.inlineDocumentStyles()
+            window.courseManager.svgManager.svgGraph.addCDATA
+                elmName: 'coursemapper'
+                data: window.courseManager.graphState.toJSON()
+            svg = window.courseManager.svgManager.svg
+            data = $('<div></div>').append($(svg).clone()).html()
+            mimeType = 'image/svg+xml'
+        downloadManager = new DownloadManager(name, data, mimeType)
+        downloadManager.download()
+    $('#load').click ->
+        # fallback 'cause we cannot trigger a click on a file input...
+        dialog = $('''
+            <div>
+            <h3>Browse for the file you wish to upload</h3>
+            <input type="file" id="files" name="files[]" accept="application/json" />
+            </div>''')
+        $(document.body).append(dialog)
+        dialog.dialog({ height: 300, width: 500, modal: true })
+        dialog.find('input').change (event) ->
+            files = event.target.files
+            FileHandler.handleFiles(files)
+            dialog.remove()
+
     # we'd like to show up on the correct tab when we relaod with a hash
     window.onhashchange?()
 
@@ -374,8 +408,11 @@ onPreviewPageShow = ->
         # at the beginning, so filter them away
         xdotCode = xdotCode.slice(xdotCode.indexOf('digraph {'))
         ast = DotParser.parse(xdotCode)
-        console.log ast #, astToStr(ast)
         svgManager = new SVGGraphManager(new SVGDot(ast))
+
+        window.courseManager.svgManager = svgManager
+
+        window.svgManager = svgManager
         #svgGraph = new SVGDot(ast)
         #svgGraph.render()
         preview = svgManager.svg
@@ -426,6 +463,24 @@ class CourseManager
     # Based make sure @graphState reflects everything
     # that is in the year chart.
     updateGraphState: ->
+        #XXX playtime
+        getAveEnrollment = (course) ->
+            crns = {}
+            for term,arr of course.data?.terms_offered || {}
+                for c in arr
+                    crns[c.crn] = [c.enrollment, c.capacity]
+            sumE = 0
+            sumC = 0
+            num = 0
+            for crn,val of crns
+                sumE += val[0]
+                sumC += val[1]
+                num += 1
+            return [Math.round(sumE), Math.round(sumC), num]
+
+
+
+        @graphState.title = $('#program-info input').val()
         # returns whether or not a single course should be inlcuded in the graph
         # and if given a list, will filter the list so only courses that should be displayed remain
         filterDisplayable = (list) =>
@@ -437,7 +492,7 @@ class CourseManager
                     return true if list.state?[state]
                 return false
             return (c for c in list when filterDisplayable(c))
-        
+
         # get a list of all the courses that should show up and what year
         # they should be showing up
         courses = {}
@@ -448,6 +503,11 @@ class CourseManager
                 if filterDisplayable(course)
                     courses[hash] =
                         course: course
+                        #course:
+                        #    subject: course.subject
+                        #    number: course.number
+                        #    data:
+                        #        title: ''+getAveEnrollment(course)
                         year: year
         # gather all the clusters of electives that should show up
         clusters = {}
@@ -469,10 +529,71 @@ class CourseManager
         @graphState.generateEdges()
 
         return @graphState
-        
+    # clears all loaded courses and removes their DOM nodes.
+    # this function should make CourseManager reset to a pristine
+    # state
+    clearAll: ->
+        for hash,courses of @courses
+            for course in courses
+                course.removeButton?()
+            @courses[hash] = null
+        @courses = {}
+        @courseData = {}
+        @sortableCourses = {}   # all the courses that are displayed in the year chart (and so are sortable)
+        @sortableCoursesStateButtons = {}
+        @loadedSubjects = {}
+        @loadingStatus = {}
+        @onSubjectLoadedCallbacks = {}
+        @graphState.clearAll()
+
+
+    # takes in JSON representation of a graph and
+    # loads all relavent courses, etc.
+    loadGraph: (str) ->
+        @clearAll()
+        # we'll update graph state and from that repopulate the dom, etc. appropriately
+        @graphState.fromJSON(str)
+
+        $('#program-info input').val(@graphState.title)
+
+        courseLoadCallback = {}
+        #creates a function that reparents course to electivesBlock
+        createCourseLoadCallback = (electivesBlock) =>
+            ret = (course) =>
+                electivesBlock.addCourse(course)
+                @updateElectivesButton(electivesBlock)
+            return ret
+
+        # load the elective blocks first so they can be populated
+        # when ensureDisplayedInYearChart is called
+        for _,cluster of @graphState.clusters
+            elective = new ElectivesButtonEditor(cluster.cluster, @)
+            electiveButton = new ElectivesButton(elective)
+            $('#electives-list').append(elective.getButton())
+            $('#electives-list').append("<hr />")
+            $(".year#{cluster.year} .courses").append(electiveButton.getButton())
+            @addCourse(electiveButton)
+            @sortableCourses[electiveButton] = electiveButton
+            @addCourse(elective)
+            @makeCourseButtonDraggable(electiveButton)
+            @makeElectivesButtonDroppable(electiveButton)
+            @makeElectivesButtonClickable(electiveButton)
+            @makeElectivesButtonClickable(elective)
+            for course in cluster.courses
+                hash = BasicCourse.hashCourse(course)
+                courseLoadCallback[hash] = createCourseLoadCallback(electiveButton)
+
+        for _,node of @graphState.nodes
+            course = node.course
+            hash = BasicCourse.hashCourse(course)
+            @ensureDisplayedInYearChart(course, {state: course.state, year: node.year, load: courseLoadCallback[hash]})
+
+        return @graphState
+
     # updates the state of all instances of a particular course
     updateCourseState: (course, state, ops={updatePrereqs: true}) ->
-        for c in (@courses[course] || [])
+        hash = BasicCourse.hashCourse(course)
+        for c in (@courses[hash] || [])
             if not c.selectable
                 state = dupObject(state)
                 delete state.selected
@@ -853,7 +974,6 @@ class CourseManager
             container = $(".year#{year} .courses")
             for data in list
                 course = @createCourseButton(data, {clickable: true, selectable: true, draggable: true})
-                #course.$elm.hide()
                 @sortableCourses[course] = course
                 container.append(course.getButton())
                 if ops.animate
@@ -867,20 +987,36 @@ class CourseManager
         if not @courseData[hash] and @loadedSubjects[course.subject]
             ops.error() if ops.error
             throw new Error("#{hash} cannot be loaded.  Does not appear to exist...")
+        # if we don't have the course's data, load it and try to display the course again
         if not @courseData[hash]
             @loadSubjectData(course.subject, (=> @ensureDisplayedInYearChart(course, ops)), ops)
-
-        if @sortableCourses[hash]
-            @sortableCourses[hash].$elm.show()
             return
+
+        # if we've already been displayed in the year chart, our job is easy
+        if @sortableCourses[hash]
+            @updateCourseState(course, ops.state) if ops.state
+            if ops.year?
+                $(".year#{ops.year} .courses").append(@sortableCourses[hash].getButton())
+            ops.load(@sortableCourses[hash]) if ops.load
+            @sortableCourses[hash].$elm.show(ops.animate)
+            return
+
+        # A course should show up in the year specified.  If not,
+        # it should clamp to year 1 or year 4
         leadingNumber = @courseData[hash].number.charAt(0)
-        if leadingNumber in ['1','2','3','4']
-            course = @createCourseButton(@courseData[hash], {clickable: true, selectable: true, draggable: true})
-            @sortableCourses[course] = course
-            $(".year#{leadingNumber} .courses").append(course.getButton())
-            if ops.animate
-                course.$elm?.hide()
-                course.$elm?.show(ops.animate)
+        leadingNumber = '1' if leadingNumber < '1'
+        leadingNumber = '4' if leadingNumber > '4'
+        leadingNumber = ops.year if ops.year?
+
+        course = @createCourseButton(@courseData[hash], {clickable: true, selectable: true, draggable: true})
+        @sortableCourses[course] = course
+        $(".year#{leadingNumber} .courses").append(course.getButton())
+        @updateCourseState(course, ops.state) if ops.state
+        ops.load(course) if ops.load
+        if ops.animate
+            course.$elm?.hide()
+            course.$elm?.show(ops.animate)
+
     showUnmetPrereqs: ->
         # we need a list of courses that are required or electives to find their prereqs
         activeCourses = []
@@ -1043,6 +1179,8 @@ PrereqUtils =
 ###
 class BasicCourse
     @hashCourse: (course) ->
+        if typeof course is 'string'
+            return course
         return "#{course.subject} #{course.number}"
     constructor: (@data, synced=false) ->
         @hash = BasicCourse.hashCourse(@data)
@@ -1237,6 +1375,15 @@ class ElectivesButton extends Electives
             $elm.detach() if $elm
         super(course)
         @updateDropTextVisibility()
+    removeButton: (ops={detach: true}) ->
+        if not @elm
+            return
+        for course of @courses
+            @removeCourse(course, ops)
+        @elm.course = null  #make sure we remove the circular ref so we can be garbage collected
+        @$elm.remove()
+        @elm = @$elm = null
+        return
     update: (data) ->
         super(data)
         # make soure our internal courses list is up to date
@@ -1311,6 +1458,15 @@ class ElectivesButtonEditor extends Electives
             $elm.detach() if $elm
         super(course)
         @updateDropTextVisibility()
+    removeButton: (ops={detach: true}) ->
+        if not @elm
+            return
+        for course of @courses
+            @removeCourse(course, ops)
+        @elm.course = null  #make sure we remove the circular ref so we can be garbage collected
+        @$elm.remove()
+        @elm = @$elm = null
+        return
     update: (data) ->
         super(data)
         @$elm.find('.title input').val @title
@@ -1345,6 +1501,7 @@ class Graph
             nodes: []
             edges: []
             clusters: []
+            title: @title
         for _,node of @nodes
             ret.nodes.push
                 course:
@@ -1380,7 +1537,13 @@ class Graph
         for cluster in data.clusters
             hash = BasicCourse.hashCourse(cluster.cluster)
             @clusters[hash] = cluster
+        @title = data.title
         return @
+    clearAll: ->
+        @dirty = true   # whether we've regenerated our adjacency matrices since the last update
+        @nodes = {}
+        @edges = {}
+        @clusters = {}
 
     addNode: (course, ops={}) ->
         @dirty = true
@@ -1450,7 +1613,7 @@ class Graph
             subgraph = graph.addSubgraph(null, parent)
             subgraph.attrs['rank'] = 'same'
             return subgraph
-        
+
         #
         # Start creating the graph
         #
@@ -1463,7 +1626,7 @@ class Graph
             graph.rootGraph.attrs['_title'] = "#{@title}"
             graph.rootGraph.attrs['labelloc'] = "top"
             graph.rootGraph.attrs['labelfontsize'] = 30
-        
+
         #
         # Initialize each year with 3 terms
         #
@@ -1545,7 +1708,7 @@ class Graph
                     graph.nodes[hash].attrs['color'] = 'white'
                     graph.nodes[hash].attrs['style'] = 'rounded,filled'
                     graph.nodes[hash].attrs['_inElectivesBlock'] = true
-        
+
         # clean up any excess term markers.
         # to ensure proper spacing, an invisible node is placed in
         # each term.  We should cleanup any term that only has the
@@ -1582,11 +1745,11 @@ class Graph
 
 
     _generateAdjacencyMatrix: (ops={}) ->
-        # returns a row of the adjacency matrix corresponding to 
+        # returns a row of the adjacency matrix corresponding to
         # the object e's keys
         createRow = (e) ->
             return ((if e[n] then 1 else 0) for n in nodeList)
-        
+
         if ops.filterByYear?
             nodeList = (n for n of @nodes when @nodes[n].year == ops.filterByYear)
         else
@@ -1665,3 +1828,193 @@ class Graph
         for rank,i in ranks
             levels[rank].push i
         return levels
+
+
+###
+# Various methods of downloading data to the users compuer so they can save it.
+# Initially DownloadManager.download will try to bounce off download.php,
+# a server-side script that sends the data it receives back with approprate
+# headers. If this fails, it will try to use the blob API to and the
+# 'download' attribute of an anchor to download the file with a suggested file name.
+# If this fails, a dataURI is used.
+###
+class DownloadManager
+    DOWNLOAD_SCRIPT: 'download.php'
+    constructor: (@filename, @data, @mimetype='application/octet-stream') ->
+    # a null status means no checks have been performed on whether that method will work
+        @downloadMethodAvailable =
+            serverBased: null
+            blobBased: null
+            dataUriBased: null
+
+    # run through each download method and if it works,
+    # use that method to download the graph. @downloadMethodAvailable
+    # starts as all null and will be set to true or false after a test has been run
+    download: () =>
+        if @downloadMethodAvailable.serverBased == null
+            @testServerAvailability(@download)
+            return
+        if @downloadMethodAvailable.serverBased == true
+            @downloadServerBased()
+            return
+
+        if @downloadMethodAvailable.blobBased == null
+            @testBlobAvailability(@download)
+            return
+        if @downloadMethodAvailable.blobBased == true
+            @downloadBlobBased()
+            return
+
+        if @downloadMethodAvailable.dataUriBased == null
+            @testDataUriAvailability(@download)
+            return
+        if @downloadMethodAvailable.dataUriBased == true
+            @downloadDataUriBased()
+            return
+
+    testServerAvailability: (callback = ->) =>
+        $.ajax
+            url: @DOWNLOAD_SCRIPT
+            dataType: 'text'
+            success: (data, status, response) =>
+                if response.getResponseHeader('Content-Description') is 'File Transfer'
+                    @downloadMethodAvailable.serverBased = true
+                else
+                    @downloadMethodAvailable.serverBased = false
+                callback.call(this)
+            error: (data, status, response) =>
+                @downloadMethodAvailable.serverBased = false
+                callback.call(this)
+
+    testBlobAvailability: (callback = ->) =>
+        if (window.webkitURL or window.URL) and (window.Blob or window.MozBlobBuilder or window.WebKitBlobBuilder)
+            @downloadMethodAvailable.blobBased = true
+        else
+            @downloadMethodAvailable.blobBased = true
+        callback.call(this)
+
+    testDataUriAvailability: (callback = ->) =>
+        # not sure how to check for this ...
+        @downloadMethodAvailable.dataUriBased = true
+        callback.call(this)
+
+    downloadServerBased: () =>
+        input1 = $('<input type="hidden"></input>').attr({name: 'filename', value: @filename})
+        # encode our data in base64 so it doesn't get mangled by post (i.e., so '\n' to '\n\r' doesn't happen...)
+        input2 = $('<input type="hidden"></input>').attr({name: 'data', value: btoa(@data)})
+        input3 = $('<input type="hidden"></input>').attr({name: 'mimetype', value: @mimetype})
+        # target=... is set to our hidden iframe so we don't change the url of our main page
+        form = $('<form action="'+@DOWNLOAD_SCRIPT+'" method="post" target="downloads_iframe"></form>')
+        form.append(input1).append(input2).append(input3)
+
+        # submit the form and hope for the best!
+        form.appendTo(document.body).submit().remove()
+
+    downloadBlobBased: (errorCallback=@download) =>
+        try
+            # first convert everything to an arraybuffer so raw bytes in our string
+            # don't get mangled
+            buf = new ArrayBuffer(@data.length)
+            bufView = new Uint8Array(buf)
+            for i in [0...@data.length]
+                bufView[i] = @data.charCodeAt(i) & 0xff
+
+            try
+                # This is the recommended method:
+                blob = new Blob(buf, {type: 'application/octet-stream'})
+            catch e
+                # The BlobBuilder API has been deprecated in favour of Blob, but older
+                # browsers don't know about the Blob constructor
+                # IE10 also supports BlobBuilder, but since the `Blob` constructor
+                # also works, there's no need to add `MSBlobBuilder`.
+                bb = new (window.WebKitBlobBuilder || window.MozBlobBuilder)
+                bb.append(buf)
+                blob = bb.getBlob('application/octet-stream')
+
+            url = (window.webkitURL || window.URL).createObjectURL(blob)
+
+            downloadLink = $('<a></a>').attr({href: url, download: @filename})
+            $(document.body).append(downloadLink)
+            # trigger the file save dialog
+            downloadLink[0].click()
+            # clean up when we're done
+            downloadLink.remove()
+        catch e
+            @downloadMethodAvailable.blobBased = false
+            errorCallback.call(this)
+
+    downloadDataUriBased: () =>
+        document.location.href = "data:application/octet-stream;base64," + btoa(@data)
+
+###
+# utilities for client-side reading files
+###
+FileHandler =
+    decodeDataURI: (dataURI) ->
+        content = dataURI.indexOf(",")
+        meta = dataURI.substr(5, content).toLowerCase()
+        data = decodeURIComponent(dataURI.substr(content + 1))
+        data = atob(data) if /;\s*base64\s*[;,]/.test(meta)
+        data = decodeURIComponent(escape(data)) if /;\s*charset=[uU][tT][fF]-?8\s*[;,]/.test(meta)
+        data
+
+    handleFiles: (files) ->
+        file = files[0]
+        #document.getElementById("droplabel").innerHTML = "Processing " + file.name
+        reader = new FileReader()
+        reader.onprogress = FileHandler.handleReaderProgress
+        reader.onloadend = FileHandler.handleReaderLoadEnd
+        reader.readAsDataURL file
+
+    handleReaderProgress: (evt) ->
+        percentLoaded = (evt.loaded / evt.total) if evt.lengthComputable
+
+    handleReaderLoadEnd: (evt) ->
+        if evt.target.error
+            throw new Error(evt.target.error + " Error Code: " + evt.target.error.code + " ")
+            return
+        data = FileHandler.decodeDataURI(evt.target.result)
+        # process the data depending on the file format.  We're going
+        # to do this by trial and error, assuming different formats
+        try
+            try
+                jsonData = JSON.parse(data)
+                window.courseManager.loadGraph(data)
+            catch e
+                parser = new DOMParser
+                xmlDoc = parser.parseFromString(data, 'text/xml')
+                data = xmlDoc.querySelector('coursemapper').textContent
+                jsonData = JSON.parse(data)
+                window.courseManager.loadGraph(data)
+        catch e
+            throw new Error("Not valid JSON or SVG (containing <coursemapper>JSON</coursemapper>) data")
+
+    dragEnter: (evt) ->
+        $('#dropcontainer').show()
+        $('.tabs').hide()
+        $('#forkme').hide()
+        evt.stopPropagation()
+        evt.preventDefault()
+    dragExit: (evt) ->
+        $('#dropcontainer').hide()
+        $('#dropbox').removeClass('dropbox-hover')
+        $('.tabs').show()
+        $('#forkme').show()
+        if evt?
+            evt.stopPropagation()
+            evt.preventDefault()
+    dragOver: (evt,b) ->
+        if not evt?
+            $('#dropbox').removeClass('dropbox-hover')
+            return
+        $('#dropbox').addClass('dropbox-hover')
+        evt.stopPropagation()
+        evt.preventDefault()
+    drop: (evt) ->
+        evt.stopPropagation()
+        evt.preventDefault()
+        files = evt.dataTransfer.files
+        count = files.length
+        FileHandler.handleFiles files if count > 0
+        # fake the exit of a drag event...
+        FileHandler.dragExit()
