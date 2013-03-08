@@ -324,7 +324,21 @@
 		</div>
 
 		<div id="preview" class="page" style="display: none;">
-			This feature is not yet implimented
+			<div class="left">
+				<div id="preview-status"></div>
+				<button id="zoom-preview-in">Zoom +</button> <button id="zoom-preview-out">Zoom -</button>
+				<div id="map-container" style="width: 100%;"></div>
+			</div>
+			<div class="right">
+				<div id="edge-selected">
+					Selected: <span class="course1"></span> <span class="course2"></span>
+					<div class="existing-edge">
+						Existing Edge: <span class="theedge"></span>
+						<button id="makeCoreq">Make Corequisite</button>
+					</div>
+				</div>
+				<button id="toggleEdge">Toggle Edge</button>
+			</div>
 		</div>
 	</div>
 </body>

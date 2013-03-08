@@ -133,6 +133,18 @@ body {
 	height: 100%;
 	overflow: auto;
 }
+.left {
+	width: 60%;
+	float: left;
+	height: 100%;
+	overflow: auto;
+}
+.right {
+	float: right;
+	width: 40%;
+	height: 100%;
+	overflow: auto;
+}
 
 .course-number {
 	font-weight: bold;
