@@ -251,3 +251,17 @@ body {
 	padding-left: 6em;
 	color: gray;
 }
+
+/* preview page */
+#edge1 {
+	width: 96px;
+}
+#edge1.noArrow {
+	background-image: url('../image/noArrow.png');
+}
+#edge1.prereqArrow {
+	background-image: url('../image/prereqArrow.png');
+}
+#edge1.coreqArrow {
+	background-image: url('../image/coreqArrow.png');
+}

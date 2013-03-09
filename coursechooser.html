@@ -330,14 +330,26 @@
 				<div id="map-container" style="width: 100%;"></div>
 			</div>
 			<div class="right">
-				<div id="edge-selected">
-					Selected: <span class="course1"></span> <span class="course2"></span>
-					<div class="existing-edge">
-						Existing Edge: <span class="theedge"></span>
-						<button id="makeCoreq">Make Corequisite</button>
+				<div class="tabs">
+					<ul>
+						<li><a href="#tab-edges">Edges</a></li>
+					</ul>
+					<div id="tab-edges">
+						<h3>Currently Selected:</h3>
+						<table id="edge-selection">
+							<tr>
+								<td id="course1"><span class="course-container"></span><div class="course defunct course-standin"><div class="number">None</div></div></td>
+								<td id="edge1" class="noArrow"></td>
+								<td id="course2"><span class="course-container"></span><div class="course defunct course-standin"><div class="number">None</div></div></td>
+							</tr>
+						</table>
+						<h3>Options:</h3>
+						<button id="toggleEdge" op1="Create Edge" op2="Remove Edge">Toggle Edge</button>
+						<button id="toggleCoreq" op1="Make Corequisite" op2="Make Prerequisite">Toggle Corequisite</button>
+						<!-- currently disabled -->
+						<button id="reverseEdge" style="display: none">Reverse Edge</button>
 					</div>
 				</div>
-				<button id="toggleEdge">Toggle Edge</button>
 			</div>
 		</div>
 	</div>
