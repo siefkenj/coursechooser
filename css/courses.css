@@ -50,6 +50,12 @@
 	opacity: 0.5;
 }
 
+#electives-list {
+	list-style-type: none;
+}
+#electives-list li {
+	margin-bottom: 1em;
+}
 /* Electives block styles */
 .electives-block {
 	/* border: 1px solid black; */

@@ -353,6 +353,11 @@ $(document).ready(function() {
     }
     return _results;
   });
+  $('#show-courses .throbber').ajaxStart(function() {
+    return $(this).show();
+  }).ajaxComplete(function() {
+    return $(this).hide();
+  });
   $('#hide-courses').click(function() {
     var c, courses, subjects, unknownCourses, v, _k, _len2, _ref2, _results;
     subjects = {};
@@ -395,7 +400,6 @@ $(document).ready(function() {
     }, window.courseManager);
     electiveButton = new ElectivesButton(elective);
     $('#electives-list').append(elective.getButton());
-    $('#electives-list').append("<hr />");
     $('.year1 .courses').append(electiveButton.getButton());
     window.courseManager.addCourse(electiveButton);
     window.courseManager.sortableCourses[electiveButton] = electiveButton;
@@ -414,6 +418,7 @@ $(document).ready(function() {
     mimeType = 'application/json';
     if ($('a[page=#preview]').hasClass('active')) {
       name = baseName + '.svg';
+      window.courseManager.svgManager.deselectAll();
       window.courseManager.svgManager.svgGraph.inlineDocumentStyles();
       window.courseManager.svgManager.svgGraph.addCDATA({
         elmName: 'coursemapper',
@@ -460,7 +465,8 @@ $(document).ready(function() {
     return svg.setAttribute('height', height / ZOOM_FACTOR);
   });
   $('#toggleEdge').click(function() {
-    var edge, elm1, elm2, svgManager, _ref2;
+    var edge, elm1, elm2, svgManager, _ref2,
+      _this = this;
     svgManager = window.courseManager.svgManager;
     if (!(svgManager && svgManager.selected[0] && svgManager.selected[1])) {
 
@@ -482,12 +488,19 @@ $(document).ready(function() {
         window.courseManager.graphState.addEdge([elm1, elm2]);
       }
       updatePreview({
-        preserveSelection: true
+        preserveSelection: true,
+        start: function() {
+          return $(_this).find('span').append('<img class="throbber" src="image/ajax-loader.gif"/>');
+        },
+        finish: function() {
+          return $(_this).find('.throbber').remove();
+        }
       });
     }
   });
   $('#toggleCoreq').click(function() {
-    var edge, elm1, elm2, svgManager;
+    var edge, elm1, elm2, svgManager,
+      _this = this;
     svgManager = window.courseManager.svgManager;
     if (!(svgManager && svgManager.selected[0] && svgManager.selected[1])) {
 
@@ -501,12 +514,19 @@ $(document).ready(function() {
       }
       edge.properties.coreq = !edge.properties.coreq;
       updatePreview({
-        preserveSelection: true
+        preserveSelection: true,
+        start: function() {
+          return $(_this).find('span').append('<img class="throbber" src="image/ajax-loader.gif"/>');
+        },
+        finish: function() {
+          return $(_this).find('.throbber').remove();
+        }
       });
     }
   });
   $('#reverseEdge').click(function() {
-    var edge, elm1, elm2, svgManager, _ref2;
+    var edge, elm1, elm2, svgManager, _ref2,
+      _this = this;
     svgManager = window.courseManager.svgManager;
     if (!(svgManager && svgManager.selected[0] && svgManager.selected[1])) {
 
@@ -527,7 +547,13 @@ $(document).ready(function() {
         window.courseManager.graphState.addEdge([elm2, elm1]);
       }
       updatePreview({
-        preserveSelection: true
+        preserveSelection: true,
+        start: function() {
+          return $(_this).find('span').append('<img class="throbber" src="image/ajax-loader.gif"/>');
+        },
+        finish: function() {
+          return $(_this).find('.throbber').remove();
+        }
       });
     }
   });
@@ -676,51 +702,80 @@ showPage = function(page, ops) {
 };
 
 updatePreview = function(ops) {
-  var aspect, ast, dotCode, elm, height, i, id, oldSelection, oldSvgManager, preview, svgManager, width, xdotCode, _i, _j, _len, _len1, _ref;
+  var render;
   if (ops == null) {
     ops = {
       preserveSelection: false
     };
   }
-  dotCode = window.courseManager.createDotGraph();
-  xdotCode = Viz(dotCode, 'xdot');
-  xdotCode = xdotCode.slice(xdotCode.indexOf('digraph {'));
-  ast = DotParser.parse(xdotCode);
-  svgManager = new SVGGraphManager(new SVGDot(ast));
-  oldSvgManager = window.courseManager.svgManager;
-  oldSelection = [];
-  if (oldSvgManager && ops.preserveSelection) {
-    _ref = oldSvgManager.selected || [];
-    for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-      elm = _ref[_i];
-      if (elm) {
-        oldSelection.push(elm.getAttribute('id'));
+  if (typeof ops.start === "function") {
+    ops.start();
+  }
+  render = function() {
+    var dotCode;
+    dotCode = window.courseManager.createDotGraph();
+    window.Viz.onmessage = function(event) {
+      var aspect, ast, data, elm, height, i, id, oldSelection, oldSvgManager, preview, svgManager, width, xdotCode, _i, _j, _len, _len1, _ref;
+      data = event.data;
+      if (data.type !== 'graph') {
+        throw new Error('Need the webworker to return graph type!');
       }
-    }
-  }
-  window.courseManager.initializeSVGManager(svgManager);
-  for (i = _j = 0, _len1 = oldSelection.length; _j < _len1; i = ++_j) {
-    id = oldSelection[i];
-    svgManager.select($(svgManager.svg).find("#" + id)[0]);
-  }
-  preview = svgManager.svg;
-  aspect = parseFloat(preview.getAttribute('aspect'));
-  if (aspect) {
-    width = $('#map-container').width();
-    height = $('#map-container').height();
-    preview.setAttribute('width', Math.round(width));
-    preview.setAttribute('height', Math.round(width / aspect));
-  }
-  return $('#map-container').html(preview);
+      xdotCode = data.message;
+      xdotCode = xdotCode.slice(xdotCode.indexOf('digraph {'));
+      ast = DotParser.parse(xdotCode);
+      svgManager = new SVGGraphManager(new SVGDot(ast));
+      oldSvgManager = window.courseManager.svgManager;
+      oldSelection = [];
+      if (oldSvgManager && ops.preserveSelection) {
+        _ref = oldSvgManager.selected || [];
+        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+          elm = _ref[_i];
+          if (elm) {
+            oldSelection.push(elm.getAttribute('id'));
+          }
+        }
+      }
+      window.courseManager.initializeSVGManager(svgManager);
+      for (i = _j = 0, _len1 = oldSelection.length; _j < _len1; i = ++_j) {
+        id = oldSelection[i];
+        svgManager.select($(svgManager.svg).find("#" + id)[0]);
+      }
+      preview = svgManager.svg;
+      aspect = parseFloat(preview.getAttribute('aspect'));
+      if (aspect) {
+        width = $('#map-container').width();
+        height = $('#map-container').height();
+        preview.setAttribute('width', Math.round(width));
+        preview.setAttribute('height', Math.round(width / aspect));
+      }
+      $('#map-container').html(preview);
+      return typeof ops.finish === "function" ? ops.finish() : void 0;
+    };
+    return window.Viz.postMessage(dotCode);
+  };
+  return window.setTimeout(render, 0);
 };
 
 onPreviewPageShow = function() {
   if (!(window.Viz != null)) {
-    $('#preview-status').html('loading graphviz library');
-    return $.getScript('js/viz-2.26.3.js', function() {
-      $('#preview-status').html('graphviz library loaded');
-      return updatePreview();
-    });
+    window.Viz = new Worker('js/viz-worker.js');
+    return window.Viz.onmessage = function(event) {
+      var data;
+      data = event.data;
+      if (data.type === 'status' && data.message === 'viz-loaded') {
+        $('#preview-status').hide();
+        $('#map-holder').show();
+        return updatePreview();
+      }
+    };
+    /*
+            #$('#preview-status').html 'loading graphviz library'
+            $.getScript 'js/viz-2.26.3.js', ->
+                $('#preview-status').hide()
+                $('#map-holder').show()
+                updatePreview()
+    */
+
   } else {
     return window.setTimeout(updatePreview, 0);
   }
@@ -816,6 +871,12 @@ SVGGraphManager = (function() {
       this.selected[i] = null;
     }
     removeClass(elm, 'selected');
+    return typeof this.selectionChanged === "function" ? this.selectionChanged() : void 0;
+  };
+
+  SVGGraphManager.prototype.deselectAll = function() {
+    this.selected[0] = null;
+    this.selected[1] = null;
     return typeof this.selectionChanged === "function" ? this.selectionChanged() : void 0;
   };
 
@@ -1040,7 +1101,6 @@ CourseManager = (function() {
       elective = new ElectivesButtonEditor(cluster.cluster, this);
       electiveButton = new ElectivesButton(elective);
       $('#electives-list').append(elective.getButton());
-      $('#electives-list').append("<hr />");
       $(".year" + cluster.year + " .courses").append(electiveButton.getButton());
       this.addCourse(electiveButton);
       this.sortableCourses[electiveButton] = electiveButton;
@@ -1207,8 +1267,46 @@ CourseManager = (function() {
     }
   };
 
-  CourseManager.prototype.removeAllCourseInstances = function(course) {
+  CourseManager.prototype.removeElective = function(course) {
+    var c, _, _i, _len, _ref, _ref1;
+    if (this.sortableCourses[course]) {
+      _ref = this.sortableCourses[course].courses;
+      for (_ in _ref) {
+        c = _ref[_];
+        console.log(c, this.sortableCourses[course]);
+        this.sortableCourses[course].$elm.parent().append(c.$elm);
+        this.updateCourseState(c, {
+          required: false,
+          elective: false
+        });
+      }
+      this.sortableCourses[course].removeCourse(c, {
+        detach: false
+      });
+      delete this.sortableCourses[course];
+    }
+    _ref1 = this.courses[course];
+    for (_i = 0, _len = _ref1.length; _i < _len; _i++) {
+      c = _ref1[_i];
+      c.removeButton();
+    }
     return delete this.courses[course];
+  };
+
+  CourseManager.prototype.removeAllCourseInstances = function(course) {
+    var c, hash, _i, _len, _ref;
+    hash = BasicCourse.hashCourse(course);
+    _ref = this.courses[hash];
+    for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+      c = _ref[_i];
+      if (c instanceof Electives) {
+        this.removeElective(course);
+        break;
+      }
+      c.removeButton();
+    }
+    delete this.courses[hash];
+    return delete this.sortableCourses[hash];
   };
 
   CourseManager.prototype.cleanupUnattachedButtons = function(course, buttonType) {
@@ -2507,9 +2605,20 @@ ElectivesButtonEditor = (function(_super) {
     if (this.elm) {
       return this.elm;
     }
-    this.$elm = $("<div class='elective-editable'>\n    <div class='title'>Title: <input type='text' value='" + this.title + "' class='ui-state-default ui-combobox-input ui-widget ui-widget-content ui-corner-all'></input></div>\n    <div class='requirements'>At least <input type='text' value='" + this.requirements.units + "' class='ui-state-default ui-combobox-input ui-widget ui-widget-content ui-corner-all'></input> " + this.requirements.unitLabel + "</div>\n    Elective Courses: <div class='dropbox courses-list'><span class='droptext'>Use the Year Chart to Add Courses</span></div>\n</div>");
+    this.$elm = $("<li class='elective-editable'>\n    <button class='delete-elective' title='Delete Electives Block'></button>\n    <div class='title'>Title: <input type='text' value='" + this.title + "' class='ui-state-default ui-combobox-input ui-widget ui-widget-content ui-corner-all'></input></div>\n    <div class='requirements'>At least <input type='text' value='" + this.requirements.units + "' class='ui-state-default ui-combobox-input ui-widget ui-widget-content ui-corner-all'></input> " + this.requirements.unitLabel + "</div>\n    Elective Courses: <div class='dropbox courses-list'><span class='droptext'>Use the Year Chart to Add Courses</span></div>\n</li>");
     this.elm = this.$elm[0];
     this.$coursesDiv = this.$elm.find('.courses-list');
+    this.$elm.find('.delete-elective').button({
+      icons: {
+        primary: 'ui-icon-trash'
+      },
+      text: false
+    });
+    this.$elm.find('.delete-elective').click(function() {
+      if (_this.manager) {
+        return _this.manager.removeElective(_this);
+      }
+    });
     _ref = this.courses;
     for (hash in _ref) {
       course = _ref[hash];

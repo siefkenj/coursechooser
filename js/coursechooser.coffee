@@ -237,6 +237,13 @@ $(document).ready ->
         for c in unknownCourses
             errorMsgHash["Could not determine subject code for course '#{c}'"] = true
             $('#department-list').combobox('showError', (e for e of errorMsgHash).join('<br/>'))
+    # whenever we are doing ajax, let's spin the throbber since
+    # it primarly happens whenever we are loading courses in this view
+    $('#show-courses .throbber').ajaxStart(->
+        $(@).show()
+    ).ajaxComplete(->
+        $(@).hide()
+    )
     $('#hide-courses').click ->
         subjects = {}
         courses = []
@@ -265,7 +272,6 @@ $(document).ready ->
         elective = new ElectivesButtonEditor({title:'Electives'}, window.courseManager)
         electiveButton = new ElectivesButton(elective)
         $('#electives-list').append(elective.getButton())
-        $('#electives-list').append("<hr />")
         $('.year1 .courses').append(electiveButton.getButton())
         window.courseManager.addCourse(electiveButton)
         window.courseManager.sortableCourses[electiveButton] = electiveButton
@@ -286,6 +292,7 @@ $(document).ready ->
         mimeType = 'application/json'
         if $('a[page=#preview]').hasClass('active')
             name = baseName + '.svg'
+            window.courseManager.svgManager.deselectAll()   # we don't want any selections showing up in our output svg
             window.courseManager.svgManager.svgGraph.inlineDocumentStyles()
             window.courseManager.svgManager.svgGraph.addCDATA
                 elmName: 'coursemapper'
@@ -345,7 +352,12 @@ $(document).ready ->
             else
                 window.courseManager.graphState.addEdge([elm1, elm2])
 
-            updatePreview({preserveSelection: true})
+            updatePreview
+                preserveSelection: true
+                start: =>
+                    $(@).find('span').append('<img class="throbber" src="image/ajax-loader.gif"/>')
+                finish: =>
+                    $(@).find('.throbber').remove()
             return
     $('#toggleCoreq').click ->
         svgManager = window.courseManager.svgManager
@@ -361,7 +373,12 @@ $(document).ready ->
 
             edge.properties.coreq = not edge.properties.coreq
 
-            updatePreview({preserveSelection: true})
+            updatePreview
+                preserveSelection: true
+                start: =>
+                    $(@).find('span').append('<img class="throbber" src="image/ajax-loader.gif"/>')
+                finish: =>
+                    $(@).find('.throbber').remove()
             return
     # TODO Doesnt work!
     $('#reverseEdge').click ->
@@ -385,7 +402,12 @@ $(document).ready ->
                         window.courseManager.graphState.removeEdge(edge.edge)
                 window.courseManager.graphState.addEdge([elm2, elm1])
 
-            updatePreview({preserveSelection: true})
+            updatePreview
+                preserveSelection: true
+                start: =>
+                    $(@).find('span').append('<img class="throbber" src="image/ajax-loader.gif"/>')
+                finish: =>
+                    $(@).find('.throbber').remove()
             return
 
     # we'd like to show up on the correct tab when we relaod with a hash
@@ -480,53 +502,68 @@ showPage = (page, ops={}) ->
     return
 
 updatePreview = (ops={preserveSelection: false}) ->
-    dotCode = window.courseManager.createDotGraph()
-    xdotCode = Viz(dotCode, 'xdot')
-    # there are some warnings in the xdot code, but they are printed
-    # at the beginning, so filter them away
-    xdotCode = xdotCode.slice(xdotCode.indexOf('digraph {'))
-    ast = DotParser.parse(xdotCode)
-    svgManager = new SVGGraphManager(new SVGDot(ast))
+    # we may want to show a progress indicator
+    ops.start?()
 
-    oldSvgManager = window.courseManager.svgManager
-    oldSelection = []
-    if oldSvgManager and ops.preserveSelection
-        for elm in oldSvgManager.selected || [] when elm
-            oldSelection.push elm.getAttribute('id')
-    window.courseManager.initializeSVGManager(svgManager)
-    # restore all of the previous selection.  This list will be empty
-    # if preserveSelection == false
-    for id,i in oldSelection
-        svgManager.select $(svgManager.svg).find("##{id}")[0]
+    render = ->
+        dotCode = window.courseManager.createDotGraph()
+        window.Viz.onmessage = (event) ->
+            data = event.data
+            if data.type isnt 'graph'
+                throw new Error('Need the webworker to return graph type!')
+            xdotCode = data.message
+            # there are some warnings in the xdot code, but they are printed
+            # at the beginning, so filter them away
+            xdotCode = xdotCode.slice(xdotCode.indexOf('digraph {'))
+            ast = DotParser.parse(xdotCode)
+            svgManager = new SVGGraphManager(new SVGDot(ast))
 
-    #svgGraph = new SVGDot(ast)
-    #svgGraph.render()
-    preview = svgManager.svg
-    aspect = parseFloat preview.getAttribute('aspect')
-    if aspect
-        width = $('#map-container').width()
-        height = $('#map-container').height()
-        #if width / aspect > height
-        #    width = height * aspect
-        preview.setAttribute('width', Math.round(width))
-        preview.setAttribute('height', Math.round(width/aspect))
+            oldSvgManager = window.courseManager.svgManager
+            oldSelection = []
+            if oldSvgManager and ops.preserveSelection
+                for elm in oldSvgManager.selected || [] when elm
+                    oldSelection.push elm.getAttribute('id')
+            window.courseManager.initializeSVGManager(svgManager)
+            # restore all of the previous selection.  This list will be empty
+            # if preserveSelection == false
+            for id,i in oldSelection
+                svgManager.select $(svgManager.svg).find("##{id}")[0]
 
-    #output = $("<div>#{xdotCode}</div>")
-    #error = xdotCode
-    #for n in output[0].childNodes
-    #    if n.nodeType == 3
-    #        error += n.nodeValue
-    #        window.n = n
-    #preview = $('<div></div>').append(output.find('svg')).append("<div><pre>#{error}</pre></div>")
-    $('#map-container').html preview
+            #svgGraph = new SVGDot(ast)
+            #svgGraph.render()
+            preview = svgManager.svg
+            aspect = parseFloat preview.getAttribute('aspect')
+            if aspect
+                width = $('#map-container').width()
+                height = $('#map-container').height()
+                #if width / aspect > height
+                #    width = height * aspect
+                preview.setAttribute('width', Math.round(width))
+                preview.setAttribute('height', Math.round(width/aspect))
+
+            $('#map-container').html preview
+
+            ops.finish?()
+        window.Viz.postMessage(dotCode)
+    window.setTimeout(render, 0)
 
 onPreviewPageShow = ->
-
     if not window.Viz?
-        $('#preview-status').html 'loading graphviz library'
+        window.Viz = new Worker('js/viz-worker.js')
+        window.Viz.onmessage = (event) ->
+            data = event.data
+            if data.type is 'status' and data.message is 'viz-loaded'
+                $('#preview-status').hide()
+                $('#map-holder').show()
+                updatePreview()
+
+        ###
+        #$('#preview-status').html 'loading graphviz library'
         $.getScript 'js/viz-2.26.3.js', ->
-            $('#preview-status').html 'graphviz library loaded'
+            $('#preview-status').hide()
+            $('#map-holder').show()
             updatePreview()
+        ###
     else
         window.setTimeout(updatePreview, 0)
 
@@ -581,6 +618,10 @@ class SVGGraphManager
         if i >= 0
             @selected[i] = null
         removeClass(elm, 'selected')
+        @selectionChanged?()
+    deselectAll: ->
+        @selected[0] = null
+        @selected[1] = null
         @selectionChanged?()
 
     nodeClicked: (course) ->
@@ -740,7 +781,6 @@ class CourseManager
             elective = new ElectivesButtonEditor(cluster.cluster, @)
             electiveButton = new ElectivesButton(elective)
             $('#electives-list').append(elective.getButton())
-            $('#electives-list').append("<hr />")
             $(".year#{cluster.year} .courses").append(electiveButton.getButton())
             @addCourse(electiveButton)
             @sortableCourses[electiveButton] = electiveButton
@@ -858,8 +898,29 @@ class CourseManager
         index = @courses[hash].indexOf(course)
         if index >= 0
             @courses[hash].splice(index, 1)
-    removeAllCourseInstances: (course) ->
+    removeElective: (course) ->
+        if @sortableCourses[course]
+            # reparent all of the electives children
+            for _,c of @sortableCourses[course].courses
+                console.log c, @sortableCourses[course]
+                @sortableCourses[course].$elm.parent().append(c.$elm)
+                @updateCourseState(c, {required:false, elective:false})
+            @sortableCourses[course].removeCourse(c, {detach: false})
+            delete @sortableCourses[course]
+        for c in @courses[course]
+            c.removeButton()
         delete @courses[course]
+
+    removeAllCourseInstances: (course) ->
+        hash = BasicCourse.hashCourse(course)
+        for c in @courses[hash]
+            # if we are an elective, we have a special delete procedure
+            if c instanceof Electives
+                @removeElective(course)
+                break
+            c.removeButton()
+        delete @courses[hash]
+        delete @sortableCourses[hash]
     cleanupUnattachedButtons: (course, buttonType=CourseButton) ->
         clean = =>
             if @needsCleaning = false
@@ -1666,13 +1727,22 @@ class ElectivesButtonEditor extends Electives
     getButton: ->
         if @elm
             return @elm
-        @$elm = $("""<div class='elective-editable'>
+        @$elm = $("""<li class='elective-editable'>
+                    <button class='delete-elective' title='Delete Electives Block'></button>
                     <div class='title'>Title: <input type='text' value='#{@title}' class='ui-state-default ui-combobox-input ui-widget ui-widget-content ui-corner-all'></input></div>
                     <div class='requirements'>At least <input type='text' value='#{@requirements.units}' class='ui-state-default ui-combobox-input ui-widget ui-widget-content ui-corner-all'></input> #{@requirements.unitLabel}</div>
                     Elective Courses: <div class='dropbox courses-list'><span class='droptext'>Use the Year Chart to Add Courses</span></div>
-                </div>""")
+                </li>""")
         @elm = @$elm[0]
         @$coursesDiv = @$elm.find('.courses-list')
+
+        @$elm.find('.delete-elective').button
+            icons:
+                primary: 'ui-icon-trash'
+            text: false
+        @$elm.find('.delete-elective').click =>
+            if @manager
+                @manager.removeElective(@)
 
         # populate with all the courses in our course list, creating buttons
         # if they have none

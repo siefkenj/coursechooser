@@ -272,7 +272,7 @@
 			<div>
 				<div class="container" contains="#courses-add" style="display: inline-block;">
 				</div>
-				<button id='show-courses'>Show</button>
+				<button id='show-courses'>Show<img class="throbber" src="image/ajax-loader.gif" style="display: none;"/></button>
 				<button id='hide-courses'>Hide</button>
 			</div>
 		</div>
@@ -299,8 +299,8 @@
 				</div>
 				<div id="tab-electives">
 					<div id='electives-editor' style="display:inline-block;">
-						<div id='electives-list'>
-						</div>
+						<ul id='electives-list'>
+						</ul>
 						<button id='create-new-electives'>Create New Electives Block</button>
 					</div>
 				</div>
@@ -325,16 +325,21 @@
 
 		<div id="preview" class="page" style="display: none;">
 			<div class="left">
-				<div id="preview-status"></div>
-				<button id="zoom-preview-in">Zoom +</button> <button id="zoom-preview-out">Zoom -</button>
-				<div id="map-container" style="width: 100%;"></div>
+				<div id="preview-status">Loading Graphing Library<img class="throbber" src="image/ajax-loader.gif" /></div>
+				<div id="map-holder" style="display: none;">
+					<button id="zoom-preview-in">Zoom +</button> <button id="zoom-preview-out">Zoom -</button>
+					<div id="map-container" style="width: 100%;"></div>
+				</div>
 			</div>
 			<div class="right">
 				<div class="tabs">
 					<ul>
-						<li><a href="#tab-edges">Edges</a></li>
+						<li><a href="#tab-edges">Arrows</a></li>
 					</ul>
 					<div id="tab-edges">
+						<p>Select two courses to add, remove, or modify the arrow between them.
+						Prerequsite arrows have arrowheads and space courses horizontally.
+						Corequisite arrows have no arrowhead and appear in the same column.</p>
 						<h3>Currently Selected:</h3>
 						<table id="edge-selection">
 							<tr>
@@ -344,7 +349,7 @@
 							</tr>
 						</table>
 						<h3>Options:</h3>
-						<button id="toggleEdge" op1="Create Edge" op2="Remove Edge">Toggle Edge</button>
+						<button id="toggleEdge" op1="Create Arrow" op2="Remove Arrow">Toggle Edge</button>
 						<button id="toggleCoreq" op1="Make Corequisite" op2="Make Prerequisite">Toggle Corequisite</button>
 						<!-- currently disabled -->
 						<button id="reverseEdge" style="display: none">Reverse Edge</button>

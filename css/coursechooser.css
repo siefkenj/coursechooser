@@ -97,6 +97,11 @@ li.prereq-and:first-child {
 .elective-editable input {
 	margin: 3px;
 }
+.elective-editable .delete-elective {
+	float: right;
+	padding-top: 4px;
+	padding-bottom: 4px;
+}
 
 /* main page layout */
 body {
@@ -134,14 +139,14 @@ body {
 	overflow: auto;
 }
 .left {
-	width: 60%;
+	width: 70%;
 	float: left;
 	height: 100%;
 	overflow: auto;
 }
 .right {
 	float: right;
-	width: 40%;
+	width: 30%;
 	height: 100%;
 	overflow: auto;
 }
@@ -255,6 +260,7 @@ body {
 /* preview page */
 #edge1 {
 	width: 96px;
+	background-repeat: no-repeat;
 }
 #edge1.noArrow {
 	background-image: url('../image/noArrow.png');
@@ -264,4 +270,8 @@ body {
 }
 #edge1.coreqArrow {
 	background-image: url('../image/coreqArrow.png');
+}
+
+.throbber {
+	margin-left: 8px;
 }
