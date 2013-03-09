@@ -93,7 +93,7 @@
 	display: inline-block;
 }
 .electives-block .requirement {
-	float: right;
+	/* float: right; */
 }
 .electives-block .requirement:before {
 	content: '(';
