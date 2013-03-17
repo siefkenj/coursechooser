@@ -1,0 +1,154 @@
+/* svg graph styling */
+svg text {
+	-webkit-user-select: none;
+	-moz-user-select: none;
+	user-select: none;
+}
+svg .year-odd {
+	fill: #e8e7e0;
+	stroke: none;
+}
+svg .year-even {
+	fill: #f5f5f2;
+	stroke: none;
+}
+svg .background-gradient-stop0 {
+	stop-color:#757554;
+	stop-opacity:1;
+}
+svg .background-gradient-stop1 {
+	stop-color:#f5f5f2;
+	stop-opacity:0;
+}
+svg .year-label {
+	font-size: 16px;
+	font-family: Arial, sans-serif;
+	fill: #003266;
+	/* opacity: 0.4; */
+}
+
+svg .heading {
+	fill: #003366;
+	font-family: Arial, sans-serif;
+	font-weight: bold;
+	font-size: 24px;
+}
+svg .heading .foreground-text {
+	fill: #ffffff;
+}
+svg .heading .title-blur {
+	fill: #000000;
+}
+
+svg .node {
+	cursor: pointer;
+}
+svg .node rect {
+	fill: #f5f5f2;
+	stroke: black;
+	stroke-width: 1px;
+}
+svg .node text {
+	font-family: Arial, sans-serif;
+	/* letter-spacing: -1px; */
+}
+svg .node .course-number {
+	font-weight: bold;
+	fill: #0058da;
+	font-size: 14px;
+}
+svg .node .course-title {
+	font-variant: normal;
+	font-weight: normal;
+	fill: #00f;
+	font-size: 12px;
+	font-style: italic;
+}
+svg .node:hover .course-number {
+	fill: #0078fa;
+}
+svg .elective-node rect {
+	stroke: none;
+	fill: #ddd;
+}
+svg .elective-node .course-number {
+	font-weight: bold;
+	fill: #000;
+	font-size: 12px;
+}
+svg .in-electives-block rect {
+	stroke: none;
+}
+svg .node.selected rect {
+	stroke-width: 3px;
+	stroke: #0058da;
+}
+svg .node.highlight rect {
+	stroke-width: 3px;
+	stroke: #DA8C00;
+}
+svg .edge.highlight path {
+	stroke-width: 3px;
+	stroke: #DA8C00;
+	/*stroke: #0058da;*/
+}
+svg .edge.highlight polygon {
+	fill: #DA8C00;
+}
+
+
+
+
+svg .edge path {
+	stroke: black;
+	stroke-width: 1.5px;
+}
+svg .edge polygon {
+	stroke: none;
+	fill: black;
+}
+
+svg .electives-group {
+	font-size: 12px;
+	font-weight: bold;
+	font-family: Arial, sans-serif;
+}
+svg .electives-group rect {
+	fill: #ddd;
+	stroke: none;
+}
+
+
+
+@media print {
+	svg .heading {
+		fill: #fff;
+		font-family: Arial, sans-serif;
+		font-weight: bold;
+		font-size: 24px;
+	}
+	svg .heading .foreground-text {
+		fill: #000;
+	}
+	svg .heading .title-blur {
+		display: none;
+	}
+	svg .year-odd, .year-even {
+		fill: #fff;
+		stroke: #000;
+	}
+	svg .background-gradient-stop0 {
+		stop-color:#757554;
+		stop-opacity:0;
+	}
+	svg .background-gradient-stop1 {
+		stop-color:#f5f5f2;
+		stop-opacity:0;
+	}
+	svg .year-label {
+		font-size: 16px;
+		font-family: Arial, sans-serif;
+		fill: #000;
+		opacity: 1;
+	}
+}
