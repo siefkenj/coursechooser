@@ -78,6 +78,11 @@ li.prereq-and:first-child:before {
 li.prereq-and:first-child {
 	padding-left: 0px;
 }
+.noprereqs,.notoffered {
+	color: #aaa;
+	font-style: italic;
+	margin-left: 1em;
+}
 
 .dropbox {
 	margin: .5em;
@@ -101,6 +106,25 @@ li.prereq-and:first-child {
 	float: right;
 	padding-top: 4px;
 	padding-bottom: 4px;
+}
+
+
+.availability {
+	display: inline-block;
+	background: #fc6;
+	color: #000;
+	border-radius: 4px;
+	padding: 1px 3px 1px 3px;
+	margin-left: 5px;
+}
+.fall {
+	background: #fc6;
+}
+.spring {
+	background: #cf9;
+}
+.summer {
+	background: #fcf;
 }
 
 /* main page layout */
@@ -143,12 +167,14 @@ body {
 	float: left;
 	height: 100%;
 	overflow: auto;
+	position: relative;
 }
 .right {
 	float: right;
 	width: 30%;
 	height: 100%;
 	overflow: auto;
+	position: relative;
 }
 
 .course-number {
@@ -274,4 +300,18 @@ body {
 
 .throbber {
 	margin-left: 8px;
+}
+#preview-status {
+	position: fixed;
+	width: inherit;
+	height: 100%;
+	background: rgba(255,255,255,.7);
+	z-index: 100;
+}
+.message {
+	font-size: 1.4em;
+	font-weight: bold;
+	margin: 25% auto auto;
+	text-align: center;
+	text-shadow: 0 0 8px white;
 }

@@ -58,6 +58,41 @@ parseUrlHash = (hash) ->
             ret.args.push h.split('=')
     return ret
 
+# escapes JSON so that it may be included in XML
+# to decode use decodeURIComponent
+escapeJSON = (str) ->
+    if typeof str isnt 'string'
+        throw new Error('escapeJSON must be called with a string only')
+    htmlEscapeToChar = (str) ->
+        if str.charAt(1) is '#'
+            num = parseInt(str.slice(2,str.length - 1), 10)
+            return String.fromCharCode(num)
+        # list of html escape sequences from http://www.w3.org/TR/html4/sgml/entities.html
+        # except &nbsp; has been replaced with a regular space
+        htmlChars = {nbsp: 32, iexcl: 161, cent: 162, pound: 163, curren: 164, yen: 165, brvbar: 166, sect: 167, uml: 168, copy: 169, ordf: 170, laquo: 171, not: 172, shy: 173, reg: 174, macr: 175, deg: 176, plusmn: 177, sup2: 178, sup3: 179, acute: 180, micro: 181, para: 182, middot: 183, cedil: 184, sup1: 185, ordm: 186, raquo: 187, frac14: 188, frac12: 189, frac34: 190, iquest: 191, Agrave: 192, Aacute: 193, Acirc: 194, Atilde: 195, Auml: 196, Aring: 197, AElig: 198, Ccedil: 199, Egrave: 200, Eacute: 201, Ecirc: 202, Euml: 203, Igrave: 204, Iacute: 205, Icirc: 206, Iuml: 207, ETH: 208, Ntilde: 209, Ograve: 210, Oacute: 211, Ocirc: 212, Otilde: 213, Ouml: 214, times: 215, Oslash: 216, Ugrave: 217, Uacute: 218, Ucirc: 219, Uuml: 220, Yacute: 221, THORN: 222, szlig: 223, agrave: 224, aacute: 225, acirc: 226, atilde: 227, auml: 228, aring: 229, aelig: 230, ccedil: 231, egrave: 232, eacute: 233, ecirc: 234, euml: 235, igrave: 236, iacute: 237, icirc: 238, iuml: 239, eth: 240, ntilde: 241, ograve: 242, oacute: 243, ocirc: 244, otilde: 245, ouml: 246, divide: 247, oslash: 248, ugrave: 249, uacute: 250, ucirc: 251, uuml: 252, yacute: 253, thorn: 254, yuml: 255, fnof: 402, Alpha: 913, Beta: 914, Gamma: 915, Delta: 916, Epsilon: 917, Zeta: 918, Eta: 919, Theta: 920, Iota: 921, Kappa: 922, Lambda: 923, Mu: 924, Nu: 925, Xi: 926, Omicron: 927, Pi: 928, Rho: 929, Sigma: 931, Tau: 932, Upsilon: 933, Phi: 934, Chi: 935, Psi: 936, Omega: 937, alpha: 945, beta: 946, gamma: 947, delta: 948, epsilon: 949, zeta: 950, eta: 951, theta: 952, iota: 953, kappa: 954, lambda: 955, mu: 956, nu: 957, xi: 958, omicron: 959, pi: 960, rho: 961, sigmaf: 962, sigma: 963, tau: 964, upsilon: 965, phi: 966, chi: 967, psi: 968, omega: 969, thetasym: 977, upsih: 978, piv: 982, bull: 8226, hellip: 8230, prime: 8242, Prime: 8243, oline: 8254, frasl: 8260, weierp: 8472, image: 8465, real: 8476, trade: 8482, alefsym: 8501, larr: 8592, uarr: 8593, rarr: 8594, darr: 8595, harr: 8596, crarr: 8629, lArr: 8656, uArr: 8657, rArr: 8658, dArr: 8659, hArr: 8660, forall: 8704, part: 8706, exist: 8707, empty: 8709, nabla: 8711, isin: 8712, notin: 8713, ni: 8715, prod: 8719, sum: 8721, minus: 8722, lowast: 8727, radic: 8730, prop: 8733, infin: 8734, ang: 8736, and: 8743, or: 8744, cap: 8745, cup: 8746, int: 8747, there4: 8756, sim: 8764, cong: 8773, asymp: 8776, ne: 8800, equiv: 8801, le: 8804, ge: 8805, sub: 8834, sup: 8835, nsub: 8836, sube: 8838, supe: 8839, oplus: 8853, otimes: 8855, perp: 8869, sdot: 8901, lceil: 8968, rceil: 8969, lfloor: 8970, rfloor: 8971, lang: 9001, rang: 9002, loz: 9674, spades: 9824, clubs: 9827, hearts: 9829, diams: 9830, quot: 34, amp: 38, lt: 60, gt: 62, OElig: 338, oelig: 339, Scaron: 352, scaron: 353, Yuml: 376, circ: 710, tilde: 732, ensp: 8194, emsp: 8195, thinsp: 8201, zwnj: 8204, zwj: 8205, lrm: 8206, rlm: 8207, ndash: 8211, mdash: 8212, lsquo: 8216, rsquo: 8217, sbquo: 8218, ldquo: 8220, rdquo: 8221, bdquo: 8222, dagger: 8224, Dagger: 8225, permil: 8240, lsaquo: 8249, rsaquo: 8250, euro: 8364}
+        code = str.slice(1, str.length - 1)
+        num = htmlChars[code]
+        # if we unescape a quote, make sure to re-escape it for JSON!
+        if num is 34
+            return "\\\""
+        if num
+            return String.fromCharCode(num)
+        return str
+    encodeUnicode = (str) ->
+        # valid ascii range
+        if 32 <= str.charCodeAt(0) <= 126
+            return str
+        return encodeURIComponent(str)
+
+    # First we eliminate any of the html escape sequences that may be in our string.
+    escaped = str.replace(/&.*?;/g, htmlEscapeToChar)
+    # Next, escape <,>,& for xml
+    for c in ['<', '>', '&']
+        escaped = escaped.replace(c, encodeURIComponent(c), 'g')
+    # encode any unicode characetrs
+    escaped = escaped.replace(/./g, encodeUnicode)
+    return escaped
+
 # Attempts to return the number of en's wide
 # str is by counting capital letters and wide letters
 strWidthInEn = (str='') ->
@@ -296,7 +331,7 @@ $(document).ready ->
             window.courseManager.svgManager.svgGraph.inlineDocumentStyles()
             window.courseManager.svgManager.svgGraph.addCDATA
                 elmName: 'coursemapper'
-                data: window.courseManager.graphState.toJSON()
+                data: escapeJSON(window.courseManager.graphState.toJSON())
             svg = window.courseManager.svgManager.svg
             data = $('<div></div>').append($(svg).clone()).html()
             mimeType = 'image/svg+xml'
@@ -506,6 +541,9 @@ updatePreview = (ops={preserveSelection: false}) ->
     ops.start?()
 
     render = ->
+        # any time we are rendering, let's show the status indicator
+        $('#preview-status .message-text').text("Updating Graph")
+        $('#preview-status').show()
         dotCode = window.courseManager.createDotGraph()
         window.Viz.onmessage = (event) ->
             data = event.data
@@ -544,6 +582,7 @@ updatePreview = (ops={preserveSelection: false}) ->
             $('#map-container').html preview
 
             ops.finish?()
+            $('#preview-status').fadeOut('fast')
         window.Viz.postMessage(dotCode)
     window.setTimeout(render, 0)
 
@@ -962,7 +1001,6 @@ class CourseManager
             electiveButton.update(data)
 
     # out of sortableCourses, ensures only course has the selected state
-    #TODO make sure this works for Electives aswell
     selectCourse: (course) ->
         if not course
             return
@@ -989,6 +1027,7 @@ class CourseManager
             $('.course-info .course-state').children().detach()
             $('.course-info .course-state').html stateButtons.elm
             $('.course-info .prereq-area').html PrereqUtils.prereqsToDivs(stateButtons.prereqs, @)
+            $('.course-info .terms-area').html CourseUtils.historyToDivs(selectedCourse.getTermsOffered())
             #TODO this shouldn't be done with a timeout.  it should be done in a robust way!!
             window.setTimeout((=> $('#dot').val @createDotGraph()), 0)
             @cleanupUnattachedButtons()
@@ -1342,19 +1381,13 @@ class CourseManager
 # Utility functions for dealing with lists of courses and their prereqs
 ###
 CourseUtils =
-    # adds the prereq class to all class buttons
-    # that are an unsatisfied prereq of any class currently selected
-    updatePrereqTags: ->
-        selected = CourseUtils.getSelectedCourses()
-        prereqs = CourseUtils.computePrereqTree(selected, selected)
-        unmet = {}
-        for c in Course.flattenPrereqs(prereqs)
-            unmet[Course.hashCourse(c)] = true
-        for hash,c of window.courses
-            c.setState({prereq: !!unmet[hash]})
-
-        console.log (k for k of unmet).join(' ')
-        return unmet
+    historyToDivs: (hist={}) ->
+        ret = ""
+        # add the divs in this order
+        for term in ['fall', 'spring', 'summer']
+            if hist[term]
+                ret += "<div class='availability #{term}'>#{titleCaps(term)}</div>"
+        return ret || "<div class='notoffered'>Hasn't been offered in the last four years</div>"
 
 PrereqUtils =
     prereqsToString: (prereq) ->
@@ -1442,7 +1475,10 @@ PrereqUtils =
         # We wrap everything in an extra div so that jQuery.find('course') will find the course
         # tag even if prereqsToDivs returns "<course />" (also, this ensures every <course/> has
         # a parent)
-        divs = $("<div>#{prereqsToDivs(prereq)}</div>")
+        prereqsStr = prereqsToDivs(prereq)
+        if not prereqsStr
+            return "<div class='noprereqs'>No prerequsites</div>"
+        divs = $("<div>#{prereqsStr}</div>")
         if not manager
             return divs
         for elm in divs.find('course')
@@ -1499,6 +1535,19 @@ class BasicCourse
         return @hash
     update: (@data) ->
         @prereqs = @data.prereqs
+
+    getTermsOffered: ->
+        ret = {}
+        for k of @data.terms_offered || {}
+            month = k.slice(-2)
+            switch month
+                when '09'
+                    ret['fall'] = (ret['fall'] || 0) + 1
+                when '01'
+                    ret['spring'] = (ret['spring'] || 0) + 1
+                when '05'
+                    ret['summer'] = (ret['summer'] || 0) + 1
+        return ret
 
     # set the course's state and return only
     # the items in the state that changed
@@ -1809,7 +1858,7 @@ class Graph
         @nodes = {}
         @edges = {}
         @clusters = {}
-    toJSON: ->
+    toJSON: (stringify=true) ->
         ret =
             nodes: []
             edges: []
@@ -1821,6 +1870,10 @@ class Graph
                     subject: node.course.subject
                     number: node.course.number
                     state: node.course.state
+                    data:
+                        title: titleCaps(node.course.data?.title)
+                        description: node.course.data?.description || ''
+                        terms_offered: node.course.getTermsOffered?() || {}
                 year: node.year
         for _,edge of @edges
             ret.edges.push
@@ -1838,7 +1891,9 @@ class Graph
                         unitLabel: elective.requirements.unitLabel
                 year: cluster.year
                 courses: ({subject: c.subject, number: c.number} for c in cluster.courses)
-        return JSON.stringify(ret)
+        if stringify
+            return JSON.stringify(ret)
+        return ret
     fromJSON: (str, ops={}) ->
         @dirty = true
         data = JSON.parse(str)
@@ -2393,10 +2448,11 @@ FileHandler =
             catch e
                 parser = new DOMParser
                 xmlDoc = parser.parseFromString(data, 'text/xml')
-                data = xmlDoc.querySelector('coursemapper').textContent
+                data = decodeURIComponent(xmlDoc.querySelector('coursemapper').textContent)
                 jsonData = JSON.parse(data)
                 window.courseManager.loadGraph(data)
         catch e
+            console.log e
             throw new Error("Not valid JSON or SVG (containing <coursemapper>JSON</coursemapper>) data")
 
     dragEnter: (evt) ->
