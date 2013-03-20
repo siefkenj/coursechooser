@@ -598,7 +598,6 @@ SVGDot = (function() {
           }
           newStyle += "; " + ruleName + ": " + rule.style[camelCase(ruleName)];
         }
-        console.log('selecting: ', selector, newStyle);
         _ref3 = svg.querySelectorAll(selector);
         for (_l = 0, _len3 = _ref3.length; _l < _len3; _l++) {
           elm = _ref3[_l];
@@ -615,15 +614,16 @@ SVGDot = (function() {
   };
 
   SVGDot.prototype.addCDATA = function(ops) {
-    var container, data, elmName;
+    var container, data, elmName, svg;
     if (ops == null) {
       ops = {
+        svg: this.svg,
         elmName: 'data',
         data: ''
       };
     }
-    elmName = ops.elmName, data = ops.data;
-    container = createElmNS(elmName, {}, this.svg);
+    svg = ops.svg, elmName = ops.elmName, data = ops.data;
+    container = createElmNS(elmName, {}, svg);
     container.textContent = data;
   };
 

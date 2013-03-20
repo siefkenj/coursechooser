@@ -702,7 +702,7 @@ $(document).ready(function() {
     return window.courseManager.makeElectivesButtonClickable(elective);
   });
   $('#save').click(function() {
-    var baseName, data, downloadManager, mimeType, name, svg;
+    var baseName, clonedSvg, data, downloadManager, elm, mimeType, name, _k, _l, _len2, _len3, _ref2, _ref3;
     window.courseManager.updateGraphState();
     baseName = window.courseManager.graphState.title || "course-map";
     name = baseName + ".json";
@@ -710,14 +710,24 @@ $(document).ready(function() {
     mimeType = 'application/json';
     if ($('a[page=#preview]').hasClass('active')) {
       name = baseName + '.svg';
-      window.courseManager.svgManager.deselectAll();
-      window.courseManager.svgManager.svgGraph.inlineDocumentStyles();
+      clonedSvg = window.courseManager.svgManager.svgGraph.svg.cloneNode(true);
+      _ref2 = $(clonedSvg).find('.highlight');
+      for (_k = 0, _len2 = _ref2.length; _k < _len2; _k++) {
+        elm = _ref2[_k];
+        SVGGraphManager.utils.removeClass(elm, 'highlight');
+      }
+      _ref3 = $(clonedSvg).find('.selected');
+      for (_l = 0, _len3 = _ref3.length; _l < _len3; _l++) {
+        elm = _ref3[_l];
+        SVGGraphManager.utils.removeClass(elm, 'selected');
+      }
+      window.courseManager.svgManager.svgGraph.inlineDocumentStyles(clonedSvg);
       window.courseManager.svgManager.svgGraph.addCDATA({
+        svg: clonedSvg,
         elmName: 'coursemapper',
         data: escapeJSON(window.courseManager.graphState.toJSON())
       });
-      svg = window.courseManager.svgManager.svg;
-      data = $('<div></div>').append($(svg).clone()).html();
+      data = $('<div></div>').append(clonedSvg).html();
       mimeType = 'image/svg+xml';
     }
     downloadManager = new DownloadManager(name, data, mimeType);
@@ -1108,6 +1118,11 @@ SVGGraphManager = (function() {
     return elm.setAttribute('class', newCls.join(' '));
   };
 
+  SVGGraphManager.utils = {
+    addClass: addClass,
+    removeClass: removeClass
+  };
+
   function SVGGraphManager(svgGraph) {
     var _this = this;
     this.svgGraph = svgGraph;
@@ -1172,6 +1187,17 @@ SVGGraphManager = (function() {
   };
 
   SVGGraphManager.prototype.deselectAll = function() {
+    var elm, _i, _j, _len, _len1, _ref, _ref1;
+    _ref = this.$svg.find('.selected');
+    for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+      elm = _ref[_i];
+      removeClass(elm, 'selected');
+    }
+    _ref1 = this.$svg.find('.highlight');
+    for (_j = 0, _len1 = _ref1.length; _j < _len1; _j++) {
+      elm = _ref1[_j];
+      removeClass(elm, 'highlight');
+    }
     this.selected[0] = null;
     this.selected[1] = null;
     return typeof this.selectionChanged === "function" ? this.selectionChanged() : void 0;
@@ -1425,7 +1451,7 @@ CourseManager = (function() {
       });
     }
     if ($('a[page=#preview]').hasClass('active')) {
-      onPreviewPageShow();
+      window.setTimeout(updatePreview, 1000);
     }
     return this.graphState;
   };

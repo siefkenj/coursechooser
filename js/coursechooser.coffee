@@ -327,13 +327,22 @@ $(document).ready ->
         mimeType = 'application/json'
         if $('a[page=#preview]').hasClass('active')
             name = baseName + '.svg'
-            window.courseManager.svgManager.deselectAll()   # we don't want any selections showing up in our output svg
-            window.courseManager.svgManager.svgGraph.inlineDocumentStyles()
+            # clone our svg.  We don't want these inlined styles to be persistent after we've saved
+            clonedSvg = window.courseManager.svgManager.svgGraph.svg.cloneNode(true)
+
+            # we don't wany any highlight's or selection to show up when our
+            # styles are inlined.  Unfortunately, we cannot use jQuery's removeClass
+            # on SVG nodes.
+            for elm in $(clonedSvg).find('.highlight')
+                SVGGraphManager.utils.removeClass(elm, 'highlight')
+            for elm in $(clonedSvg).find('.selected')
+                SVGGraphManager.utils.removeClass(elm, 'selected')
+            window.courseManager.svgManager.svgGraph.inlineDocumentStyles(clonedSvg)
             window.courseManager.svgManager.svgGraph.addCDATA
+                svg: clonedSvg
                 elmName: 'coursemapper'
                 data: escapeJSON(window.courseManager.graphState.toJSON())
-            svg = window.courseManager.svgManager.svg
-            data = $('<div></div>').append($(svg).clone()).html()
+            data = $('<div></div>').append(clonedSvg).html()
             mimeType = 'image/svg+xml'
         downloadManager = new DownloadManager(name, data, mimeType)
         downloadManager.download()
@@ -619,6 +628,10 @@ class SVGGraphManager
         newCls = (c for c in oldCls.split(/\s+/) when c isnt cls)
         elm.setAttribute('class', newCls.join(' '))
 
+    @utils:
+        addClass: addClass
+        removeClass: removeClass
+
     constructor: (@svgGraph) ->
         @svgGraph.render()
         @svg = @svgGraph.svg
@@ -659,6 +672,10 @@ class SVGGraphManager
         removeClass(elm, 'selected')
         @selectionChanged?()
     deselectAll: ->
+        for elm in @$svg.find('.selected')
+            removeClass(elm, 'selected')
+        for elm in @$svg.find('.highlight')
+            removeClass(elm, 'highlight')
         @selected[0] = null
         @selected[1] = null
         @selectionChanged?()
@@ -839,7 +856,8 @@ class CourseManager
 
         # display the graph immediately when the preview page is active
         if $('a[page=#preview]').hasClass('active')
-            onPreviewPageShow()
+            #XXX We need to delay
+            window.setTimeout(updatePreview, 1000)
         return @graphState
     initializeSVGManager: (svgManager) ->
         idToCourse = (id) ->

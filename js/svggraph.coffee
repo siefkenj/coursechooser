@@ -358,7 +358,6 @@ class SVGDot
                         continue
                     newStyle += "; #{ruleName}: #{rule.style[camelCase(ruleName)]}"
 
-                console.log 'selecting: ', selector, newStyle
                 for elm in svg.querySelectorAll(selector)
                     oldStyle = elm.getAttribute('style') || ''
                     newStyle = oldStyle + newStyle
@@ -366,9 +365,9 @@ class SVGDot
                         newStyle = newStyle.slice(1)
                     elm.setAttribute('style', newStyle)
         return svg
-    addCDATA: (ops={elmName: 'data', data: ''}) ->
-        {elmName, data} = ops
-        container = createElmNS(elmName, {}, @svg)
+    addCDATA: (ops={svg: @svg, elmName: 'data', data: ''}) ->
+        {svg, elmName, data} = ops
+        container = createElmNS(elmName, {}, svg)
         container.textContent = data
         return
 
