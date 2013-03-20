@@ -319,7 +319,7 @@ $(document).ready ->
     # set up the load and save buttons
     $('#save').click ->
         window.courseManager.updateGraphState()
-        baseName = (window.courseManager.graphState.title || "course-map")
+        baseName = (window.courseManager.graphState.title || "course-map").replace(/\W/g,'_')
         # if we are currently looking at a preview, save a visual version, otherwise save
         # the json
         name = baseName + ".json"
