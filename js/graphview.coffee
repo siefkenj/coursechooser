@@ -257,7 +257,7 @@ class GraphManager
         
         # remove any styles that have been inserted, we will use stylesheets instead
         for elm in @svg.querySelectorAll('*')
-            elm.setAttribute('style', null)
+            elm.removeAttribute('style')
         @data = JSON.parse(decodeURIComponent(@svg.querySelector('coursemapper').textContent))
         @processData()
         console.log @data
@@ -303,12 +303,29 @@ class GraphManager
         @correqSpan = Mat.gt(Mat.powerSum(@adjacencyMatCoreq, @adjacencyMatCoreq.length), 0)
         return
     # returns a list of all the prereqs/coreqs for a course
-    coursePrereqs: (course) ->
+    coursePrereqs: (course, excludeCorreqs=false) ->
         hash = hashCourse(course)
         spanT = Mat.transpose(@span)
+        adjT = @adjacencyMatCoreq   # this doesn't need to be transposed because the coreq matrix is symmetric
         index = @courses[hash].listPos
         ret = []
-        for e,i in spanT[index] when e
+        # we can get into funny situations where we appear in our own span.  We should never appear
+        # in our own prereq list.
+        for e,i in spanT[index] when (e and not (hash is @coursesList[i]))
+            # if we're in the span 'cause we're a coreq, move along
+            if excludeCorreqs and adjT[index][i]
+                continue
+            ret.push @coursesList[i]
+        return ret
+    # returns a list of all the prereqs/coreqs for a course
+    courseCoreqs: (course) ->
+        hash = hashCourse(course)
+        adjT = @adjacencyMatCoreq   # this doesn't need to be transposed because the coreq matrix is symmetric
+        index = @courses[hash].listPos
+        ret = []
+        # we can get into funny situations where we appear in our own span.  We should never appear
+        # in our own prereq list.
+        for e,i in adjT[index] when (e and not (hash is @coursesList[i]))
             ret.push @coursesList[i]
         return ret
     _onClick: (event) =>
@@ -337,25 +354,22 @@ class GraphManager
             id = sanitizeId(prereq)
             for elm in @svg.querySelectorAll("[target=#{id}]")
                 addClass(elm, 'highlight')
-        @courseRequirementsSummary(course)
         @createCourseSummary(course)
     courseRequirementsSummary: (course) ->
         hash = hashCourse(course)
-        prereqs = @coursePrereqs(hash)
-        years = {}
-        yearsTitles = {}
-        for year in [1..4]
-            years[year] = []
-            yearsTitles[year] = []
+        prereqs = @coursePrereqs(hash, true)
+        years = {1:[], 2:[], 3:[], 4:[]}
         for prereq in prereqs
             c = @courses[prereq]
+            years[c.year] = years[c.year] || []
             years[c.year].push c
-
-        for year in [1..4]
-            for c in years[year]
-                yearsTitles[year].push "#{hashCourse(c)} (#{c.title})"
-            yearsTitles[year].sort()
-        console.log yearsTitles[1], yearsTitles[2], yearsTitles[3], yearsTitles[4]
+        coreqs = @courseCoreqs(hash)
+        years['coreq'] = []
+        for coreq in coreqs
+            c = @courses[coreq]
+            years['coreq'].push c
+        
+        return years
     createCourseSummary: (course) ->
         hash = hashCourse(course)
         course = @courses[course]
@@ -369,6 +383,40 @@ class GraphManager
             else
                 addClass(elm, "hidden")
         infoArea.querySelector('.description')?.textContent = course.data.description
+
+        # construct the prereq list
+        years = @courseRequirementsSummary(course)
+        numPrereqs = years[1].length + years[2].length + years[3].length + years[4].length
+        if numPrereqs > 0
+            removeClass(infoArea.querySelector('.prereq'), "invisible")
+            for year in [1,2,3,4]
+                parent = infoArea.querySelector(".year#{year}")
+                elm = parent.querySelector('ul')
+                list = []
+                prereqs = years[year]
+                for c in prereqs
+                    list.push "<li>#{hashCourse(c)}</li>"
+                list.sort()
+                elm?.innerHTML = list.join('')
+                if list.length is 0
+                    addClass(parent, "invisible")
+                else
+                    removeClass(parent, "invisible")
+        else
+            addClass(infoArea.querySelector('.prereq'), "invisible")
+        # construct the prereq list
+        parent = infoArea.querySelector(".coreq")
+        elm = parent.querySelector('ul')
+        list = []
+        prereqs = years['coreq']
+        for c in prereqs
+            list.push "<li>#{hashCourse(c)}</li>"
+        list.sort()
+        elm?.innerHTML = list.join('')
+        if list.length is 0
+            addClass(parent, "invisible")
+        else
+            removeClass(parent, "invisible")
 
 
         

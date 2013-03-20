@@ -404,7 +404,7 @@ GraphManager = (function() {
     _ref = this.svg.querySelectorAll('*');
     for (_i = 0, _len = _ref.length; _i < _len; _i++) {
       elm = _ref[_i];
-      elm.setAttribute('style', null);
+      elm.removeAttribute('style');
     }
     this.data = JSON.parse(decodeURIComponent(this.svg.querySelector('coursemapper').textContent));
     this.processData();
@@ -457,16 +457,40 @@ GraphManager = (function() {
     this.correqSpan = Mat.gt(Mat.powerSum(this.adjacencyMatCoreq, this.adjacencyMatCoreq.length), 0);
   };
 
-  GraphManager.prototype.coursePrereqs = function(course) {
-    var e, hash, i, index, ret, spanT, _i, _len, _ref;
+  GraphManager.prototype.coursePrereqs = function(course, excludeCorreqs) {
+    var adjT, e, hash, i, index, ret, spanT, _i, _len, _ref;
+    if (excludeCorreqs == null) {
+      excludeCorreqs = false;
+    }
     hash = hashCourse(course);
     spanT = Mat.transpose(this.span);
+    adjT = this.adjacencyMatCoreq;
     index = this.courses[hash].listPos;
     ret = [];
     _ref = spanT[index];
     for (i = _i = 0, _len = _ref.length; _i < _len; i = ++_i) {
       e = _ref[i];
-      if (e) {
+      if (!(e && !(hash === this.coursesList[i]))) {
+        continue;
+      }
+      if (excludeCorreqs && adjT[index][i]) {
+        continue;
+      }
+      ret.push(this.coursesList[i]);
+    }
+    return ret;
+  };
+
+  GraphManager.prototype.courseCoreqs = function(course) {
+    var adjT, e, hash, i, index, ret, _i, _len, _ref;
+    hash = hashCourse(course);
+    adjT = this.adjacencyMatCoreq;
+    index = this.courses[hash].listPos;
+    ret = [];
+    _ref = adjT[index];
+    for (i = _i = 0, _len = _ref.length; _i < _len; i = ++_i) {
+      e = _ref[i];
+      if (e && !(hash === this.coursesList[i])) {
         ret.push(this.coursesList[i]);
       }
     }
@@ -517,38 +541,37 @@ GraphManager = (function() {
         addClass(elm, 'highlight');
       }
     }
-    this.courseRequirementsSummary(course);
     return this.createCourseSummary(course);
   };
 
   GraphManager.prototype.courseRequirementsSummary = function(course) {
-    var c, hash, prereq, prereqs, year, years, yearsTitles, _i, _j, _k, _l, _len, _len1, _ref;
+    var c, coreq, coreqs, hash, prereq, prereqs, years, _i, _j, _len, _len1;
     hash = hashCourse(course);
-    prereqs = this.coursePrereqs(hash);
-    years = {};
-    yearsTitles = {};
-    for (year = _i = 1; _i <= 4; year = ++_i) {
-      years[year] = [];
-      yearsTitles[year] = [];
-    }
-    for (_j = 0, _len = prereqs.length; _j < _len; _j++) {
-      prereq = prereqs[_j];
+    prereqs = this.coursePrereqs(hash, true);
+    years = {
+      1: [],
+      2: [],
+      3: [],
+      4: []
+    };
+    for (_i = 0, _len = prereqs.length; _i < _len; _i++) {
+      prereq = prereqs[_i];
       c = this.courses[prereq];
+      years[c.year] = years[c.year] || [];
       years[c.year].push(c);
     }
-    for (year = _k = 1; _k <= 4; year = ++_k) {
-      _ref = years[year];
-      for (_l = 0, _len1 = _ref.length; _l < _len1; _l++) {
-        c = _ref[_l];
-        yearsTitles[year].push("" + (hashCourse(c)) + " (" + c.title + ")");
-      }
-      yearsTitles[year].sort();
+    coreqs = this.courseCoreqs(hash);
+    years['coreq'] = [];
+    for (_j = 0, _len1 = coreqs.length; _j < _len1; _j++) {
+      coreq = coreqs[_j];
+      c = this.courses[coreq];
+      years['coreq'].push(c);
     }
-    return console.log(yearsTitles[1], yearsTitles[2], yearsTitles[3], yearsTitles[4]);
+    return years;
   };
 
   GraphManager.prototype.createCourseSummary = function(course) {
-    var elm, hash, infoArea, term, _i, _len, _ref, _ref1, _ref2, _ref3;
+    var c, elm, hash, infoArea, list, numPrereqs, parent, prereqs, term, year, years, _i, _j, _k, _l, _len, _len1, _len2, _len3, _ref, _ref1, _ref2, _ref3, _ref4;
     hash = hashCourse(course);
     course = this.courses[course];
     infoArea = document.querySelector('#graphview-courseinfo');
@@ -568,7 +591,54 @@ GraphManager = (function() {
         addClass(elm, "hidden");
       }
     }
-    return (_ref3 = infoArea.querySelector('.description')) != null ? _ref3.textContent = course.data.description : void 0;
+    if ((_ref3 = infoArea.querySelector('.description')) != null) {
+      _ref3.textContent = course.data.description;
+    }
+    years = this.courseRequirementsSummary(course);
+    numPrereqs = years[1].length + years[2].length + years[3].length + years[4].length;
+    if (numPrereqs > 0) {
+      removeClass(infoArea.querySelector('.prereq'), "invisible");
+      _ref4 = [1, 2, 3, 4];
+      for (_j = 0, _len1 = _ref4.length; _j < _len1; _j++) {
+        year = _ref4[_j];
+        parent = infoArea.querySelector(".year" + year);
+        elm = parent.querySelector('ul');
+        list = [];
+        prereqs = years[year];
+        for (_k = 0, _len2 = prereqs.length; _k < _len2; _k++) {
+          c = prereqs[_k];
+          list.push("<li>" + (hashCourse(c)) + "</li>");
+        }
+        list.sort();
+        if (elm != null) {
+          elm.innerHTML = list.join('');
+        }
+        if (list.length === 0) {
+          addClass(parent, "invisible");
+        } else {
+          removeClass(parent, "invisible");
+        }
+      }
+    } else {
+      addClass(infoArea.querySelector('.prereq'), "invisible");
+    }
+    parent = infoArea.querySelector(".coreq");
+    elm = parent.querySelector('ul');
+    list = [];
+    prereqs = years['coreq'];
+    for (_l = 0, _len3 = prereqs.length; _l < _len3; _l++) {
+      c = prereqs[_l];
+      list.push("<li>" + (hashCourse(c)) + "</li>");
+    }
+    list.sort();
+    if (elm != null) {
+      elm.innerHTML = list.join('');
+    }
+    if (list.length === 0) {
+      return addClass(parent, "invisible");
+    } else {
+      return removeClass(parent, "invisible");
+    }
   };
 
   return GraphManager;

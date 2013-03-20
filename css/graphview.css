@@ -123,7 +123,7 @@
 	font-size: .8em;
 }
 #graphview-courseinfo li {
-	display: inline-block;
+	display: block;
 }
 #graphview-courseinfo .year {
 	font-size: .8em;
