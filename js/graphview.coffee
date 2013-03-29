@@ -12,6 +12,23 @@ loadSVG = (url, callback) ->
     xhr.setRequestHeader('Content-type', 'image/svg+xml')
     xhr.send()
 
+# pass in a Date object and returns {year: .., term: ..}
+# object corresponding to the school year
+computeTermFromDate = (date) ->
+    # summer: 5-8
+    # fall: 9-12
+    # spring: 1-5   in this case we need to subtract 1 from the year, 'cause it counts as the previous year!
+    year = date.getYear() + 1900
+    month = date.getMonth()
+    if 0 <= month <= 4
+        term = 'spring'
+        year -= 1
+    else if 4 <= month <= 7
+        term = 'summer'
+    else
+        term = 'fall'
+    return {year: year, term: term}
+
 resize = (svg) ->
     #svg.setAttribute('preserveAspectRatio', 'none')
     window.zoomer = new SVGZoomer(svg)
@@ -117,7 +134,7 @@ Mat =
         for i in [0...bin.length]
             curr = Mat.sum(Mat.mul(curr, mat), mat)
         return curr
-        
+
     numToBinary: (num) ->
         if num <= 0
             len = 0
@@ -146,7 +163,7 @@ class SVGZoomer
         @svg.getElementById = @svg.getElementById || (id) => @parent.getElementById(id)
         @svg.querySelector = @svg.querySelector || (srt) => @parent.querySelector(str)
         @svg.querySelectorAll = @svg.querySelectorAll || (srt) => @parent.querySelectorAll(str)
-        
+
         # get the dimensions
         if @svg.getAttribute('viewBox')
             dims = @svg.getAttribute('viewBox').split(/[^\w]+/)
@@ -199,7 +216,7 @@ class SVGZoomer
             @panning = true
             dx = @totalPan[0]
             dy = @totalPan[1]
-        
+
         if @panning
             @parent.scrollTop -= dy
             @parent.scrollLeft -= dx
@@ -236,25 +253,50 @@ class GraphManager
     sanitizeId = (str) ->
         return (''+str).replace(/\W+/g,'-')
     addClass = (elm, cls) ->
-        oldCls = elm.getAttribute('class')
+        oldCls = elm.getAttribute('class') || ''
         if oldCls.split(/\s+/).indexOf(cls) >= 0
             return
         elm.setAttribute('class', oldCls + ' ' + cls)
     removeClass = (elm, cls) ->
-        oldCls = elm.getAttribute('class')
+        oldCls = elm.getAttribute('class') || ''
         if not oldCls.match(cls)
             return
         newCls = (c for c in oldCls.split(/\s+/) when c isnt cls)
         elm.setAttribute('class', newCls.join(' '))
+    # from http://dzone.com/snippets/javascript-function-checks-dom
+    # checkes whether an element is visible or not
+    #isVisible = (obj) ->
+    #    return true  if obj is document
+    #    return false unless obj
+    #    return false unless obj.parentNode
+    #    if obj.style
+    #        return false if obj.style.display is "none"
+    #        return false if obj.style.visibility is "hidden"
+    #
+    #    #Try the computed style in a standard way
+    #    if window.getComputedStyle
+    #        style = window.getComputedStyle(obj, "")
+    #        return false if style.display is "none"
+    #        return false if style.visibility is "hidden"
+    #
+    #    #Or get the computed style using IE's silly proprietary way
+    #    style = obj.currentStyle
+    #    if style
+    #        return false if style["display"] is "none"
+    #        return false if style["visibility"] is "hidden"
+    #    return isVisible obj.parentNode
 
     constructor: (@svg) ->
         # compatibility stuff
         @svg.getElementById = @svg.getElementById || (id) => @parent.getElementById(id)
-        @svg.querySelector = @svg.querySelector || (srt) => @parent.querySelector(str)
-        @svg.querySelectorAll = @svg.querySelectorAll || (srt) => @parent.querySelectorAll(str)
+        @svg.querySelector = @svg.querySelector || (str) => @parent.querySelector(str)
+        @svg.querySelectorAll = @svg.querySelectorAll || (str) => @parent.querySelectorAll(str)
 
         @parent = @svg.parentNode
-        
+        @divCourseinfo = document.getElementById('graphview-courseinfo')
+        @divGraph = document.getElementById('graphview-graph')
+        @currentlySelected = null
+
         # remove any styles that have been inserted, we will use stylesheets instead
         for elm in @svg.querySelectorAll('*')
             elm.removeAttribute('style')
@@ -262,8 +304,20 @@ class GraphManager
         @processData()
         console.log @data
 
+        # ensure nodes are clickable and set their title appropriately
         for elm in @svg.querySelectorAll('g.node')
             elm.addEventListener('click', @_onCourseClicked, true)
+            info = @courses[elm.courseHash]
+            if info
+                try
+                    desc = "#{info.subject} #{info.number}: #{info.data.title}"
+                    elm.setAttribute('title', desc)
+                catch e
+                    ''
+        console.log @courses
+
+        # closable infoarea
+        @divCourseinfo.querySelector('.graphview-close-button').addEventListener('click', (=> @setCourseinfoVisibility(false)), true)
 
         #@svg.addEventListener('click', @_onClick, false)
     # Get a list of all the nodes and their corresponding
@@ -279,10 +333,24 @@ class GraphManager
             @coursesList.push hash
             course.listPos = i
             course.year = node.year
+            # mark each clickable node with a reference to its unmangled hash so we
+            # can get back to it.
             elm = @svg.getElementById(sanitizeId(hash))
             if elm
                 course.elm = elm
                 elm.courseHash = hash
+        # make sure any electives that aren't explicitly
+        # specified have a reference to their info for use on click
+        for cluster in @data.clusters when cluster.courses?.length is 0
+            course = cluster.cluster
+            course.isElectivesNode = true
+            hash = hashCourse(course)
+            @courses[hash] = course
+            elm = @svg.getElementById(sanitizeId(hash))
+            if elm
+                course.elm = elm
+                elm.courseHash = hash
+
         # compute adjacency matrices
         numNodes = @coursesList.length
         @adjacencyMat = Mat.zeros(numNodes, numNodes)
@@ -305,6 +373,10 @@ class GraphManager
     # returns a list of all the prereqs/coreqs for a course
     coursePrereqs: (course, excludeCorreqs=false) ->
         hash = hashCourse(course)
+        # if we're not a standard course (e.g. an electives node), we wont have a listPos.
+        # Bail in this case.
+        if not @courses[hash].listPos?
+            return []
         spanT = Mat.transpose(@span)
         adjT = @adjacencyMatCoreq   # this doesn't need to be transposed because the coreq matrix is symmetric
         index = @courses[hash].listPos
@@ -320,6 +392,10 @@ class GraphManager
     # returns a list of all the prereqs/coreqs for a course
     courseCoreqs: (course) ->
         hash = hashCourse(course)
+        # if we're not a standard course (e.g. an electives node), we wont have a listPos.
+        # Bail in this case.
+        if not @courses[hash].listPos?
+            return []
         adjT = @adjacencyMatCoreq   # this doesn't need to be transposed because the coreq matrix is symmetric
         index = @courses[hash].listPos
         ret = []
@@ -334,9 +410,10 @@ class GraphManager
             @_onCourseClicked(event)
     _onCourseClicked: (event) =>
         elm = event.currentTarget
-        #addClass(elm, 'highlight')
-        console.log elm.courseHash, elm
-        @selectCourse(elm.courseHash)
+        if @currentlySelected is elm.courseHash
+            @deselectAll()
+        else
+            @selectCourse(elm.courseHash)
     # select a course and highlight all its prereqs
     selectCourse: (course) ->
         hash = hashCourse(course)
@@ -355,6 +432,16 @@ class GraphManager
             for elm in @svg.querySelectorAll("[target=#{id}]")
                 addClass(elm, 'highlight')
         @createCourseSummary(course)
+        @currentlySelected = course
+        @setCourseinfoVisibility(true)
+    deselectAll: ->
+        for _,c of @courses
+            removeClass(c.elm, 'highlight')
+        for elm in @svg.querySelectorAll('g.edge')
+            removeClass(elm, 'highlight')
+        @currentlySelected = null
+        @setCourseinfoVisibility(false)
+
     courseRequirementsSummary: (course) ->
         hash = hashCourse(course)
         prereqs = @coursePrereqs(hash, true)
@@ -368,21 +455,48 @@ class GraphManager
         for coreq in coreqs
             c = @courses[coreq]
             years['coreq'].push c
-        
+
         return years
     createCourseSummary: (course) ->
         hash = hashCourse(course)
         course = @courses[course]
         infoArea = document.querySelector('#graphview-courseinfo')
+
+        # we have a special display if we're an electives node
+        if course.isElectivesNode
+            addClass(infoArea.querySelector('#graphview-courseinfo-text'), 'invisible')
+            infoArea = infoArea.querySelector('#graphview-electivesinfo-text')
+            removeClass(infoArea, 'invisible')
+            infoArea.querySelector('.name')?.textContent = course.title
+
+            requirement = "#{course.requirements?.units} #{course.requirements?.unitLabel}"
+            infoArea.querySelector('.title')?.textContent = requirement
+
+            infoArea.querySelector('.description')?.textContent = "Take #{requirement}."
+            return
+
+        addClass(infoArea.querySelector('#graphview-electivesinfo-text'), 'invisible')
+        infoArea = infoArea.querySelector('#graphview-courseinfo-text')
+        removeClass(infoArea, 'invisible')
+
+
         infoArea.querySelector('.name')?.textContent = hash
-        infoArea.querySelector('.title')?.textContent = course.data.title
+        infoArea.querySelector('.title')?.textContent = course.data?.title
+
+        # prepare the appropriate calendar link
+        academicTerm = computeTermFromDate(new Date)
+        link = "http://web.uvic.ca/calendar#{academicTerm.year}/CDs/#{course.subject}/#{course.number}.html"
+        calendarLink = infoArea.querySelector('#graphview-calendar-link')
+        if calendarLink
+            calendarLink.setAttribute('href', link)
+
         for term in ['fall', 'spring', 'summer']
             elm = infoArea.querySelector(".#{term}")
-            if course.data.terms_offered[term]
+            if course.data?.terms_offered[term]
                 removeClass(elm, "hidden")
             else
                 addClass(elm, "hidden")
-        infoArea.querySelector('.description')?.textContent = course.data.description
+        infoArea.querySelector('.description')?.textContent = course.data?.description
 
         # construct the prereq list
         years = @courseRequirementsSummary(course)
@@ -395,7 +509,7 @@ class GraphManager
                 list = []
                 prereqs = years[year]
                 for c in prereqs
-                    list.push "<li>#{hashCourse(c)}</li>"
+                    list.push "<li title='#{c.subject} #{c.number}: #{c.data.title}'>#{hashCourse(c)}</li>"
                 list.sort()
                 elm?.innerHTML = list.join('')
                 if list.length is 0
@@ -410,16 +524,25 @@ class GraphManager
         list = []
         prereqs = years['coreq']
         for c in prereqs
-            list.push "<li>#{hashCourse(c)}</li>"
+            list.push "<li title='#{c.subject} #{c.number}: #{c.data.title}'>#{hashCourse(c)}</li>"
         list.sort()
         elm?.innerHTML = list.join('')
         if list.length is 0
             addClass(parent, "invisible")
         else
             removeClass(parent, "invisible")
+    # sets whether the courseinfo area is visible or not.
+    # This function handles resizing of the graph area, etc.
+    setCourseinfoVisibility: (visible=true) ->
+        if visible
+            removeClass(@divCourseinfo, 'invisible')
+            addClass(@divGraph, 'sidepanel-visible')
+        else
+            addClass(@divCourseinfo, 'invisible')
+            removeClass(@divGraph, 'sidepanel-visible')
 
 
-        
+
 
 
 

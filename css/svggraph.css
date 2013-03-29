@@ -86,6 +86,7 @@ svg .node.selected rect {
 svg .node.highlight rect {
 	stroke-width: 3px;
 	stroke: #DA8C00;
+	fill: #FFF3D8;
 }
 svg .edge.highlight path {
 	stroke-width: 3px;
