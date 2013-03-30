@@ -299,8 +299,8 @@ $(document).ready ->
         drop: (event, ui) ->
             courses = this.getElementsByClassName('courses')[0]
             courses.appendChild(ui.draggable[0])
-            window.courseManager.selectCourse(ui.draggable[0].course)
             window.courseManager.courseMoved(ui.draggable[0].course)
+            window.courseManager.selectCourse(ui.draggable[0].course)
 
     # setup the electives area
     $('#create-new-electives').click ->
@@ -733,27 +733,12 @@ class CourseManager
         @loadingStatus = {}
         @onSubjectLoadedCallbacks = {}
         @graphState = new Graph
+        @mostRecentTerm = ''    # we'd only like to show course availability for the most recent 2 years (6 most recent terms)
     # Based make sure @graphState reflects everything
     # that is in the year chart.
     updateGraphState: ->
-        #XXX playtime
-        getAveEnrollment = (course) ->
-            crns = {}
-            for term,arr of course.data?.terms_offered || {}
-                for c in arr
-                    crns[c.crn] = [c.enrollment, c.capacity]
-            sumE = 0
-            sumC = 0
-            num = 0
-            for crn,val of crns
-                sumE += val[0]
-                sumC += val[1]
-                num += 1
-            return [Math.round(sumE), Math.round(sumC), num]
-
-
-
         @graphState.title = $('#program-info input').val()
+        @graphState.mostRecentTerm = @mostRecentTerm
         # returns whether or not a single course should be inlcuded in the graph
         # and if given a list, will filter the list so only courses that should be displayed remain
         filterDisplayable = (list) =>
@@ -776,11 +761,6 @@ class CourseManager
                 if filterDisplayable(course)
                     courses[hash] =
                         course: course
-                        #course:
-                        #    subject: course.subject
-                        #    number: course.number
-                        #    data:
-                        #        title: ''+getAveEnrollment(course)
                         year: year
         # gather all the clusters of electives that should show up
         clusters = {}
@@ -861,7 +841,7 @@ class CourseManager
             hash = BasicCourse.hashCourse(course)
             @ensureDisplayedInYearChart(course, {state: course.state, year: node.year, load: courseLoadCallback[hash]})
 
-        # display the graph immediately when the preview page is active
+        # display the graph preview when the preview page is active
         if $('a[page=#preview]').hasClass('active')
             #XXX We need to delay
             window.setTimeout(updatePreview, 1000)
@@ -1008,6 +988,8 @@ class CourseManager
 
     # makes all electivesButtons have the same state as button (including
     # making the list of elective courses the same)
+    #
+    # returns a list of hashes of all courses that button has as children
     updateElectivesButton: (button) ->
         data = button.getValues()
         # we will sync the courses manually, we don't want to have a shallow copy of the courses object!
@@ -1018,12 +1000,13 @@ class CourseManager
             # and only those courses
             diff = symmetricDiffObjects(button.courses, electiveButton.courses)
             for hash,course of diff['missing']
-                newCourse = @createCourseButton(course, {clickable: true})
+                newCourse = @createCourseButton(course, {clickable: true, restrictions: 'elective'})
                 electiveButton.addCourse(newCourse)
             for hash,course of diff['excess']
                 electiveButton.removeCourse(course)
 
             electiveButton.update(data)
+        return (k for k of button.courses)
 
     # out of sortableCourses, ensures only course has the selected state
     selectCourse: (course) ->
@@ -1046,13 +1029,14 @@ class CourseManager
             stateButtons = @sortableCoursesStateButtons[selectedCourse]
             if not stateButtons
                 stateButtons = @createCourseStateButton(selectedCourse)
+            stateButtons.setRestrictions(selectedCourse.restrictions)
             $('.course-info .course-name .course-number').html selectedCourse.hash
             $('.course-info .course-name .course-title').html titleCaps(('' + selectedCourse.data.title).toLowerCase())
             # if we don't detach first, jquery removes all bound events and ui widgets, etc.
             $('.course-info .course-state').children().detach()
             $('.course-info .course-state').html stateButtons.elm
             $('.course-info .prereq-area').html PrereqUtils.prereqsToDivs(stateButtons.prereqs, @)
-            $('.course-info .terms-area').html CourseUtils.historyToDivs(selectedCourse.getTermsOffered())
+            $('.course-info .terms-area').html CourseUtils.historyToDivs(selectedCourse.getTermsOffered(@mostRecentTerm, 2))
             #TODO this shouldn't be done with a timeout.  it should be done in a robust way!!
             window.setTimeout((=> $('#dot').val @createDotGraph()), 0)
             @cleanupUnattachedButtons()
@@ -1083,6 +1067,8 @@ class CourseManager
             @makeCourseButtonClickable(course, ops)
         if ops.draggable
             @makeCourseButtonDraggable(course, ops)
+        if ops.restrictions
+            course.restrictions = ops.restrictions
         @addCourse(course)
         @initButtonState(course)
         return course
@@ -1144,7 +1130,7 @@ class CourseManager
             if $(evt.currentTarget).hasClass('noclick')
                 $(evt.currentTarget).removeClass('noclick')
                 return
-            newState = CourseManager.toggleState(button.state)
+            newState = CourseManager.toggleState(button.state, button.restrictions)
             # we need to make sure that the course appears in the yearchart if this option
             # is set
             if ops.insertOnClick
@@ -1181,7 +1167,7 @@ class CourseManager
                 # all electivesButtons are synced up and updated with
                 # their new contents
                 @courseMoved(ui.draggable[0].course)
-                window.courseManager.selectCourse(ui.draggable[0].course)
+                @selectCourse(ui.draggable[0].course)
                 # when we drop a course on an electives block, assume
                 # we want it automatically to be marked as an elective
                 @updateCourseState(ui.draggable[0].course, {required:false, elective:true})
@@ -1191,11 +1177,30 @@ class CourseManager
     # this method is called whenever a course changes levels or
     # gets added or removed from an elective's block
     courseMoved: (course) ->
+        electivesChildren = []
         # see if any of our electivesButtons have changed
         # and if so, update them
-        for hash,course of @sortableCourses
-            if course instanceof ElectivesButton
-                @updateElectivesButton(course)
+        for hash,c of @sortableCourses
+            if c instanceof ElectivesButton
+                children = @updateElectivesButton(c)
+                electivesChildren = electivesChildren.concat children
+        # we now have a list of all child courses of electives.  update course's
+        # state accordingly
+        electivesChildren = (BasicCourse.hashCourse(c) for c in electivesChildren)
+        state = dupObject(course.state)
+        if electivesChildren.indexOf(BasicCourse.hashCourse(course)) >= 0
+            course.restrictions = 'elective'
+            if state.required
+                state.required = false
+                state.elective = true
+                @updateCourseState(course, state)
+        else
+            course.restrictions = 'nonelective'
+            if state.elective
+                state.required = true
+                state.elective = false
+                @updateCourseState(course, state)
+        return
 
     # returns a CourseStateButton for the desired course.  If the course
     # hasn't been loaded yet, it will be loaded and the CourseButton's data will
@@ -1233,17 +1238,29 @@ class CourseManager
             @updateCourseState(button, state)
     # computes an updated state that cycles from none -> required -> elective -> none
     # Does not specify selected or prereq
-    @toggleState: (state) ->
+    @toggleState: (state, restrictions) ->
         ret =
             required: false
             elective: false
-        if state.required
-            ret.elective = true
-        if state.elective
-            ret.elective = false
-        if not (state.required or state.elective)
-            ret.required = true
+        switch restrictions
+            # toggle between elective and none
+            when 'elective'
+                if not state.elective
+                    ret.elective = true
+            # toggle between required and none
+            when 'nonelective'
+                if not state.required
+                    ret.required = true
+            # toggle required -> elective -> none
+            else
+                if state.required
+                    ret.elective = true
+                if state.elective
+                    ret.elective = false
+                if not (state.required or state.elective)
+                    ret.required = true
         return ret
+
     # sets the button state to match the state of
     # the other course buttons currently being managed.
     # If the course isn't currently being managed, nothing is done
@@ -1294,6 +1311,9 @@ class CourseManager
         for c in data
             @courseData[BasicCourse.hashCourse(c)] = c
             @loadedSubjects[c.subject] = true
+            if c.terms_offered
+                for term of c.terms_offered when term > @mostRecentTerm
+                    @mostRecentTerm = term
     # shows courses from a particular department.  If buttons
     # already exist for the department, those buttons are made visible.
     # If not, the buttons are created
@@ -1341,7 +1361,7 @@ class CourseManager
             list.sort()
             container = $(".year#{year} .courses")
             for data in list
-                course = @createCourseButton(data, {clickable: true, selectable: true, draggable: true})
+                course = @createCourseButton(data, {clickable: true, selectable: true, draggable: true, restrictions:'nonelective'})
                 @sortableCourses[course] = course
                 container.append(course.getButton())
                 if ops.animate
@@ -1376,7 +1396,7 @@ class CourseManager
         leadingNumber = '4' if leadingNumber > '4'
         leadingNumber = ops.year if ops.year?
 
-        course = @createCourseButton(@courseData[hash], {clickable: true, selectable: true, draggable: true})
+        course = @createCourseButton(@courseData[hash], {clickable: true, selectable: true, draggable: true, restrictions: 'nonelective'})
         @sortableCourses[course] = course
         $(".year#{leadingNumber} .courses").append(course.getButton())
         @updateCourseState(course, ops.state) if ops.state
@@ -1412,7 +1432,7 @@ CourseUtils =
         for term in ['fall', 'spring', 'summer']
             if hist[term]
                 ret += "<div class='availability #{term}'>#{titleCaps(term)}</div>"
-        return ret || "<div class='notoffered'>Hasn't been offered in the last four years</div>"
+        return ret || "<div class='notoffered'>Hasn't been offered in the last two years</div>"
 
 PrereqUtils =
     prereqsToString: (prereq) ->
@@ -1509,7 +1529,7 @@ PrereqUtils =
         for elm in divs.find('course')
             subject = elm.getAttribute('subject')
             number = elm.getAttribute('number')
-            course = manager.createCourseButton({subject:subject, number:number}, {clickable:true, insertOnClick:true})
+            course = manager.createCourseButton({subject:subject, number:number}, {clickable:true, insertOnClick:true, restrictions:'nonelective'})
             courseElm = course.getButton()
             elm.parentNode.replaceChild(courseElm, elm)
         return divs
@@ -1561,9 +1581,14 @@ class BasicCourse
     update: (@data) ->
         @prereqs = @data.prereqs
 
-    getTermsOffered: ->
+    getTermsOffered: (currentTerm='', goBackNYears=0)->
+        currentYear = parseInt(currentTerm.slice(-4,-2), 10)
         ret = {}
         for k of @data.terms_offered || {}
+            # We may only want to include terms a course was offered in recent years
+            if goBackNYears > 0 and currentTerm
+                if parseInt(k.slice(-4,-2), 10) < currentYear - goBackNYears
+                    continue
             month = k.slice(-2)
             switch month
                 when '09'
@@ -1666,6 +1691,19 @@ class CourseStateButton extends BasicCourse
         @elm.course = null  #make sure we remove the circular ref so we can be garbage collected
         @$elm.remove()
         @elm = @$elm = null
+    # set to be 'elective' or 'nonelective' options
+    # only.  setRestrictions(null) removes the restrictions
+    setRestrictions: (restriction) ->
+        switch restriction
+            when 'elective'
+                @$elm.find('input[value=elective]').button('enable')
+                @$elm.find('input[value=required]').button('disable')
+            when 'nonelective'
+                @$elm.find('input[value=elective]').button('disable')
+                @$elm.find('input[value=required]').button('enable')
+            else
+                @$elm.find('input[value=elective]').button('enable')
+                @$elm.find('input[value=required]').button('enable')
 ###
 # Holds a group of courses
 ###
@@ -1764,7 +1802,7 @@ class ElectivesButton extends Electives
         return
     update: (data) ->
         super(data)
-        # make soure our internal courses list is up to date
+        # make sure our internal courses list is up to date
         @courses = {}
         for elm in @$elm.find('.courses-list').children()
             if elm.course
@@ -1898,7 +1936,7 @@ class Graph
                     data:
                         title: titleCaps(node.course.data?.title)
                         description: node.course.data?.description || ''
-                        terms_offered: node.course.getTermsOffered?() || {}
+                        terms_offered: node.course.getTermsOffered?(@mostRecentTerm, 2) || {}
                 year: node.year
         for _,edge of @edges
             ret.edges.push

@@ -681,8 +681,8 @@ $(document).ready(function() {
       var courses;
       courses = this.getElementsByClassName('courses')[0];
       courses.appendChild(ui.draggable[0]);
-      window.courseManager.selectCourse(ui.draggable[0].course);
-      return window.courseManager.courseMoved(ui.draggable[0].course);
+      window.courseManager.courseMoved(ui.draggable[0].course);
+      return window.courseManager.selectCourse(ui.draggable[0].course);
     }
   });
   $('#create-new-electives').click(function() {
@@ -1278,34 +1278,14 @@ CourseManager = (function() {
     this.loadingStatus = {};
     this.onSubjectLoadedCallbacks = {};
     this.graphState = new Graph;
+    this.mostRecentTerm = '';
   }
 
   CourseManager.prototype.updateGraphState = function() {
-    var cluster, clusterHash, clusters, course, courses, elm, filterDisplayable, getAveEnrollment, hash, year, _i, _j, _k, _l, _len, _len1, _len2, _m, _ref, _ref1, _ref2,
+    var cluster, clusterHash, clusters, course, courses, elm, filterDisplayable, hash, year, _i, _j, _k, _l, _len, _len1, _len2, _m, _ref, _ref1, _ref2,
       _this = this;
-    getAveEnrollment = function(course) {
-      var arr, c, crn, crns, num, sumC, sumE, term, val, _i, _len, _ref, _ref1;
-      crns = {};
-      _ref1 = ((_ref = course.data) != null ? _ref.terms_offered : void 0) || {};
-      for (term in _ref1) {
-        arr = _ref1[term];
-        for (_i = 0, _len = arr.length; _i < _len; _i++) {
-          c = arr[_i];
-          crns[c.crn] = [c.enrollment, c.capacity];
-        }
-      }
-      sumE = 0;
-      sumC = 0;
-      num = 0;
-      for (crn in crns) {
-        val = crns[crn];
-        sumE += val[0];
-        sumC += val[1];
-        num += 1;
-      }
-      return [Math.round(sumE), Math.round(sumC), num];
-    };
     this.graphState.title = $('#program-info input').val();
+    this.graphState.mostRecentTerm = this.mostRecentTerm;
     filterDisplayable = function(list) {
       var c, state, _i, _len, _ref, _ref1;
       if (!list) {
@@ -1674,11 +1654,10 @@ CourseManager = (function() {
   };
 
   CourseManager.prototype.updateElectivesButton = function(button) {
-    var course, data, diff, electiveButton, hash, newCourse, _i, _len, _ref, _ref1, _ref2, _results;
+    var course, data, diff, electiveButton, hash, k, newCourse, _i, _len, _ref, _ref1, _ref2;
     data = button.getValues();
     delete data.courses;
     _ref = this.courses[button] || [];
-    _results = [];
     for (_i = 0, _len = _ref.length; _i < _len; _i++) {
       electiveButton = _ref[_i];
       diff = symmetricDiffObjects(button.courses, electiveButton.courses);
@@ -1686,7 +1665,8 @@ CourseManager = (function() {
       for (hash in _ref1) {
         course = _ref1[hash];
         newCourse = this.createCourseButton(course, {
-          clickable: true
+          clickable: true,
+          restrictions: 'elective'
         });
         electiveButton.addCourse(newCourse);
       }
@@ -1695,9 +1675,16 @@ CourseManager = (function() {
         course = _ref2[hash];
         electiveButton.removeCourse(course);
       }
-      _results.push(electiveButton.update(data));
+      electiveButton.update(data);
     }
-    return _results;
+    return (function() {
+      var _results;
+      _results = [];
+      for (k in button.courses) {
+        _results.push(k);
+      }
+      return _results;
+    })();
   };
 
   CourseManager.prototype.selectCourse = function(course) {
@@ -1733,12 +1720,13 @@ CourseManager = (function() {
       if (!stateButtons) {
         stateButtons = this.createCourseStateButton(selectedCourse);
       }
+      stateButtons.setRestrictions(selectedCourse.restrictions);
       $('.course-info .course-name .course-number').html(selectedCourse.hash);
       $('.course-info .course-name .course-title').html(titleCaps(('' + selectedCourse.data.title).toLowerCase()));
       $('.course-info .course-state').children().detach();
       $('.course-info .course-state').html(stateButtons.elm);
       $('.course-info .prereq-area').html(PrereqUtils.prereqsToDivs(stateButtons.prereqs, this));
-      $('.course-info .terms-area').html(CourseUtils.historyToDivs(selectedCourse.getTermsOffered()));
+      $('.course-info .terms-area').html(CourseUtils.historyToDivs(selectedCourse.getTermsOffered(this.mostRecentTerm, 2)));
       window.setTimeout((function() {
         return $('#dot').val(_this.createDotGraph());
       }), 0);
@@ -1774,6 +1762,9 @@ CourseManager = (function() {
     }
     if (ops.draggable) {
       this.makeCourseButtonDraggable(course, ops);
+    }
+    if (ops.restrictions) {
+      course.restrictions = ops.restrictions;
     }
     this.addCourse(course);
     this.initButtonState(course);
@@ -1849,7 +1840,7 @@ CourseManager = (function() {
         $(evt.currentTarget).removeClass('noclick');
         return;
       }
-      newState = CourseManager.toggleState(button.state);
+      newState = CourseManager.toggleState(button.state, button.restrictions);
       if (ops.insertOnClick) {
         _this.ensureDisplayedInYearChart(button);
       }
@@ -1893,7 +1884,7 @@ CourseManager = (function() {
         }
         button.addCourse(ui.draggable[0].course);
         _this.courseMoved(ui.draggable[0].course);
-        window.courseManager.selectCourse(ui.draggable[0].course);
+        _this.selectCourse(ui.draggable[0].course);
         return _this.updateCourseState(ui.draggable[0].course, {
           required: false,
           elective: true
@@ -1913,18 +1904,41 @@ CourseManager = (function() {
   };
 
   CourseManager.prototype.courseMoved = function(course) {
-    var hash, _ref, _results;
+    var c, children, electivesChildren, hash, state, _ref;
+    electivesChildren = [];
     _ref = this.sortableCourses;
-    _results = [];
     for (hash in _ref) {
-      course = _ref[hash];
-      if (course instanceof ElectivesButton) {
-        _results.push(this.updateElectivesButton(course));
-      } else {
-        _results.push(void 0);
+      c = _ref[hash];
+      if (c instanceof ElectivesButton) {
+        children = this.updateElectivesButton(c);
+        electivesChildren = electivesChildren.concat(children);
       }
     }
-    return _results;
+    electivesChildren = (function() {
+      var _i, _len, _results;
+      _results = [];
+      for (_i = 0, _len = electivesChildren.length; _i < _len; _i++) {
+        c = electivesChildren[_i];
+        _results.push(BasicCourse.hashCourse(c));
+      }
+      return _results;
+    })();
+    state = dupObject(course.state);
+    if (electivesChildren.indexOf(BasicCourse.hashCourse(course)) >= 0) {
+      course.restrictions = 'elective';
+      if (state.required) {
+        state.required = false;
+        state.elective = true;
+        this.updateCourseState(course, state);
+      }
+    } else {
+      course.restrictions = 'nonelective';
+      if (state.elective) {
+        state.required = true;
+        state.elective = false;
+        this.updateCourseState(course, state);
+      }
+    }
   };
 
   CourseManager.prototype.createCourseStateButton = function(course) {
@@ -1977,20 +1991,33 @@ CourseManager = (function() {
     });
   };
 
-  CourseManager.toggleState = function(state) {
+  CourseManager.toggleState = function(state, restrictions) {
     var ret;
     ret = {
       required: false,
       elective: false
     };
-    if (state.required) {
-      ret.elective = true;
-    }
-    if (state.elective) {
-      ret.elective = false;
-    }
-    if (!(state.required || state.elective)) {
-      ret.required = true;
+    switch (restrictions) {
+      case 'elective':
+        if (!state.elective) {
+          ret.elective = true;
+        }
+        break;
+      case 'nonelective':
+        if (!state.required) {
+          ret.required = true;
+        }
+        break;
+      default:
+        if (state.required) {
+          ret.elective = true;
+        }
+        if (state.elective) {
+          ret.elective = false;
+        }
+        if (!(state.required || state.elective)) {
+          ret.required = true;
+        }
     }
     return ret;
   };
@@ -2065,12 +2092,26 @@ CourseManager = (function() {
   };
 
   CourseManager.prototype.courseDataLoaded = function(data, textState, jsXHR) {
-    var c, _i, _len, _results;
+    var c, term, _i, _len, _results;
     _results = [];
     for (_i = 0, _len = data.length; _i < _len; _i++) {
       c = data[_i];
       this.courseData[BasicCourse.hashCourse(c)] = c;
-      _results.push(this.loadedSubjects[c.subject] = true);
+      this.loadedSubjects[c.subject] = true;
+      if (c.terms_offered) {
+        _results.push((function() {
+          var _results1;
+          _results1 = [];
+          for (term in c.terms_offered) {
+            if (term > this.mostRecentTerm) {
+              _results1.push(this.mostRecentTerm = term);
+            }
+          }
+          return _results1;
+        }).call(this));
+      } else {
+        _results.push(void 0);
+      }
     }
     return _results;
   };
@@ -2167,7 +2208,8 @@ CourseManager = (function() {
         course = this.createCourseButton(data, {
           clickable: true,
           selectable: true,
-          draggable: true
+          draggable: true,
+          restrictions: 'nonelective'
         });
         this.sortableCourses[course] = course;
         container.append(course.getButton());
@@ -2224,7 +2266,8 @@ CourseManager = (function() {
     course = this.createCourseButton(this.courseData[hash], {
       clickable: true,
       selectable: true,
-      draggable: true
+      draggable: true,
+      restrictions: 'nonelective'
     });
     this.sortableCourses[course] = course;
     $(".year" + leadingNumber + " .courses").append(course.getButton());
@@ -2285,7 +2328,7 @@ CourseUtils = {
         ret += "<div class='availability " + term + "'>" + (titleCaps(term)) + "</div>";
       }
     }
-    return ret || "<div class='notoffered'>Hasn't been offered in the last four years</div>";
+    return ret || "<div class='notoffered'>Hasn't been offered in the last two years</div>";
   }
 };
 
@@ -2445,7 +2488,8 @@ PrereqUtils = {
         number: number
       }, {
         clickable: true,
-        insertOnClick: true
+        insertOnClick: true,
+        restrictions: 'nonelective'
       });
       courseElm = course.getButton();
       elm.parentNode.replaceChild(courseElm, elm);
@@ -2540,10 +2584,22 @@ BasicCourse = (function() {
     return this.prereqs = this.data.prereqs;
   };
 
-  BasicCourse.prototype.getTermsOffered = function() {
-    var k, month, ret;
+  BasicCourse.prototype.getTermsOffered = function(currentTerm, goBackNYears) {
+    var currentYear, k, month, ret;
+    if (currentTerm == null) {
+      currentTerm = '';
+    }
+    if (goBackNYears == null) {
+      goBackNYears = 0;
+    }
+    currentYear = parseInt(currentTerm.slice(-4, -2), 10);
     ret = {};
     for (k in this.data.terms_offered || {}) {
+      if (goBackNYears > 0 && currentTerm) {
+        if (parseInt(k.slice(-4, -2), 10) < currentYear - goBackNYears) {
+          continue;
+        }
+      }
       month = k.slice(-2);
       switch (month) {
         case '09':
@@ -2704,6 +2760,20 @@ CourseStateButton = (function(_super) {
     this.elm.course = null;
     this.$elm.remove();
     return this.elm = this.$elm = null;
+  };
+
+  CourseStateButton.prototype.setRestrictions = function(restriction) {
+    switch (restriction) {
+      case 'elective':
+        this.$elm.find('input[value=elective]').button('enable');
+        return this.$elm.find('input[value=required]').button('disable');
+      case 'nonelective':
+        this.$elm.find('input[value=elective]').button('disable');
+        return this.$elm.find('input[value=required]').button('enable');
+      default:
+        this.$elm.find('input[value=elective]').button('enable');
+        return this.$elm.find('input[value=required]').button('enable');
+    }
   };
 
   return CourseStateButton;
@@ -3082,7 +3152,7 @@ Graph = (function() {
           data: {
             title: titleCaps((_ref1 = node.course.data) != null ? _ref1.title : void 0),
             description: ((_ref2 = node.course.data) != null ? _ref2.description : void 0) || '',
-            terms_offered: (typeof (_base = node.course).getTermsOffered === "function" ? _base.getTermsOffered() : void 0) || {}
+            terms_offered: (typeof (_base = node.course).getTermsOffered === "function" ? _base.getTermsOffered(this.mostRecentTerm, 2) : void 0) || {}
           }
         },
         year: node.year
