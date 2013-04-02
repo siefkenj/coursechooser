@@ -47,7 +47,7 @@ resize = function(svg) {
   document.getElementById('graphview-zoom-fit').onclick = function() {
     return zoomer.zoomFit();
   };
-  window.manager = new GraphManager(svg);
+  window.manager = new GraphManager(svg, zoomer);
 };
 
 /*
@@ -263,6 +263,7 @@ SVGZoomer = (function() {
     }
     this.currentZoomFactor = 1;
     this.aspect = this.width / this.height;
+    this.lastZoomAction = null;
     this.zoom();
     this.buttonPressed = false;
     this.oldMousePos = [-1, -1];
@@ -320,6 +321,7 @@ SVGZoomer = (function() {
     if (factor == null) {
       factor = this.ZOOM_FACTOR;
     }
+    this.lastZoomAction = 'in';
     this.currentZoomFactor *= factor;
     return this.zoom();
   };
@@ -328,12 +330,14 @@ SVGZoomer = (function() {
     if (factor == null) {
       factor = this.ZOOM_FACTOR;
     }
+    this.lastZoomAction = 'out';
     this.currentZoomFactor /= factor;
     return this.zoom();
   };
 
   SVGZoomer.prototype.zoomFit = function() {
     var height, width, _ref;
+    this.lastZoomAction = 'fit';
     _ref = this.parent.getBoundingClientRect(), width = _ref.width, height = _ref.height;
     this.currentZoomFactor = width / this.width;
     return this.zoom();
@@ -401,10 +405,11 @@ GraphManager = (function() {
     return elm.setAttribute('class', newCls.join(' '));
   };
 
-  function GraphManager(svg) {
-    var desc, elm, info, _i, _j, _len, _len1, _ref, _ref1,
+  function GraphManager(svg, zoomer) {
+    var closeInfoArea, desc, elm, info, _i, _j, _len, _len1, _ref, _ref1,
       _this = this;
     this.svg = svg;
+    this.zoomer = zoomer;
     this._onCourseClicked = __bind(this._onCourseClicked, this);
 
     this._onClick = __bind(this._onClick, this);
@@ -446,9 +451,14 @@ GraphManager = (function() {
       }
     }
     console.log(this.courses);
-    this.divCourseinfo.querySelector('.graphview-close-button').addEventListener('click', (function() {
-      return _this.setCourseinfoVisibility(false);
-    }), true);
+    closeInfoArea = function() {
+      var _ref2;
+      _this.setCourseinfoVisibility(false);
+      if (((_ref2 = _this.zoomer) != null ? _ref2.lastZoomAction : void 0) === 'fit') {
+        return _this.zoomer.zoomFit();
+      }
+    };
+    this.divCourseinfo.querySelector('.graphview-close-button').addEventListener('click', closeInfoArea, true);
   }
 
   GraphManager.prototype.processData = function() {

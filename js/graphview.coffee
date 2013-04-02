@@ -40,7 +40,7 @@ resize = (svg) ->
     document.getElementById('graphview-zoom-fit').onclick = ->
         zoomer.zoomFit()
 
-    window.manager = new GraphManager(svg)
+    window.manager = new GraphManager(svg, zoomer)
     return
 
 ###
@@ -177,6 +177,7 @@ class SVGZoomer
         @currentZoomFactor = 1
         @aspect = @width/@height
 
+        @lastZoomAction = null # keep track of whether our last call was zoomFit or not.
         @zoom()
 
         # panning state
@@ -226,12 +227,15 @@ class SVGZoomer
         return
 
     zoomIn: (factor=@ZOOM_FACTOR) ->
+        @lastZoomAction = 'in'
         @currentZoomFactor *= factor
         @zoom()
     zoomOut: (factor=@ZOOM_FACTOR) ->
+        @lastZoomAction = 'out'
         @currentZoomFactor /= factor
         @zoom()
     zoomFit: () ->
+        @lastZoomAction = 'fit'
         {width, height} = @parent.getBoundingClientRect()
         @currentZoomFactor = width/@width
         @zoom()
@@ -286,7 +290,7 @@ class GraphManager
     #        return false if style["visibility"] is "hidden"
     #    return isVisible obj.parentNode
 
-    constructor: (@svg) ->
+    constructor: (@svg, @zoomer) ->
         # compatibility stuff
         @svg.getElementById = @svg.getElementById || (id) => @parent.getElementById(id)
         @svg.querySelector = @svg.querySelector || (str) => @parent.querySelector(str)
@@ -317,7 +321,14 @@ class GraphManager
         console.log @courses
 
         # closable infoarea
-        @divCourseinfo.querySelector('.graphview-close-button').addEventListener('click', (=> @setCourseinfoVisibility(false)), true)
+        closeInfoArea = =>
+            @setCourseinfoVisibility(false)
+            # if you zoom-fit while the infoarea was open and you
+            # close it, you expect the graph to fit to the newly-enlarged area
+            if @zoomer?.lastZoomAction is 'fit'
+                @zoomer.zoomFit()
+                
+        @divCourseinfo.querySelector('.graphview-close-button').addEventListener('click', closeInfoArea, true)
 
         #@svg.addEventListener('click', @_onClick, false)
     # Get a list of all the nodes and their corresponding
