@@ -204,6 +204,11 @@ reparent = (elm, newParent, ops={}) ->
                 ops.complete.hasRun = true
     return
 
+localStorageWrapper = (action='get', data) ->
+    $.jStorage.reInit()
+    if action is 'get'
+        return $.jStorage.get('coursechooser')
+    $.jStorage.set('coursechooser', data)
 
 $(document).ready ->
     $('.course-status').buttonset().disableSelection()
@@ -366,7 +371,28 @@ $(document).ready ->
             files = event.target.files
             FileHandler.handleFiles(files)
             dialog.remove()
-
+    $('#new').click ->
+        clearAll = ->
+            window.courseManager.clearAll()
+            $('#program-info input').val('')
+            showPage('#welcome')
+        dialog = $('''
+            <div title="Start a new Program?">
+            <p><span class="ui-icon ui-icon-alert" style="float: left; margin: 0 7px 20px 0;"></span>
+            Warning: all unsaved data will be lost and an
+            empty program will be presented.</p>
+            </div>''')
+        $(document.body).append(dialog)
+        dialog.dialog
+            height: 200
+            modal: true
+            resizable: false
+            buttons:
+                'Continue': ->
+                    dialog.remove()
+                    clearAll()
+                'Cancel': ->
+                    dialog.remove()
     ZOOM_FACTOR = 1.25
     $('#zoom-preview-in').click ->
         svg = $('#map-container svg')[0]
@@ -460,6 +486,23 @@ $(document).ready ->
                 finish: =>
                     $(@).find('.throbber').remove()
             return
+
+    # set up autosaves and autoloads
+    saveGraph = ->
+        window.courseManager.updateGraphState()
+        data = window.courseManager.graphState.toJSON()
+        localStorageWrapper('set', data)
+        return
+    $(window).bind 'beforeunload', ->
+        saveGraph()
+    window.setInterval(saveGraph, 1000*5*60)     # autosave every 5 minutes
+    window.setTimeout (->
+        data = localStorageWrapper('get')
+        if data
+            try
+                window.courseManager.loadGraph data
+            catch e
+                console.log 'could no load local storage data'), 0
 
     # we'd like to show up on the correct tab when we relaod with a hash
     window.onhashchange?()
@@ -570,7 +613,7 @@ updatePreview = (ops={preserveSelection: false}) ->
             # at the beginning, so filter them away
             xdotCode = xdotCode.slice(xdotCode.indexOf('digraph {'))
             ast = DotParser.parse(xdotCode)
-            svgManager = new SVGGraphManager(new SVGDot(ast))
+            svgManager = new SVGGraphManager(new SVGDot(ast), window.courseManager.graphState)
 
             oldSvgManager = window.courseManager.svgManager
             oldSelection = []
@@ -634,21 +677,39 @@ class SVGGraphManager
         oldCls = elm.getAttribute('class')
         newCls = (c for c in oldCls.split(/\s+/) when c isnt cls)
         elm.setAttribute('class', newCls.join(' '))
+    sanitizeId = (str) ->
+        return (''+str).replace(/\W+/g,'-')
 
     @utils:
         addClass: addClass
         removeClass: removeClass
 
-    constructor: (@svgGraph) ->
+    constructor: (@svgGraph, @graphState) ->
         @svgGraph.render()
         @svg = @svgGraph.svg
         @$svg = $(@svgGraph.svg)
+        @addReferenceToCourseToNodes()
         @$svg.find('.node').click (event) =>
-            id = event.currentTarget.getAttribute('id')
-            [subject, number] = id.split('-')
-            @nodeClicked({subject, number})
+            elm = event.currentTarget
+            if elm.isElectivesNode
+                course = @graphState.clusters[elm.courseHash]
+                @electivesNodeClicked(course.cluster)
+            else
+                course = @graphState.nodes[elm.courseHash]
+                @courseClicked(course.course)
 
         @selected = [null, null]    # currently selected nodes
+    # adds a .courseHash expando property to all svg nodes corresponding to a course
+    addReferenceToCourseToNodes: ->
+        for hash of @graphState.nodes
+            elm = @$svg.find("##{sanitizeId(hash)}")[0]
+            if elm
+                elm.courseHash = hash
+        for hash of @graphState.clusters
+            elm = @$svg.find("##{sanitizeId(hash)}")[0]
+            if elm
+                elm.courseHash = hash
+                elm.isElectivesNode = true
     selectEdgeBetween: (elm1, elm2) ->
         id1 = elm1.getAttribute('id')
         id2 = elm2.getAttribute('id')
@@ -658,6 +719,17 @@ class SVGGraphManager
             addClass(edge, 'highlight')
 
     select: (elm) ->
+        # special behavior when clicking an electivesNode
+        if elm.isElectivesNode
+            @selected[0] = elm
+            addClass(elm, 'selected')
+            @selectionChanged?()
+            return
+        # if we have any electivesNodes selected and we click something else, we want
+        # to deselect them instead of adding them to the queue.
+        if @selected[0]?.isElectivesNode or @selected[1]?.isElectivesNode
+            @deselectAll()
+
         # if the queue is full, cyclically rotate
         if @selected[0] and @selected[1]
             @deselct(@selected[0])
@@ -687,8 +759,8 @@ class SVGGraphManager
         @selected[1] = null
         @selectionChanged?()
 
-    nodeClicked: (course) ->
-        clickedNode = $("##{course.subject}-#{course.number}")[0]
+    courseClicked: (course) ->
+        clickedNode = $("##{sanitizeId(BasicCourse.hashCourse(course))}")[0]
 
         for edge in @$svg.find('.edge.highlight')
             removeClass(edge, 'highlight')
@@ -702,21 +774,24 @@ class SVGGraphManager
             @selected[1] = null
         @select(clickedNode)
 
+    electivesNodeClicked: (course) ->
+        clickedNode = $("##{sanitizeId(BasicCourse.hashCourse(course))}")[0]
+        @deselectAll()
+
+        @select(clickedNode, true)
+
     highlightPrereqPath: (course) ->
         for elm in @$svg.find('.highlight')
             removeClass(elm, 'highlight')
 
         # highight the node and all its anscestors
         highlight = (node) =>
-            console.log 'highlighting', node
             addClass($(node)[0], "highlight")
             id = $(node).attr('id')
             for arrow in @$svg.find("[target=#{id}]")
                 addClass(arrow, "highlight")
                 highlight($("##{arrow.attr('origin')}"))
         highlight("##{course.subject}-#{course.number}")
-
-        console.log course, course.subject, course.number
 
 ###
 # Class to manage and keep the sync of all course on the webpage
@@ -852,7 +927,19 @@ class CourseManager
             return {subject, number}
 
         @svgManager = svgManager
-        @svgManager.selectionChanged = ->
+        @svgManager.selectionChanged = =>
+            # special behavior for when we click an electives block.
+            # We want to be able to edit its extra properties.
+            if svgManager.selected[0]?.isElectivesNode
+                elm = svgManager.selected[0]
+                course = @sortableCourses[elm.courseHash]
+                course.data = course.data || {}
+                $('#preview-tabs').tabs('select', '#tab-electives-graphical')
+                $('#currently-selected-electivesNode').html course.title
+                @bindElectivesDescription(course)
+                return
+
+            $('#preview-tabs').tabs('select', '#tab-edges')
             if not (svgManager.selected[0] and svgManager.selected[1])
                 elm = 0
                 if svgManager.selected[0]
@@ -946,7 +1033,6 @@ class CourseManager
         if @sortableCourses[course]
             # reparent all of the electives children
             for _,c of @sortableCourses[course].courses
-                console.log c, @sortableCourses[course]
                 @sortableCourses[course].$elm.parent().append(c.$elm)
                 @updateCourseState(c, {required:false, elective:false})
             @sortableCourses[course].removeCourse(c, {detach: false})
@@ -1421,6 +1507,29 @@ class CourseManager
     createDotGraph: ->
         @updateGraphState()
         return @graphState.toDot()
+    # binds text boxes to the extra data belonging
+    # to an electivesNode (e.g. description, link to more
+    # info, etc.)
+    bindElectivesDescription: (course) ->
+        data = course.data
+        $('#electives-description').val(data.description || '')
+        $('#electives-url').val(data.url || '')
+
+        descriptionChange = ->
+            val = $('#electives-description').val()
+            data.description = val
+        urlChange = ->
+            val = $('#electives-url').val()
+            data.url = val
+
+        # let's bind the old way so our new binding
+        # always replaces our old
+        $('#electives-description')[0].onkeyup = ->
+            window.setTimeout(descriptionChange, 0)
+        $('#electives-url')[0].onkeyup = ->
+            window.setTimeout(urlChange, 0)
+
+
 
 ###
 # Utility functions for dealing with lists of courses and their prereqs
@@ -1710,6 +1819,7 @@ class CourseStateButton extends BasicCourse
 class Electives
     constructor: (data) ->
         {@title, @requirements, @number} = data
+        @data = data.data || {}
         # make sure we don't just use the courses object that was passed in,
         # we want to shallow copy so we actually have an internal copy!
         @courses = dupObject(data.courses || {})
@@ -1944,7 +2054,7 @@ class Graph
                 properties: edge.properties || {}
         for _,cluster of @clusters
             elective = cluster.cluster
-            ret.clusters.push
+            obj =
                 cluster:
                     subject: elective.subject
                     number: elective.number
@@ -1952,8 +2062,12 @@ class Graph
                     requirements:
                         units: elective.requirements.units
                         unitLabel: elective.requirements.unitLabel
+                    data: {}
                 year: cluster.year
                 courses: ({subject: c.subject, number: c.number} for c in cluster.courses)
+            obj.cluster.data.description = elective.data.description if elective.data?.description
+            obj.cluster.data.url = elective.data.url if elective.data?.url
+            ret.clusters.push obj
         if stringify
             return JSON.stringify(ret)
         return ret
