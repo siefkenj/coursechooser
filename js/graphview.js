@@ -659,7 +659,7 @@ GraphManager = (function() {
   };
 
   GraphManager.prototype.createCourseSummary = function(course) {
-    var academicTerm, c, calendarLink, elm, hash, infoArea, link, list, numPrereqs, parent, prereqs, requirement, term, year, years, _i, _j, _k, _l, _len, _len1, _len2, _len3, _ref, _ref1, _ref10, _ref11, _ref12, _ref2, _ref3, _ref4, _ref5, _ref6, _ref7, _ref8, _ref9;
+    var academicTerm, c, calendarLink, elm, emailRegexp, formatted, hash, infoArea, infoLink, link, list, numPrereqs, parent, prereqs, requirement, term, urlRegex, year, years, _i, _j, _k, _l, _len, _len1, _len2, _len3, _ref, _ref1, _ref10, _ref11, _ref12, _ref13, _ref14, _ref15, _ref16, _ref2, _ref3, _ref4, _ref5, _ref6, _ref7, _ref8, _ref9;
     hash = hashCourse(course);
     course = this.courses[course];
     infoArea = document.querySelector('#graphview-courseinfo');
@@ -670,23 +670,47 @@ GraphManager = (function() {
       if ((_ref = infoArea.querySelector('.name')) != null) {
         _ref.textContent = course.title;
       }
-      requirement = "" + ((_ref1 = course.requirements) != null ? _ref1.units : void 0) + " " + ((_ref2 = course.requirements) != null ? _ref2.unitLabel : void 0);
-      if ((_ref3 = infoArea.querySelector('.title')) != null) {
-        _ref3.textContent = requirement;
+      link = ((_ref1 = course.data) != null ? _ref1.url : void 0) || '#';
+      calendarLink = infoArea.querySelector('#graphview-electivesinfo-link');
+      if (calendarLink) {
+        calendarLink.setAttribute('href', link);
       }
-      if ((_ref4 = infoArea.querySelector('.description')) != null) {
-        _ref4.textContent = "Take " + requirement + ".";
+      if ((_ref2 = course.data) != null ? _ref2.url : void 0) {
+        removeClass(infoArea.querySelector('.moreinfo'), 'invisible');
+        infoLink = infoArea.querySelector('.moreinfo a');
+        infoLink.setAttribute('href', link);
+        infoLink.textContent = link;
+      } else {
+        addClass(infoArea.querySelector('.moreinfo'), 'invisible');
+      }
+      requirement = "" + ((_ref3 = course.requirements) != null ? _ref3.units : void 0) + " " + ((_ref4 = course.requirements) != null ? _ref4.unitLabel : void 0);
+      if ((_ref5 = infoArea.querySelector('.title')) != null) {
+        _ref5.textContent = requirement;
+      }
+      if ((_ref6 = course.data) != null ? _ref6.description : void 0) {
+        emailRegexp = /([\w\-\.]+@[\w\-\.]+)/gi;
+        urlRegex = /((http:|https:)\/\/[\w\-\.~%?\/\#]+)/gi;
+        formatted = course.data.description.replace(/\n(\s|\n)*\n/g, '<br/><br/>');
+        formatted = formatted.replace(urlRegex, "<a href='$1'>$1</a>");
+        formatted = formatted.replace(emailRegexp, "<a href='mailto::$1'>$1</a>");
+        if ((_ref7 = infoArea.querySelector('.description')) != null) {
+          _ref7.innerHTML = formatted;
+        }
+      } else {
+        if ((_ref8 = infoArea.querySelector('.description')) != null) {
+          _ref8.textContent = "Take " + requirement + ".";
+        }
       }
       return;
     }
     addClass(infoArea.querySelector('#graphview-electivesinfo-text'), 'invisible');
     infoArea = infoArea.querySelector('#graphview-courseinfo-text');
     removeClass(infoArea, 'invisible');
-    if ((_ref5 = infoArea.querySelector('.name')) != null) {
-      _ref5.textContent = hash;
+    if ((_ref9 = infoArea.querySelector('.name')) != null) {
+      _ref9.textContent = hash;
     }
-    if ((_ref6 = infoArea.querySelector('.title')) != null) {
-      _ref6.textContent = (_ref7 = course.data) != null ? _ref7.title : void 0;
+    if ((_ref10 = infoArea.querySelector('.title')) != null) {
+      _ref10.textContent = (_ref11 = course.data) != null ? _ref11.title : void 0;
     }
     academicTerm = computeTermFromDate(new Date);
     link = "http://web.uvic.ca/calendar" + academicTerm.year + "/CDs/" + course.subject + "/" + course.number + ".html";
@@ -694,26 +718,26 @@ GraphManager = (function() {
     if (calendarLink) {
       calendarLink.setAttribute('href', link);
     }
-    _ref8 = ['fall', 'spring', 'summer'];
-    for (_i = 0, _len = _ref8.length; _i < _len; _i++) {
-      term = _ref8[_i];
+    _ref12 = ['fall', 'spring', 'summer'];
+    for (_i = 0, _len = _ref12.length; _i < _len; _i++) {
+      term = _ref12[_i];
       elm = infoArea.querySelector("." + term);
-      if ((_ref9 = course.data) != null ? _ref9.terms_offered[term] : void 0) {
+      if ((_ref13 = course.data) != null ? _ref13.terms_offered[term] : void 0) {
         removeClass(elm, "hidden");
       } else {
         addClass(elm, "hidden");
       }
     }
-    if ((_ref10 = infoArea.querySelector('.description')) != null) {
-      _ref10.textContent = (_ref11 = course.data) != null ? _ref11.description : void 0;
+    if ((_ref14 = infoArea.querySelector('.description')) != null) {
+      _ref14.textContent = (_ref15 = course.data) != null ? _ref15.description : void 0;
     }
     years = this.courseRequirementsSummary(course);
     numPrereqs = years[1].length + years[2].length + years[3].length + years[4].length;
     if (numPrereqs > 0) {
       removeClass(infoArea.querySelector('.prereq'), "invisible");
-      _ref12 = [1, 2, 3, 4];
-      for (_j = 0, _len1 = _ref12.length; _j < _len1; _j++) {
-        year = _ref12[_j];
+      _ref16 = [1, 2, 3, 4];
+      for (_j = 0, _len1 = _ref16.length; _j < _len1; _j++) {
+        year = _ref16[_j];
         parent = infoArea.querySelector(".year" + year);
         elm = parent.querySelector('ul');
         list = [];

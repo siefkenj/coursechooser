@@ -75,6 +75,11 @@
 #graphview-courseinfo a {
 	color: inherit;
 	text-decoration: inherit;
+	word-wrap: break-word;
+	/* older browser support */
+	-ms-word-break: break-all;
+	word-break: break-all;
+	word-break: break-word;
 }
 #graphview-courseinfo a:hover {
 	text-decoration: underline;

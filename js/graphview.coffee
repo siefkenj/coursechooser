@@ -267,6 +267,7 @@ class GraphManager
             return
         newCls = (c for c in oldCls.split(/\s+/) when c isnt cls)
         elm.setAttribute('class', newCls.join(' '))
+    
     # from http://dzone.com/snippets/javascript-function-checks-dom
     # checkes whether an element is visible or not
     #isVisible = (obj) ->
@@ -480,10 +481,35 @@ class GraphManager
             removeClass(infoArea, 'invisible')
             infoArea.querySelector('.name')?.textContent = course.title
 
+            link = course.data?.url || '#'
+            calendarLink = infoArea.querySelector('#graphview-electivesinfo-link')
+            if calendarLink
+                calendarLink.setAttribute('href', link)
+            if course.data?.url
+                removeClass(infoArea.querySelector('.moreinfo'), 'invisible')
+                infoLink = infoArea.querySelector('.moreinfo a')
+                infoLink.setAttribute('href', link)
+                infoLink.textContent = link
+            else
+                addClass(infoArea.querySelector('.moreinfo'), 'invisible')
+                
+
             requirement = "#{course.requirements?.units} #{course.requirements?.unitLabel}"
             infoArea.querySelector('.title')?.textContent = requirement
 
-            infoArea.querySelector('.description')?.textContent = "Take #{requirement}."
+            if course.data?.description
+                # let's do some pretty formatting of the description so it looks
+                # more like how it was typed
+                emailRegexp = /([\w\-\.]+@[\w\-\.]+)/gi
+                urlRegex = /((http:|https:)\/\/[\w\-\.~%?\/\#]+)/gi
+                
+                formatted = course.data.description.replace(/\n(\s|\n)*\n/g,'<br/><br/>')
+                formatted = formatted.replace(urlRegex, "<a href='$1'>$1</a>")
+                formatted = formatted.replace(emailRegexp, "<a href='mailto::$1'>$1</a>")
+                infoArea.querySelector('.description')?.innerHTML = formatted
+            else
+                infoArea.querySelector('.description')?.textContent = "Take #{requirement}."
+
             return
 
         addClass(infoArea.querySelector('#graphview-electivesinfo-text'), 'invisible')
