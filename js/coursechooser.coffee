@@ -501,6 +501,9 @@ $(document).ready ->
         if data
             try
                 window.courseManager.loadGraph data
+                # make sure the welcome page is updated after any previous data has been loaded
+                #XXX ugly hack!
+                window.setTimeout(updateWelcomePage, 100)
             catch e
                 console.log 'could no load local storage data'), 0
 
@@ -524,7 +527,23 @@ prepareWelcomePage = ->
 
     $('#goto-course-chooser').click ->
         showPage('#course-chooser', {animate: true, complete: (-> $('#show-courses').trigger('click'))})
+    $('#welcome-new-program').click ->
+        $('#new').click()
+
+    updateWelcomePage()
     return
+# shows and hides things on the welcome page (such as next/new button)
+# based upon the current state.
+updateWelcomePage = ->
+    # if there are any sortable courses, assume we are working off an existing
+    # program, otherwise assume a new and empty program
+    console.log window.courseManager?.sortableCourses
+    if window.courseManager?.sortableCourses and Object.keys(window.courseManager.sortableCourses).length is 0
+        $('#welcome-new').hide()
+        $('#welcome-next').show()
+    else
+        $('#welcome-new').show()
+        $('#welcome-next').hide()
 
 prepareNavMenu = ->
     makeLinkShow = (link, target) ->
@@ -536,10 +555,6 @@ prepareNavMenu = ->
         target = elm.attr('href')
         #elm.attr({href: 'javascript: void 0;'})
         makeLinkShow(elm, target)
-
-    # when we switch to the preview window, we want to load the viz library
-    $('a[page=#preview]').click ->
-        onPreviewPageShow()
 
     # make sure the back button works--that is when the index.html#foo changes,
     # make the appropriate page display
@@ -559,6 +574,13 @@ showPage = (page, ops={}) ->
         else
             elm.removeClass('active')
     target = $(page)
+
+    switch page
+        when '#welcome'
+            updateWelcomePage()
+        when '#preview'
+            onPreviewPageShow()
+
     # if we're not animating, we don't need to do
     # anything fancy, so just ensure our container elements
     # are all filled
@@ -593,6 +615,8 @@ showPage = (page, ops={}) ->
     for elm in needsAnimation
         container = target.find(".container[contains=#{elm}]")
         reparent(elm, container, {animate: true, origin: offsets[elm], complete: ops.complete})
+
+    # special actions to be taken on particular pages
     return
 
 updatePreview = (ops={preserveSelection: false}) ->
