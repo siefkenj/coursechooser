@@ -3441,7 +3441,7 @@ Graph = (function() {
     _results = [];
     for (hash in _ref) {
       edge = _ref[hash];
-      if ((!this.nodes[edge.edge[0]]) || (!this.nodes[edge.edge[0]])) {
+      if ((!this.nodes[edge.edge[0]]) || (!this.nodes[edge.edge[1]])) {
         _results.push(this.removeEdge(hash));
       } else {
         _results.push(void 0);

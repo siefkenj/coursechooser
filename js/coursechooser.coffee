@@ -2136,7 +2136,7 @@ class Graph
     # not in @nodes and removes them
     pruneOrphanedEdges: ->
         for hash,edge of @edges
-            if (not @nodes[edge.edge[0]]) or (not @nodes[edge.edge[0]])
+            if (not @nodes[edge.edge[0]]) or (not @nodes[edge.edge[1]])
                 @removeEdge(hash)
     # generates edges based on the prereqs
     # of each node.  The generated edges are compared
