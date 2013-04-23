@@ -96,6 +96,22 @@ svg .edge.highlight path {
 svg .edge.highlight polygon {
 	fill: #DA8C00;
 }
+svg .node.highlight2 rect {
+	stroke-width: 3px;
+	stroke: rgb(129,0,134);
+	fill: #FFFFFF;
+}
+svg .edge.highlight2 path {
+	stroke-width: 3px;
+	stroke: rgb(129,0,134);
+	/*stroke: #0058da;*/
+}
+svg .edge.highlight2 polygon {
+	stroke: rgb(129,0,134);
+}
+svg .node.transparent {
+	opacity: 0.4;
+}
 
 
 

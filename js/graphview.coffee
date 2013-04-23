@@ -160,9 +160,14 @@ class SVGZoomer
         @parent = @svg.parentNode
 
         # compatibility stuff
-        @svg.getElementById = @svg.getElementById || (id) => @parent.getElementById(id)
-        @svg.querySelector = @svg.querySelector || (srt) => @parent.querySelector(str)
-        @svg.querySelectorAll = @svg.querySelectorAll || (srt) => @parent.querySelectorAll(str)
+        try
+            # see if we can successfully execute the builtin getElementById by trying to locate a bogus element
+            @svg.getElementById('boguselement')
+            @svg.querySelector('boguselement')
+        catch e
+            @svg.getElementById = (id) => document.getElementById(id)
+            @svg.querySelector = (str) => @parent.querySelector(str)
+            @svg.querySelectorAll = (str) => @parent.querySelectorAll(str)
 
         # get the dimensions
         if @svg.getAttribute('viewBox')
@@ -267,7 +272,7 @@ class GraphManager
             return
         newCls = (c for c in oldCls.split(/\s+/) when c isnt cls)
         elm.setAttribute('class', newCls.join(' '))
-    
+
     # from http://dzone.com/snippets/javascript-function-checks-dom
     # checkes whether an element is visible or not
     #isVisible = (obj) ->
@@ -293,14 +298,21 @@ class GraphManager
 
     constructor: (@svg, @zoomer) ->
         # compatibility stuff
-        @svg.getElementById = @svg.getElementById || (id) => @parent.getElementById(id)
-        @svg.querySelector = @svg.querySelector || (str) => @parent.querySelector(str)
-        @svg.querySelectorAll = @svg.querySelectorAll || (str) => @parent.querySelectorAll(str)
+        try
+            # see if we can successfully execute the builtin getElementById by trying to locate a bogus element
+            @svg.getElementById('boguselement')
+            @svg.querySelector('boguselement')
+        catch e
+            @svg.getElementById = (id) => document.getElementById(id)
+            @svg.querySelector = (str) => @parent.querySelector(str)
+            @svg.querySelectorAll = (str) => @parent.querySelectorAll(str)
 
         @parent = @svg.parentNode
         @divCourseinfo = document.getElementById('graphview-courseinfo')
         @divGraph = document.getElementById('graphview-graph')
+        @divNav = document.getElementById('graphview-nav')
         @currentlySelected = null
+        @currentlySelectedTerms = {fall: true, spring: true, summer: true}
 
         # remove any styles that have been inserted, we will use stylesheets instead
         for elm in @svg.querySelectorAll('*')
@@ -328,8 +340,13 @@ class GraphManager
             # close it, you expect the graph to fit to the newly-enlarged area
             if @zoomer?.lastZoomAction is 'fit'
                 @zoomer.zoomFit()
-                
+
         @divCourseinfo.querySelector('.graphview-close-button').addEventListener('click', closeInfoArea, true)
+
+        # set up the term selection menu
+        @divNav.querySelector('#graphview-term-menu-fall').addEventListener('click', @_createTermToggler('fall'), true)
+        @divNav.querySelector('#graphview-term-menu-spring').addEventListener('click', @_createTermToggler('spring'), true)
+        @divNav.querySelector('#graphview-term-menu-summer').addEventListener('click', @_createTermToggler('summer'), true)
 
         #@svg.addEventListener('click', @_onClick, false)
     # Get a list of all the nodes and their corresponding
@@ -416,6 +433,29 @@ class GraphManager
         for e,i in adjT[index] when (e and not (hash is @coursesList[i]))
             ret.push @coursesList[i]
         return ret
+    # returns a callback to be executed whenever
+    # the visibility checkbox for that term is checked
+    # term is in ['fall','spring','summer','any']
+    _createTermToggler: (term) ->
+        callback = =>
+            switch term
+                when 'fall'
+                    @currentlySelectedTerms['fall'] = not @currentlySelectedTerms['fall']
+                when 'spring'
+                    @currentlySelectedTerms['spring'] = not @currentlySelectedTerms['spring']
+                when 'summer'
+                    @currentlySelectedTerms['summer'] = not @currentlySelectedTerms['summer']
+            # set the proper icons on the menu
+            for t in ['fall', 'spring', 'summer']
+                if @currentlySelectedTerms[t]
+                    @divNav.querySelector("#graphview-term-menu-#{t} i").setAttribute('class', 'icon-check')
+                else
+                    @divNav.querySelector("#graphview-term-menu-#{t} i").setAttribute('class', 'icon-check-empty')
+            @filterClassesByTerm(@currentlySelectedTerms)
+        return callback
+
+
+
     _onClick: (event) =>
         if event.target.getAttribute('class')?.match(/course/) or true
             event.currentTarget = event.target
@@ -433,6 +473,7 @@ class GraphManager
         # highlight all the course nodes
         for _,c of @courses
             removeClass(c.elm, 'highlight')
+            removeClass(c.elm, 'highlight2')
         for prereq in prereqs
             addClass(@courses[prereq].elm, 'highlight')
         addClass(@courses[hash].elm, 'highlight')
@@ -446,9 +487,11 @@ class GraphManager
         @createCourseSummary(course)
         @currentlySelected = course
         @setCourseinfoVisibility(true)
+
     deselectAll: ->
         for _,c of @courses
             removeClass(c.elm, 'highlight')
+            removeClass(c.elm, 'highlight2')
         for elm in @svg.querySelectorAll('g.edge')
             removeClass(elm, 'highlight')
         @currentlySelected = null
@@ -492,7 +535,7 @@ class GraphManager
                 infoLink.textContent = link
             else
                 addClass(infoArea.querySelector('.moreinfo'), 'invisible')
-                
+
 
             requirement = "#{course.requirements?.units} #{course.requirements?.unitLabel}"
             infoArea.querySelector('.title')?.textContent = requirement
@@ -502,7 +545,7 @@ class GraphManager
                 # more like how it was typed
                 emailRegexp = /([\w\-\.]+@[\w\-\.]+)/gi
                 urlRegex = /((http:|https:)\/\/[\w\-\.~%?\/\#]+)/gi
-                
+
                 formatted = course.data.description.replace(/\n(\s|\n)*\n/g,'<br/><br/>')
                 formatted = formatted.replace(urlRegex, "<a href='$1'>$1</a>")
                 formatted = formatted.replace(emailRegexp, "<a href='mailto::$1'>$1</a>")
@@ -546,13 +589,21 @@ class GraphManager
                 list = []
                 prereqs = years[year]
                 for c in prereqs
-                    list.push "<li title='#{c.subject} #{c.number}: #{c.data.title}'>#{hashCourse(c)}</li>"
+                    list.push "<li title='#{c.subject} #{c.number}: #{c.data.title}' course='#{hashCourse(c)}'>#{hashCourse(c)}</li>"
                 list.sort()
                 elm?.innerHTML = list.join('')
                 if list.length is 0
                     addClass(parent, "invisible")
                 else
                     removeClass(parent, "invisible")
+                # make the pre-reqs highlight on hover and make the clickable
+                for li in elm?.querySelectorAll('li') || []
+                    li.onmouseover = @_onPrereqHoverEnter
+                    li.onmouseout = @_onPrereqHoverLeave
+                    li.onclick = (event) =>
+                        elm = event.currentTarget
+                        course = elm.getAttribute('course')
+                        @selectCourse(course)
         else
             addClass(infoArea.querySelector('.prereq'), "invisible")
         # construct the prereq list
@@ -564,10 +615,31 @@ class GraphManager
             list.push "<li title='#{c.subject} #{c.number}: #{c.data.title}'>#{hashCourse(c)}</li>"
         list.sort()
         elm?.innerHTML = list.join('')
+        # make the co-reqs highlight on hover and make the clickable
+        for li in elm?.querySelectorAll('li') || []
+            li.onmouseover = @_onPrereqHoverEnter
+            li.onmouseout = @_onPrereqHoverLeave
+            li.onclick = (event) =>
+                elm = event.currentTarget
+                course = elm.getAttribute('course')
+                @selectCourse(course)
         if list.length is 0
             addClass(parent, "invisible")
         else
             removeClass(parent, "invisible")
+    _onPrereqHoverEnter: (event) =>
+        elm = event.currentTarget
+        courseHash = elm.getAttribute('course')
+        course = @courses[courseHash]
+        if course
+            addClass(course.elm, 'highlight2')
+
+    _onPrereqHoverLeave: (event) =>
+        elm = event.currentTarget
+        courseHash = elm.getAttribute('course')
+        course = @courses[courseHash]
+        if course
+            removeClass(course.elm, 'highlight2')
     # sets whether the courseinfo area is visible or not.
     # This function handles resizing of the graph area, etc.
     setCourseinfoVisibility: (visible=true) ->
@@ -577,7 +649,22 @@ class GraphManager
         else
             addClass(@divCourseinfo, 'invisible')
             removeClass(@divGraph, 'sidepanel-visible')
+    # pass in an object with the terms you want to be visible.
+    # Courses only offered in other terms will be transparent
+    filterClassesByTerm: (terms={summer: true, fall: true, spring: true}) ->
+        isOfferedInTerms = (course) ->
+            for term,v of terms when v
+                if course.data.terms_offered?[term]
+                    return true
+            return false
 
+        for elm in @svg.querySelectorAll('.node')
+            course = @courses[elm.courseHash]
+            if isOfferedInTerms(course) or course.isElectivesNode
+                removeClass(elm, 'transparent')
+            else
+                addClass(elm, 'transparent')
+        return
 
 
 

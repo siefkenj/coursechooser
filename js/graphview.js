@@ -234,15 +234,20 @@ SVGZoomer = (function() {
     this._onMouseUp = __bind(this._onMouseUp, this);
 
     this.parent = this.svg.parentNode;
-    this.svg.getElementById = this.svg.getElementById || function(id) {
-      return _this.parent.getElementById(id);
-    };
-    this.svg.querySelector = this.svg.querySelector || function(srt) {
-      return _this.parent.querySelector(str);
-    };
-    this.svg.querySelectorAll = this.svg.querySelectorAll || function(srt) {
-      return _this.parent.querySelectorAll(str);
-    };
+    try {
+      this.svg.getElementById('boguselement');
+      this.svg.querySelector('boguselement');
+    } catch (e) {
+      this.svg.getElementById = function(id) {
+        return document.getElementById(id);
+      };
+      this.svg.querySelector = function(str) {
+        return _this.parent.querySelector(str);
+      };
+      this.svg.querySelectorAll = function(str) {
+        return _this.parent.querySelectorAll(str);
+      };
+    }
     if (this.svg.getAttribute('viewBox')) {
       dims = this.svg.getAttribute('viewBox').split(/[^\w]+/);
       dims = (function() {
@@ -410,23 +415,38 @@ GraphManager = (function() {
       _this = this;
     this.svg = svg;
     this.zoomer = zoomer;
+    this._onPrereqHoverLeave = __bind(this._onPrereqHoverLeave, this);
+
+    this._onPrereqHoverEnter = __bind(this._onPrereqHoverEnter, this);
+
     this._onCourseClicked = __bind(this._onCourseClicked, this);
 
     this._onClick = __bind(this._onClick, this);
 
-    this.svg.getElementById = this.svg.getElementById || function(id) {
-      return _this.parent.getElementById(id);
-    };
-    this.svg.querySelector = this.svg.querySelector || function(str) {
-      return _this.parent.querySelector(str);
-    };
-    this.svg.querySelectorAll = this.svg.querySelectorAll || function(str) {
-      return _this.parent.querySelectorAll(str);
-    };
+    try {
+      this.svg.getElementById('boguselement');
+      this.svg.querySelector('boguselement');
+    } catch (e) {
+      this.svg.getElementById = function(id) {
+        return document.getElementById(id);
+      };
+      this.svg.querySelector = function(str) {
+        return _this.parent.querySelector(str);
+      };
+      this.svg.querySelectorAll = function(str) {
+        return _this.parent.querySelectorAll(str);
+      };
+    }
     this.parent = this.svg.parentNode;
     this.divCourseinfo = document.getElementById('graphview-courseinfo');
     this.divGraph = document.getElementById('graphview-graph');
+    this.divNav = document.getElementById('graphview-nav');
     this.currentlySelected = null;
+    this.currentlySelectedTerms = {
+      fall: true,
+      spring: true,
+      summer: true
+    };
     _ref = this.svg.querySelectorAll('*');
     for (_i = 0, _len = _ref.length; _i < _len; _i++) {
       elm = _ref[_i];
@@ -459,6 +479,9 @@ GraphManager = (function() {
       }
     };
     this.divCourseinfo.querySelector('.graphview-close-button').addEventListener('click', closeInfoArea, true);
+    this.divNav.querySelector('#graphview-term-menu-fall').addEventListener('click', this._createTermToggler('fall'), true);
+    this.divNav.querySelector('#graphview-term-menu-spring').addEventListener('click', this._createTermToggler('spring'), true);
+    this.divNav.querySelector('#graphview-term-menu-summer').addEventListener('click', this._createTermToggler('summer'), true);
   }
 
   GraphManager.prototype.processData = function() {
@@ -564,6 +587,35 @@ GraphManager = (function() {
     return ret;
   };
 
+  GraphManager.prototype._createTermToggler = function(term) {
+    var callback,
+      _this = this;
+    callback = function() {
+      var t, _i, _len, _ref;
+      switch (term) {
+        case 'fall':
+          _this.currentlySelectedTerms['fall'] = !_this.currentlySelectedTerms['fall'];
+          break;
+        case 'spring':
+          _this.currentlySelectedTerms['spring'] = !_this.currentlySelectedTerms['spring'];
+          break;
+        case 'summer':
+          _this.currentlySelectedTerms['summer'] = !_this.currentlySelectedTerms['summer'];
+      }
+      _ref = ['fall', 'spring', 'summer'];
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        t = _ref[_i];
+        if (_this.currentlySelectedTerms[t]) {
+          _this.divNav.querySelector("#graphview-term-menu-" + t + " i").setAttribute('class', 'icon-check');
+        } else {
+          _this.divNav.querySelector("#graphview-term-menu-" + t + " i").setAttribute('class', 'icon-check-empty');
+        }
+      }
+      return _this.filterClassesByTerm(_this.currentlySelectedTerms);
+    };
+    return callback;
+  };
+
   GraphManager.prototype._onClick = function(event) {
     var _ref;
     if (((_ref = event.target.getAttribute('class')) != null ? _ref.match(/course/) : void 0) || true) {
@@ -590,6 +642,7 @@ GraphManager = (function() {
     for (_ in _ref) {
       c = _ref[_];
       removeClass(c.elm, 'highlight');
+      removeClass(c.elm, 'highlight2');
     }
     for (_i = 0, _len = prereqs.length; _i < _len; _i++) {
       prereq = prereqs[_i];
@@ -622,6 +675,7 @@ GraphManager = (function() {
     for (_ in _ref) {
       c = _ref[_];
       removeClass(c.elm, 'highlight');
+      removeClass(c.elm, 'highlight2');
     }
     _ref1 = this.svg.querySelectorAll('g.edge');
     for (_i = 0, _len = _ref1.length; _i < _len; _i++) {
@@ -659,7 +713,8 @@ GraphManager = (function() {
   };
 
   GraphManager.prototype.createCourseSummary = function(course) {
-    var academicTerm, c, calendarLink, elm, emailRegexp, formatted, hash, infoArea, infoLink, link, list, numPrereqs, parent, prereqs, requirement, term, urlRegex, year, years, _i, _j, _k, _l, _len, _len1, _len2, _len3, _ref, _ref1, _ref10, _ref11, _ref12, _ref13, _ref14, _ref15, _ref16, _ref2, _ref3, _ref4, _ref5, _ref6, _ref7, _ref8, _ref9;
+    var academicTerm, c, calendarLink, elm, emailRegexp, formatted, hash, infoArea, infoLink, li, link, list, numPrereqs, parent, prereqs, requirement, term, urlRegex, year, years, _i, _j, _k, _l, _len, _len1, _len2, _len3, _len4, _len5, _m, _n, _ref, _ref1, _ref10, _ref11, _ref12, _ref13, _ref14, _ref15, _ref16, _ref17, _ref18, _ref2, _ref3, _ref4, _ref5, _ref6, _ref7, _ref8, _ref9,
+      _this = this;
     hash = hashCourse(course);
     course = this.courses[course];
     infoArea = document.querySelector('#graphview-courseinfo');
@@ -744,7 +799,7 @@ GraphManager = (function() {
         prereqs = years[year];
         for (_k = 0, _len2 = prereqs.length; _k < _len2; _k++) {
           c = prereqs[_k];
-          list.push("<li title='" + c.subject + " " + c.number + ": " + c.data.title + "'>" + (hashCourse(c)) + "</li>");
+          list.push("<li title='" + c.subject + " " + c.number + ": " + c.data.title + "' course='" + (hashCourse(c)) + "'>" + (hashCourse(c)) + "</li>");
         }
         list.sort();
         if (elm != null) {
@@ -755,6 +810,17 @@ GraphManager = (function() {
         } else {
           removeClass(parent, "invisible");
         }
+        _ref17 = (elm != null ? elm.querySelectorAll('li') : void 0) || [];
+        for (_l = 0, _len3 = _ref17.length; _l < _len3; _l++) {
+          li = _ref17[_l];
+          li.onmouseover = this._onPrereqHoverEnter;
+          li.onmouseout = this._onPrereqHoverLeave;
+          li.onclick = function(event) {
+            elm = event.currentTarget;
+            course = elm.getAttribute('course');
+            return _this.selectCourse(course);
+          };
+        }
       }
     } else {
       addClass(infoArea.querySelector('.prereq'), "invisible");
@@ -763,18 +829,49 @@ GraphManager = (function() {
     elm = parent.querySelector('ul');
     list = [];
     prereqs = years['coreq'];
-    for (_l = 0, _len3 = prereqs.length; _l < _len3; _l++) {
-      c = prereqs[_l];
+    for (_m = 0, _len4 = prereqs.length; _m < _len4; _m++) {
+      c = prereqs[_m];
       list.push("<li title='" + c.subject + " " + c.number + ": " + c.data.title + "'>" + (hashCourse(c)) + "</li>");
     }
     list.sort();
     if (elm != null) {
       elm.innerHTML = list.join('');
     }
+    _ref18 = (elm != null ? elm.querySelectorAll('li') : void 0) || [];
+    for (_n = 0, _len5 = _ref18.length; _n < _len5; _n++) {
+      li = _ref18[_n];
+      li.onmouseover = this._onPrereqHoverEnter;
+      li.onmouseout = this._onPrereqHoverLeave;
+      li.onclick = function(event) {
+        elm = event.currentTarget;
+        course = elm.getAttribute('course');
+        return _this.selectCourse(course);
+      };
+    }
     if (list.length === 0) {
       return addClass(parent, "invisible");
     } else {
       return removeClass(parent, "invisible");
+    }
+  };
+
+  GraphManager.prototype._onPrereqHoverEnter = function(event) {
+    var course, courseHash, elm;
+    elm = event.currentTarget;
+    courseHash = elm.getAttribute('course');
+    course = this.courses[courseHash];
+    if (course) {
+      return addClass(course.elm, 'highlight2');
+    }
+  };
+
+  GraphManager.prototype._onPrereqHoverLeave = function(event) {
+    var course, courseHash, elm;
+    elm = event.currentTarget;
+    courseHash = elm.getAttribute('course');
+    course = this.courses[courseHash];
+    if (course) {
+      return removeClass(course.elm, 'highlight2');
     }
   };
 
@@ -788,6 +885,39 @@ GraphManager = (function() {
     } else {
       addClass(this.divCourseinfo, 'invisible');
       return removeClass(this.divGraph, 'sidepanel-visible');
+    }
+  };
+
+  GraphManager.prototype.filterClassesByTerm = function(terms) {
+    var course, elm, isOfferedInTerms, _i, _len, _ref;
+    if (terms == null) {
+      terms = {
+        summer: true,
+        fall: true,
+        spring: true
+      };
+    }
+    isOfferedInTerms = function(course) {
+      var term, v, _ref;
+      for (term in terms) {
+        v = terms[term];
+        if (v) {
+          if ((_ref = course.data.terms_offered) != null ? _ref[term] : void 0) {
+            return true;
+          }
+        }
+      }
+      return false;
+    };
+    _ref = this.svg.querySelectorAll('.node');
+    for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+      elm = _ref[_i];
+      course = this.courses[elm.courseHash];
+      if (isOfferedInTerms(course) || course.isElectivesNode) {
+        removeClass(elm, 'transparent');
+      } else {
+        addClass(elm, 'transparent');
+      }
     }
   };
 

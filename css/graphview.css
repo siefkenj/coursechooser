@@ -45,6 +45,41 @@
 #graphview .graphview-button-desc {
 	font-size: .7em;
 }
+
+#graphview-term-menu {
+	z-index: 1;
+	margin-left: 2em;
+	position: absolute;
+}
+#graphview-term-menu div {
+	display: none;
+	font-weight: normal;
+	font-size: .8em;
+}
+#graphview-term-menu:hover div {
+	display: block;
+}
+#graphview-term-menu ul{
+	list-style: none;
+	background: #5f6975;
+	padding: 0;
+	font-size: 1.2em;
+
+}
+#graphview-term-menu ul li{
+	color: #aaa;
+	padding: 2px 15px;
+	border-top: 1px solid #6b727c;
+	border-bottom: 1px solid #575f6a;
+	position: relative;
+	width: 7em;
+	font-weight: normal;
+	font-size: 100%;
+}
+#graphview-term-menu ul li:hover{
+	color: #fff;
+}
+
 #graphview svg {
 	-moz-user-select: none;
 	-webkit-user-select: none;
@@ -79,10 +114,15 @@
 	/* older browser support */
 	-ms-word-break: break-all;
 	word-break: break-all;
-	word-break: break-word;
+	word-wrap: break-word;
 }
 #graphview-courseinfo a:hover {
 	text-decoration: underline;
+}
+#graphview-calendar-link div {
+	-ms-word-break: normal;
+	word-break: normal;
+	word-wrap: normal;
 }
 #graphview-courseinfo .name {
 	font-size: 1.2em;
@@ -148,7 +188,11 @@
 	font-size: .8em;
 }
 #graphview-courseinfo li {
+	cursor: pointer;
 	display: block;
+}
+#graphview-courseinfo li:hover {
+	text-decoration: underline;
 }
 #graphview-courseinfo .year {
 	font-size: .8em;
