@@ -1,5 +1,5 @@
 loadSVG = (url, callback) ->
-    window.xhr = new XMLHttpRequest
+    xhr = new XMLHttpRequest
     xhr.onreadystatechange = ->
         # when running from file:// xhr.status is always 0
         #if xhr.readyState is 4 and xhr.status is 200
@@ -29,19 +29,113 @@ computeTermFromDate = (date) ->
         term = 'fall'
     return {year: year, term: term}
 
-resize = (svg) ->
+makeResizableAndClickable = (svg, container=document) ->
     #svg.setAttribute('preserveAspectRatio', 'none')
     window.zoomer = new SVGZoomer(svg)
     zoomer.zoomFit()
-    document.getElementById('graphview-zoom-in').onclick = ->
+    container.querySelector('#graphview-zoom-in').onclick = ->
         zoomer.zoomIn()
-    document.getElementById('graphview-zoom-out').onclick = ->
+    container.querySelector('#graphview-zoom-out').onclick = ->
         zoomer.zoomOut()
-    document.getElementById('graphview-zoom-fit').onclick = ->
+    container.querySelector('#graphview-zoom-fit').onclick = ->
         zoomer.zoomFit()
 
-    window.manager = new GraphManager(svg, zoomer)
-    return
+    window.manager = new GraphManager(svg, zoomer, container)
+    return manager
+
+###
+# responsible for loading the graphview template and dynamically
+# injecting the appropriate stylesheets, etc.
+###
+class GraphviewCreator
+    constructor: ->
+        @loadError = false
+        @templateText = ''
+        @loadTemplate('graphview.html')
+
+    loadTemplate: (url, callback=(->)) ->
+        if @loadError
+            return
+        # if things are already loaded, don't try to reload
+        if @templateText
+            (callback.bind(@))()
+
+        xhr = new XMLHttpRequest
+        # TODO this is not actually handling errors...
+        xhr.onerror = =>
+            @loadError = true
+        xhr.onreadystatechange = =>
+            # when running from file:// xhr.status is always 0
+            #if xhr.readyState is 4 and xhr.status is 200
+            if xhr.readyState is 4
+                @templateText = xhr.responseText
+                # call our callback, but to avoid hassle, make sure
+                # we call it with the appropriate _this_ context.
+                (callback.bind(@))()
+        xhr.open('GET', url, true)
+        xhr.setRequestHeader('Content-type', 'image/svg+xml')
+        xhr.send()
+    injectHeader: ->
+        if @loadError
+            return
+        if not @templateText
+            @loadTemplate('graphview.html', @injectHeader)
+            return
+
+        frag = document.createElement('div')
+        frag.innerHTML = @templateText
+        for elm in frag.querySelectorAll('link[rel=stylesheet]')
+            document.body.appendChild(elm)
+        for elm in frag.querySelectorAll('style')
+            document.body.appendChild(elm)
+        # clean up, just in case
+        frag.innerHTML = ''
+        return
+    createGraphviewInstance: (svgUrl) ->
+        if @loadError
+            return
+        if not @templateText
+            @loadTemplate('graphview.html', @createGraphviewInstance)
+            return
+
+        frag = document.createElement('div')
+        frag.innerHTML = @templateText
+        graphviewDiv = frag.querySelector('#graphview')
+
+        # once the svg is loaded, link it all up and inject it
+        onSvgLoadComplete = (svgText) =>
+            parent = graphviewDiv.querySelector('#graphview-graph')
+            parent.innerHTML = svgText
+            makeResizableAndClickable(parent.childNodes[0], graphviewDiv)
+
+        # start the load request
+        xhr = new XMLHttpRequest
+        xhr.onreadystatechange = =>
+            # when running from file:// xhr.status is always 0
+            #if xhr.readyState is 4 and xhr.status is 200
+            if xhr.readyState is 4
+                onSvgLoadComplete(xhr.responseText)
+        xhr.open('GET', svgUrl, true)
+        xhr.setRequestHeader('Content-type', 'image/svg+xml')
+        xhr.send()
+
+        # graphviewDiv will be dynamically updated when the svg has loaded
+        return graphviewDiv
+    # pass in an <img> element and replaceImage will find the src url,
+    # replace the extension with .svg and attempt to make an interactive
+    # graph that replaces the imgElm
+    replaceImage: (imgElm) ->
+        afterTemplateLoads = =>
+            url = imgElm.getAttribute('src')
+            console.log imgElm, url
+            # replace the extension
+            url = url.replace(/\.\w*$/, '.svg')
+            instance = @createGraphviewInstance(url)
+
+            imgElm.parentNode.replaceChild(instance, imgElm)
+
+        @loadTemplate('graphview.html', afterTemplateLoads)
+
 
 ###
 # Mini matrix library
@@ -162,10 +256,8 @@ class SVGZoomer
         # compatibility stuff
         try
             # see if we can successfully execute the builtin getElementById by trying to locate a bogus element
-            @svg.getElementById('boguselement')
             @svg.querySelector('boguselement')
         catch e
-            @svg.getElementById = (id) => document.getElementById(id)
             @svg.querySelector = (str) => @parent.querySelector(str)
             @svg.querySelectorAll = (str) => @parent.querySelectorAll(str)
 
@@ -296,21 +388,20 @@ class GraphManager
     #        return false if style["visibility"] is "hidden"
     #    return isVisible obj.parentNode
 
-    constructor: (@svg, @zoomer) ->
+    constructor: (@svg, @zoomer, @container=document) ->
         # compatibility stuff
         try
-            # see if we can successfully execute the builtin getElementById by trying to locate a bogus element
-            @svg.getElementById('boguselement')
+            # see if we can successfully execute the builtin querySelector by trying to locate a bogus element
+            # It is not enought to check @svg.querySelector == null, since it is defined in Firefox 10, but throws an error
             @svg.querySelector('boguselement')
         catch e
-            @svg.getElementById = (id) => document.getElementById(id)
             @svg.querySelector = (str) => @parent.querySelector(str)
             @svg.querySelectorAll = (str) => @parent.querySelectorAll(str)
 
         @parent = @svg.parentNode
-        @divCourseinfo = document.getElementById('graphview-courseinfo')
-        @divGraph = document.getElementById('graphview-graph')
-        @divNav = document.getElementById('graphview-nav')
+        @divCourseinfo = @container.querySelector('#graphview-courseinfo')
+        @divGraph = @container.querySelector('#graphview-graph')
+        @divNav = @container.querySelector('#graphview-nav')
         @currentlySelected = null
         @currentlySelectedTerms = {fall: true, spring: true, summer: true}
 
@@ -364,7 +455,7 @@ class GraphManager
             course.year = node.year
             # mark each clickable node with a reference to its unmangled hash so we
             # can get back to it.
-            elm = @svg.getElementById(sanitizeId(hash))
+            elm = @svg.querySelector("##{sanitizeId(hash)}")
             if elm
                 course.elm = elm
                 elm.courseHash = hash
@@ -375,7 +466,7 @@ class GraphManager
             course.isElectivesNode = true
             hash = hashCourse(course)
             @courses[hash] = course
-            elm = @svg.getElementById(sanitizeId(hash))
+            elm = @svg.querySelector("##{sanitizeId(hash)}")
             if elm
                 course.elm = elm
                 elm.courseHash = hash
@@ -515,7 +606,7 @@ class GraphManager
     createCourseSummary: (course) ->
         hash = hashCourse(course)
         course = @courses[course]
-        infoArea = document.querySelector('#graphview-courseinfo')
+        infoArea = @container.querySelector('#graphview-courseinfo')
 
         # we have a special display if we're an electives node
         if course.isElectivesNode
@@ -666,9 +757,12 @@ class GraphManager
                 addClass(elm, 'transparent')
         return
 
+# set it up so that images with the graphview attribute
+# are dynamically replaced with interactive maps
+onLoad = ->
+    creator = new GraphviewCreator
+    creator.injectHeader()
+    for elm in document.querySelectorAll('[graphview=true]')
+        creator.replaceImage(elm)
 
-
-
-
-window.onload = ->
-    loadSVG('testdata/test.svg', resize)
+window.addEventListener('load', onLoad, true)

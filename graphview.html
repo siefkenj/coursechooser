@@ -6,7 +6,9 @@
 	<link rel="stylesheet" href="css/svggraph.css">
 	<script src="js/graphview.js"></script>
 	<link href="http://netdna.bootstrapcdn.com/font-awesome/3.0.2/css/font-awesome.css" rel="stylesheet">
-	<link href='http://fonts.googleapis.com/css?family=Merriweather+Sans:400,700' rel='stylesheet' type='text/css'>
+	<script type="text/javascript">
+		window.onload = function(){ loadSVG('testdata/test.svg', makeResizableAndClickable); }
+	</script>
 </head>
 <body>
 
@@ -26,6 +28,8 @@
 				</ul>
 			</div>
 		</div>
+
+		<div class="graphview-uvic-logo"></div>
 	</div>
 	<div id="graphview-graph">
 	</div>
