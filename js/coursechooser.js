@@ -2549,7 +2549,7 @@ PrereqUtils = {
   prunePrereqs: function(prereq, courses) {
     var course, prunedBranch, ret, _i, _j, _len, _len1, _ref, _ref1, _ref2, _ref3;
     if (!(prereq != null)) {
-      throw new Error("Yikes.  We errored while pruning the prereqs!");
+      throw new Error("Yikes.  We errored while pruning the prereqs (found " + prereq + " for courses " + courses + "!)");
     }
     ret = {
       op: 'and',
@@ -2566,6 +2566,9 @@ PrereqUtils = {
         _ref = prereq.data;
         for (_i = 0, _len = _ref.length; _i < _len; _i++) {
           course = _ref[_i];
+          if (!(course != null)) {
+            continue;
+          }
           prunedBranch = PrereqUtils.prunePrereqs(course, courses);
           if (((_ref1 = prunedBranch.data) != null ? _ref1.length : void 0) === 0) {
             return {
@@ -2580,6 +2583,9 @@ PrereqUtils = {
         _ref2 = prereq.data;
         for (_j = 0, _len1 = _ref2.length; _j < _len1; _j++) {
           course = _ref2[_j];
+          if (!(course != null)) {
+            continue;
+          }
           prunedBranch = PrereqUtils.prunePrereqs(course, courses);
           if (((_ref3 = prunedBranch.data) != null ? _ref3.length : void 0) !== 0) {
             ret.data.push(prunedBranch);

@@ -1618,7 +1618,7 @@ PrereqUtils =
     # courses should be a list of course hashes
     prunePrereqs: (prereq, courses) ->
         if not prereq?
-            throw new Error("Yikes.  We errored while pruning the prereqs!")
+            throw new Error("Yikes.  We errored while pruning the prereqs (found #{prereq} for courses #{courses}!)")
 
         ret = {op: 'and', data: []}
         if prereq.subject
@@ -1628,6 +1628,12 @@ PrereqUtils =
             when 'or'
                 ret.op = 'or'
                 for course in prereq.data
+                    # our prereq data isn't completely clean.  Sometimes
+                    # there are null values for strange course requirements.
+                    # e.g. ECON225 has "Univ English Requirement (Y=1) 1"
+                    # skip past any of these nulls
+                    if not course?
+                        continue
                     # if we're in an 'or' list and we've found one of our items,
                     # we're done!  Return an empty list
                     prunedBranch = PrereqUtils.prunePrereqs(course, courses)
@@ -1637,6 +1643,8 @@ PrereqUtils =
                     ret.data.push prunedBranch
             when 'and'
                 for course in prereq.data
+                    if not course?
+                        continue
                     # if we're in an 'and' list, we need to keep any branches
                     # that have not been fully met
                     prunedBranch = PrereqUtils.prunePrereqs(course, courses)
