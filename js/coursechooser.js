@@ -935,12 +935,16 @@ $(document).ready(function() {
   });
   window.setInterval(saveGraph, 1000 * 5 * 60);
   window.setTimeout((function() {
-    var data;
+    var data, graph, programState;
     data = localStorageWrapper('get');
     if (data) {
       try {
-        window.courseManager.loadGraph(data);
-        return window.setTimeout(updateWelcomePage, 100);
+        graph = window.courseManager.loadGraph(data);
+        programState = 'newProgram';
+        if (graph.title || Object.keys(graph.nodes || {}).length > 0) {
+          programState = 'existingProgram';
+        }
+        return updateWelcomePage(programState);
       } catch (e) {
         return console.log('could no load local storage data');
       }
@@ -986,15 +990,32 @@ prepareWelcomePage = function() {
   updateWelcomePage();
 };
 
-updateWelcomePage = function() {
-  var _ref, _ref1;
-  console.log((_ref = window.courseManager) != null ? _ref.sortableCourses : void 0);
-  if (((_ref1 = window.courseManager) != null ? _ref1.sortableCourses : void 0) && Object.keys(window.courseManager.sortableCourses).length === 0) {
-    $('#welcome-new').hide();
-    return $('#welcome-next').show();
+updateWelcomePage = function(forceState) {
+  var nextText, programState, _ref;
+  if (forceState == null) {
+    forceState = '';
+  }
+  programState = null;
+  if (forceState === 'newProgram') {
+    programState = 'newProgram';
+  } else if (forceState === 'existingProgram') {
+    programState = 'existingProgram';
+  } else if (((_ref = window.courseManager) != null ? _ref.sortableCourses : void 0) && Object.keys(window.courseManager.sortableCourses).length === 0) {
+    programState = 'newProgram';
   } else {
-    $('#welcome-new').show();
-    return $('#welcome-next').hide();
+    programState = 'existingProgram';
+  }
+  switch (programState) {
+    case 'newProgram':
+      $('#welcome-new').hide();
+      nextText = $('#welcome-next button').attr('text1');
+      $('#welcome-next .ui-button-text').html(nextText);
+      $('#welcome-next').show();
+      break;
+    case 'existingProgram':
+      $('#welcome-new').show();
+      nextText = $('#welcome-next button').attr('text2');
+      $('#welcome-next .ui-button-text').html(nextText);
   }
 };
 

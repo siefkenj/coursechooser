@@ -522,10 +522,14 @@ $(document).ready ->
         data = localStorageWrapper('get')
         if data
             try
-                window.courseManager.loadGraph data
-                # make sure the welcome page is updated after any previous data has been loaded
-                #XXX ugly hack!
-                window.setTimeout(updateWelcomePage, 100)
+                graph = window.courseManager.loadGraph data
+                # figure out if there is anything to this program or if it's blank
+                # (the default state for a new program) so we can adjust the welcome page
+                # accordingly.
+                programState = 'newProgram'
+                if graph.title or Object.keys(graph.nodes || {}).length > 0
+                    programState = 'existingProgram'
+                updateWelcomePage(programState)
             catch e
                 console.log 'could no load local storage data'), 0
 
@@ -558,16 +562,36 @@ prepareWelcomePage = ->
     return
 # shows and hides things on the welcome page (such as next/new button)
 # based upon the current state.
-updateWelcomePage = ->
+#
+# If forceState is 'newProgram' then the page will be shown as if it is a new program.
+# If forceState is 'existingProgram' thenthe page will be shown as if it there
+# is an existing program.
+# Otherwise, the existance of a program is autodetected based on whether there are displayed
+# courses.
+updateWelcomePage = (forceState='') ->
+    programState = null
+    if forceState is 'newProgram'
+        programState = 'newProgram'
+    else if forceState is 'existingProgram'
+        programState = 'existingProgram'
     # if there are any sortable courses, assume we are working off an existing
     # program, otherwise assume a new and empty program
-    console.log window.courseManager?.sortableCourses
-    if window.courseManager?.sortableCourses and Object.keys(window.courseManager.sortableCourses).length is 0
-        $('#welcome-new').hide()
-        $('#welcome-next').show()
+    else if window.courseManager?.sortableCourses and Object.keys(window.courseManager.sortableCourses).length is 0
+        programState = 'newProgram'
     else
-        $('#welcome-new').show()
-        $('#welcome-next').hide()
+        programState = 'existingProgram'
+
+    switch programState
+        when 'newProgram'
+            $('#welcome-new').hide()
+            nextText = $('#welcome-next button').attr('text1')
+            $('#welcome-next .ui-button-text').html(nextText)
+            $('#welcome-next').show()
+        when 'existingProgram'
+            $('#welcome-new').show()
+            nextText = $('#welcome-next button').attr('text2')
+            $('#welcome-next .ui-button-text').html(nextText)
+    return
 
 prepareNavMenu = ->
     makeLinkShow = (link, target) ->
