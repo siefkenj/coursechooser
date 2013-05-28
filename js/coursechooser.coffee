@@ -42,11 +42,12 @@ dupObject = (obj) ->
 # escape <,>,& in a string
 htmlEncode = (str) ->
     str = '' + str
-    try
-        str = str.replace('&','&amp;','g').replace('<','&lt;','g').replace('>','&gt;','g')
-    catch e
-        console.log 'error, expected string, got', str
+    str = str.replace('&','&amp;','g').replace('<','&lt;','g').replace('>','&gt;','g')
     return str
+htmlUnencode = (str) ->
+    str = '' + str
+    # inefficient way to do it, but all the functions already exist
+    return unescape(escapeJSON(str))
 
 parseUrlHash = (hash) ->
     hash = hash.split(/[&?]/)
@@ -203,6 +204,23 @@ reparent = (elm, newParent, ops={}) ->
                 ops.complete()
                 ops.complete.hasRun = true
     return
+
+# prints the contents of '#welcome-steps'
+printInstructions = ->
+    printWindow = window.open('', 'Instructions', 'menubar=yes,status=1,width=350,height=150')
+    printWindow.document.write("""<html><head><title>Instructions</title><link rel='stylesheet' href='css/coursechooser.css'></head>""")
+    printWindow.document.write("""<body></body></html>""")
+    printWindow.onafterprint = ->
+        close = ->
+            printWindow.close()
+        printWindow.setTimeout(close, 0)
+    newSteps = $('#welcome-steps').clone()
+    # make sure the details are fully expanded
+    newSteps.find('*').show()
+    newSteps.find('a.more').hide()
+    $(printWindow.document.body).html(newSteps)
+    # TODO It appears the @media print styles do not show up at this point in Firefox...
+    printWindow.print()
 
 localStorageWrapper = (action='get', data) ->
     $.jStorage.reInit()
@@ -529,6 +547,8 @@ prepareWelcomePage = ->
         showPage('#course-chooser', {animate: true, complete: (-> $('#show-courses').trigger('click'))})
     $('#welcome-new-program').click ->
         $('#new').click()
+
+    $('#print-instructions').click(printInstructions)
 
     updateWelcomePage()
     return
@@ -1419,7 +1439,13 @@ class CourseManager
 
     courseDataLoaded: (data, textState, jsXHR) =>
         for c in data
-            @courseData[BasicCourse.hashCourse(c)] = c
+            hash = BasicCourse.hashCourse(c)
+            @courseData[hash] = c
+            # when the data was scraped it may contain html escape characters like '&amp;'
+            # remove all of these so they won't show up anywhere accidentally.
+            @courseData[hash].title = htmlUnencode(@courseData[hash].title)
+            @courseData[hash].description = htmlUnencode(@courseData[hash].description)
+
             @loadedSubjects[c.subject] = true
             if c.terms_offered
                 for term of c.terms_offered when term > @mostRecentTerm

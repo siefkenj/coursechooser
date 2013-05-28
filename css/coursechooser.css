@@ -283,6 +283,47 @@ body {
 	color: gray;
 }
 
+@media print {
+	#welcome-steps {
+		max-width: 5in;
+		margin-left: auto;
+		margin-right: auto;
+	}
+	#welcome-steps li {
+		list-style: none;
+		display: block;
+		margin-left: 0;
+		padding-left: 0;
+	}
+	#welcome-steps li .list-label {
+		font-size: 1em;
+		font-style: italic;
+		float: left;
+	}
+	#welcome-steps li .content {
+		margin-left: 3.5em;
+	}
+	#welcome-steps a.more {
+		text-decoration: none;
+		text-color: cadetblue;
+		font-size: 1em;
+		font-style: italic;
+		padding-left: 2em;
+	}
+	#welcome-steps a.more:focus {
+		outline: 0;
+	}
+	#welcome-steps a.more:visited {
+		color: cadetblue;
+	}
+	emph {
+		font-style: italic;
+	}
+	op {
+		font-weight: bold;
+	}
+}
+
 /* preview page */
 #edge1 {
 	width: 96px;
