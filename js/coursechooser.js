@@ -646,10 +646,14 @@ $(document).ready(function() {
       };
       createDisplayCallback = function(c) {
         return function() {
-          return window.courseManager.ensureDisplayedInYearChart(c, {
-            error: createErrorCallback(c),
-            animate: 'slow'
-          });
+          try {
+            return window.courseManager.ensureDisplayedInYearChart(c, {
+              error: createErrorCallback(c),
+              animate: 'slow'
+            });
+          } catch (e) {
+            return console.log(e);
+          }
         };
       };
       try {
@@ -1996,7 +2000,11 @@ CourseManager = (function() {
       }
       newState = CourseManager.toggleState(button.state, button.restrictions);
       if (ops.insertOnClick) {
-        _this.ensureDisplayedInYearChart(button);
+        try {
+          _this.ensureDisplayedInYearChart(button);
+        } catch (e) {
+          console.log(e);
+        }
       }
       return _this.updateCourseState(button, newState);
     });

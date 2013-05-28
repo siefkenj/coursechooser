@@ -287,7 +287,11 @@ $(document).ready ->
                     errorMsgHash["Could not load course '#{sub.subject} #{sub.number}'"] = true
                     $('#department-list').combobox('showError', (e for e of errorMsgHash).join('<br/>'))
             createDisplayCallback = (c) ->
-                return -> window.courseManager.ensureDisplayedInYearChart(c, {error: createErrorCallback(c), animate: 'slow'})
+                return ->
+                    try
+                        window.courseManager.ensureDisplayedInYearChart(c, {error: createErrorCallback(c), animate: 'slow'})
+                    catch e
+                        console.log e
             try
                 window.courseManager.loadSubjectData(c.subject, createDisplayCallback(c), {error: createErrorCallback(c), animate: 'slow'})
             catch e
@@ -1264,7 +1268,10 @@ class CourseManager
             # we need to make sure that the course appears in the yearchart if this option
             # is set
             if ops.insertOnClick
-                @ensureDisplayedInYearChart(button)
+                try
+                    @ensureDisplayedInYearChart(button)
+                catch e
+                    console.log e
             @updateCourseState(button, newState)
     makeCourseButtonDraggable: (button, ops={}) ->
         $(button.getButton()).draggable
