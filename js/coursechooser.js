@@ -3334,7 +3334,8 @@ Graph = (function() {
       nodes: [],
       edges: [],
       clusters: [],
-      title: this.title
+      title: this.title,
+      creation_date: JSON.stringify(new Date)
     };
     _ref = this.nodes;
     for (_ in _ref) {

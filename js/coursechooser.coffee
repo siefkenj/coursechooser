@@ -2102,6 +2102,7 @@ class Graph
             edges: []
             clusters: []
             title: @title
+            creation_date: JSON.stringify(new Date)
         for _,node of @nodes
             ret.nodes.push
                 course:
