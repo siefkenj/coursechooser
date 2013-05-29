@@ -565,10 +565,13 @@ localStorageWrapper = function(action, data) {
 };
 
 $(document).ready(function() {
-  var ZOOM_FACTOR, arg, locHash, preloadSubjects, saveGraph, subject, _i, _j, _len, _len1, _ref, _ref1;
+  var ZOOM_FACTOR, arg, departmentList, locHash, preloadSubjects, saveGraph, subject, _i, _j, _len, _len1, _ref, _ref1;
   $('.course-status').buttonset().disableSelection();
   $('button').button();
-  $('#department-list').combobox().combobox('value', '');
+  departmentList = $('#department-list').combobox().combobox('value', '');
+  departmentList.combobox('activate', function() {
+    return $('#show-courses').click();
+  });
   $('#tabs,.tabs').tabs();
   /*
       $(document).tooltip

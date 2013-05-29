@@ -3,6 +3,7 @@
  * http://jqueryui.com/autocomplete/#combobox
  */
 (function( $ ) {
+    "use strict";
     function split( val ) {
         return val.split( /,\s*/ );
     }
@@ -13,13 +14,15 @@
     $.widget( "ui.combobox", {
         _create: function() {
             var input,
+                errorBox,
+                textAtSelectionTime = '',
                 that = this,
                 select = this.element.hide(),
                 selected = select.children( ":selected" ),
                 value = selected.val() ? selected.text() : "",
                 wrapper = this.wrapper = $( "<span>" )
                     .addClass( "ui-combobox" )
-                    .insertAfter( select );
+                    .insertAfter( select ),
                 // Make a hash of all the values in the option box.
                 // We assume that these values don't ever change once the widgit is
                 // initialized
@@ -57,7 +60,7 @@
                 }
             }
             
-            errorBox = $( "<span id=\""+select.attr('id')+"-errorbox\" title=\"x\"></span>" )
+            errorBox = this.errorBox = $( "<span id=\""+select.attr('id')+"-errorbox\" title=\"x\"></span>" )
                     .tooltip({tooltipClass: "ui-state-highlight"})
                     .appendTo( wrapper );
 
@@ -106,6 +109,7 @@
                             item: ui.item.option
                         });
                         
+                        textAtSelectionTime = input.val();
                         return false;
                     },
                     change: function( event, ui ) {
@@ -113,6 +117,27 @@
                             return removeIfInvalid( this );
                         */
                     }
+                })
+                .keyup(function(event) {
+                    // we need the timeout to make sure keyup happens after
+                    // the select event.
+                    window.setTimeout(function(){
+                        if (event.keyCode == 13) {
+                            var val = input.val();
+                            // when we press enter, we check to see if our text is different
+                            // from what it was when the last selection event occurred.
+                            // If it is, we assume it's an authentic enter.
+                            if (val !== '' && textAtSelectionTime !== val) {
+                                var data = input.data( "autocomplete" );
+                                if (typeof data._activateCallback === "function") {
+                                    data._activateCallback(event);
+                                }
+                            }
+                            // if we press enter twice, the text may not change, but
+                            // we really intend to trigger an enter event
+                            textAtSelectionTime = '';
+                        }
+                    },0)
                 })
                 .addClass( "ui-widget ui-widget-content ui-corner-left" );
 
@@ -161,6 +186,23 @@
                     });*/
         },
 
+        activate: function(callback) {
+            var self = this;
+            // wrap the callback to make sure the autocomplete popup is
+            // always closed after an actiate event
+            this.input.data( "autocomplete" )._activateCallback = function(event) {
+                if ( typeof callback === 'function' ) {
+                    callback(event);
+                }
+                // close if already visible
+                if ( self.input.autocomplete( "widget" ).is( ":visible" ) ) {
+                    self.input.autocomplete( "close" );
+                }
+            }
+
+            return this;
+        },
+
         value: function(str) {
             if (str == null) {
                 return this.input.val();
@@ -177,11 +219,12 @@
         },
         
         showError: function(msg) {
+            var self = this;
             if (this.timeout) {
                 window.clearTimeout(this.timeout);
             }
-            errorBox.tooltip({content: msg}).tooltip('open');
-            this.timeout = window.setTimeout(function(){ errorBox.tooltip('close'); }, 3500);
+            this.errorBox.tooltip({content: msg}).tooltip('open');
+            this.timeout = window.setTimeout(function(){ self.errorBox.tooltip('close'); }, 3500);
             return this;
         }
     });

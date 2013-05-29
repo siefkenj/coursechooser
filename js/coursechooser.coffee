@@ -231,7 +231,8 @@ localStorageWrapper = (action='get', data) ->
 $(document).ready ->
     $('.course-status').buttonset().disableSelection()
     $('button').button()
-    $('#department-list').combobox().combobox('value', '')
+    departmentList = $('#department-list').combobox().combobox('value', '')
+    departmentList.combobox('activate', -> $('#show-courses').click())
     $('#tabs,.tabs').tabs()
     ###
     $(document).tooltip
