@@ -344,6 +344,10 @@ $(document).ready ->
         window.courseManager.makeElectivesButtonClickable(electiveButton)
         window.courseManager.makeElectivesButtonClickable(elective)
 
+    # setup the coops area
+    $('#create-new-coop').click ->
+        window.courseManager.addCoop()
+
     # set up the load and save buttons
     $('#save').click ->
         window.courseManager.updateGraphState()
@@ -442,7 +446,7 @@ $(document).ready ->
             if edge
                 # if we have an exising edge and its invisible, turn it visible
                 # and visa versa.  If we turn a user-created edge invisible, also
-                # delee it.
+                # delete it.
                 if edge.properties.style?.match(/invis/)
                     edge.properties.style = ''
                 else
@@ -472,6 +476,7 @@ $(document).ready ->
                 return
 
             edge.properties.coreq = not edge.properties.coreq
+            console.log edge, edge.properties, 'coreq'
 
             updatePreview
                 preserveSelection: true
@@ -737,9 +742,12 @@ onPreviewPageShow = ->
         ###
     else
         window.setTimeout(updatePreview, 0)
-
+###
+# manages click events for for an svg course map.
+# Allows two nodes to be selected so arrows between them can be
+# adjusted.
+###
 class SVGGraphManager
-
     # jquery's functions don't work on svg elements, so we'll use our own
     addClass = (elm, cls) ->
         oldCls = elm.getAttribute('class')
@@ -880,6 +888,7 @@ class CourseManager
         @loadedSubjects = {}
         @loadingStatus = {}
         @onSubjectLoadedCallbacks = {}
+        @coops = {}
         @graphState = new Graph
         @mostRecentTerm = ''    # we'd only like to show course availability for the most recent 2 years (6 most recent terms)
     # Based make sure @graphState reflects everything
@@ -929,6 +938,11 @@ class CourseManager
         @graphState.pruneOrphanedEdges()
         @graphState.generateEdges()
 
+        # add the coops
+        @graphState.coops = []
+        for hash,coop of @coops
+            @graphState.coops.push dupObject(coop.data)
+
         return @graphState
 
     # clears all loaded courses and removes their DOM nodes.
@@ -946,6 +960,9 @@ class CourseManager
         @loadedSubjects = {}
         @loadingStatus = {}
         @onSubjectLoadedCallbacks = {}
+        for hash,coop of @coops
+            @removeCoop(coop)
+        @coops = {}
         @graphState.clearAll()
 
 
@@ -988,6 +1005,9 @@ class CourseManager
             course = node.course
             hash = BasicCourse.hashCourse(course)
             @ensureDisplayedInYearChart(course, {state: course.state, year: node.year, load: courseLoadCallback[hash]})
+
+        for coop in @graphState.coops
+            @addCoop(coop)
 
         # display the graph preview when the preview page is active
         if $('a[page=#preview]').hasClass('active')
@@ -1113,7 +1133,6 @@ class CourseManager
         for c in @courses[course]
             c.removeButton()
         delete @courses[course]
-
     removeAllCourseInstances: (course) ->
         hash = BasicCourse.hashCourse(course)
         for c in @courses[hash]
@@ -1144,6 +1163,14 @@ class CourseManager
         @needsCleaning = true
         # this operation takes a bit of time, so do it asyncronously
         window.setTimeout(clean, 1000)
+    addCoop: (data={}) ->
+        coop = new CoopButtonEditor(data, @)
+        $('#coop-list').append(coop.getButton())
+        @coops[coop.hash] = coop
+        return coop
+    removeCoop: (coop) ->
+        coop.removeButton()
+        delete @coops[coop.hash]
 
     # makes all electivesButtons have the same state as button (including
     # making the list of elective courses the same)
@@ -2110,6 +2137,66 @@ class ElectivesButtonEditor extends Electives
         else
             @$elm.find('.droptext').hide()
 
+class CoopButtonEditor
+    constructor: (@data, @manager) ->
+        @hash = @data.id = "#{Math.random().toFixed(8).slice(3)}"
+        @getButton()
+        @update()
+    getButton: ->
+        if @elm
+            return @elm
+        @$elm = $("""<li class='coop-editable'>
+                <button class='delete-elective' title='Delete Electives Block'></button>
+                <div class='title'>Label: <input type='text' value='' class='ui-state-default ui-combobox-input ui-widget ui-widget-content ui-corner-all'></input></div>
+                <div class='requirements'>
+                Start Year: <select name='startyear' title="Start Year"><option value='1' selected="true">1</option><option value='2'>2</option><option value='3'>3</option><option value='4'>4</option></select>
+                End Year: <select name='endyear' title="Start Year"><option value='1'>1</option><option value='2'>2</option><option value='3'>3</option><option value='4' selected="true">4</option></select>
+                <h4>Link to More Information</h4>
+                <p>(This is where you will be redirected when you click on the co-op banner.)</p>
+                <input name='infolink' type='text' value='' class='ui-state-default ui-combobox-input ui-widget ui-widget-content ui-corner-all'></input>
+                </div>
+                </li>""")
+        @elm = @$elm[0]
+        @$coursesDiv = @$elm.find('.courses-list')
+
+        @$elm.find('.delete-elective').button
+            icons:
+                primary: 'ui-icon-trash'
+            text: false
+        @$elm.find('.delete-elective').click =>
+            if @manager
+                @manager.removeCoop(@)
+
+        # set up callbacks for when we've been edited
+        update = (event) =>
+            @data['label'] = @$elm.find('.title input').val()
+            @data['start-year'] = @$elm.find('[name=startyear]').val()
+            @data['end-year'] = @$elm.find('[name=endyear]').val()
+            @data['url'] = @$elm.find('[name=infolink]').val()
+
+        # text boxes only change when they blur, so also register on keyup
+        @$elm.find('.title input').change(update).keyup( -> window.setTimeout(update, 0) )
+        @$elm.find('[name=infolink]').change(update).keyup( -> window.setTimeout(update, 0) )
+        @$elm.find('[name=startyear]')
+        @$elm.find('[name=startyear]').change(update)
+        @$elm.find('[name=endyear]').change(update)
+
+        return @elm
+
+    removeButton: (ops={detach: true}) ->
+        if not @elm
+            return
+        @$elm.remove()
+        @elm = @$elm = null
+        return
+    update: (data) ->
+        @data = data if data
+        # if @data == {}, we want to instantiate the defaults, not undefined
+        @$elm.find('.title input').val(@data['label'] || '')
+        @$elm.find('[name=startyear]').val(@data['start-year'] || 1)
+        @$elm.find('[name=endyear]').val(@data['end-year'] || 4)
+        @$elm.find('[name=infolink]').val(@data['url'] || '')
+
 ###
 # Class to hold the state of the current graph.  This object
 # can be used for loading and saving and will preserve
@@ -2121,13 +2208,17 @@ class Graph
         @nodes = {}
         @edges = {}
         @clusters = {}
+        # list of objects {'start-year': ..., 'end-year': ..., 'label': ..., 'id': ...}
+        # coops will show up as the banners attribute of the root graph when converted to Dot
+        # format.
+        @coops = []
     toJSON: (stringify=true) ->
         ret =
             nodes: []
             edges: []
             clusters: []
             title: @title
-            creation_date: JSON.stringify(new Date)
+            creation_date: (new Date)?.toJSON()
         for _,node of @nodes
             ret.nodes.push
                 course:
@@ -2159,6 +2250,7 @@ class Graph
             obj.cluster.data.description = elective.data.description if elective.data?.description
             obj.cluster.data.url = elective.data.url if elective.data?.url
             ret.clusters.push obj
+        ret.coops = (dupObject(o) for o in @coops)
         if stringify
             return JSON.stringify(ret)
         return ret
@@ -2174,12 +2266,14 @@ class Graph
             hash = BasicCourse.hashCourse(cluster.cluster)
             @clusters[hash] = cluster
         @title = data.title
+        @coops = data.coops || []
         return @
     clearAll: ->
         @dirty = true   # whether we've regenerated our adjacency matrices since the last update
         @nodes = {}
         @edges = {}
         @clusters = {}
+        @coops = []
 
     addNode: (course, ops={}) ->
         @dirty = true
@@ -2238,9 +2332,15 @@ class Graph
                         delete @edges[edge]
             console.log numDeleted, 'edges deleted'
 
-        # restore any edges that weren't autogenerated
+        # now that we have pruned the excess edges,
+        # restore the corresponding original edges, since they may have style
+        # information/be coreqs, etc.
+        for hash of @edges
+            @edges[hash] = originalEdges[hash]
+
+        # restore any edges that weren't autogenerated that may have been pruned
         for hash,edge of originalEdges
-            if not edge.properties?.autogenerated
+            if not edge.properties?.autoGenerated
                 @edges[hash] = edge
         return @edges
 
@@ -2262,6 +2362,8 @@ class Graph
             graph.rootGraph.attrs['_title'] = "#{@title}"
             graph.rootGraph.attrs['labelloc'] = "top"
             graph.rootGraph.attrs['labelfontsize'] = 30
+        # make sure coops show up as an attribute of the root graph
+        graph.rootGraph.attrs['banners'] = JSON.stringify(@coops)
 
         #
         # Initialize each year with 3 terms
@@ -2504,7 +2606,7 @@ class Graph
         #     * identify all connected components of coreqs
         #     * pick a representative from each component
         #     * create a new adjacency matrix consisting only
-        #     of representatives by collapsing coreqs
+        #     of representatives by collapsing goreqs
         #     to a single node (while preserving edges)
         #     * rank in the usual way
         #     * assign ranks to the non-representatives

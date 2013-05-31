@@ -75,6 +75,7 @@ svg .elective-node .course-number {
 	font-weight: bold;
 	fill: #000;
 	font-size: 12px;
+	font-family: Arial, sans-serif;
 }
 svg .in-electives-block rect {
 	stroke: none;
@@ -133,6 +134,17 @@ svg .electives-group {
 svg .electives-group rect {
 	fill: #ddd;
 	stroke: none;
+}
+
+svg .banner {
+	cursor: pointer;
+}
+svg .banner rect {
+	fill: rgb(54,48,172);
+	opacity: .75;
+}
+svg .banner text {
+	fill: #ffffff;
 }
 
 

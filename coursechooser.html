@@ -293,6 +293,7 @@
 					<li><a href="#tab-courseinfo">Course Info</a></li>
 					<li><a href="#tab-electives">Electives</a></li>
 					<li><a href="#tab-prereqs">Prerequisites</a></li>
+					<li><a href="#tab-coops">Co-ops</a></li>
 				</ul>
 				<div id="tab-courseinfo">
 					<div class='course-info' style="display:inline-block;">
@@ -322,6 +323,17 @@
 					As soon as a prereq becomes satisfied, it disappears from the list. If a new course is selected
 					and has an unmet prereq, it will automatically appear in this list.</p>
 					<div id="unmet-prereq-list">
+					</div>
+				</div>
+				<div id="tab-coops">
+					<p>Co-ops, unlike courses, can span multiple terms.  To offer flexibility,
+					co-ops are displayed as a banner spanning all the years in which a co-op can
+					be taken.  (e.g., if a co-op term is required somewhere between second and fourth
+					year, a Start Year of 2 and End Year of 4 will produce the appropriate banner.)</p>
+					<div id='coops-editor' style="display:inline-block;">
+						<ul id='coop-list'>
+						</ul>
+						<button id='create-new-coop'>Create New Co-op</button>
 					</div>
 				</div>
 			</div>

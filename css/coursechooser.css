@@ -91,21 +91,27 @@ li.prereq-and:first-child {
 	border-radius: 5px;
 }
 
-.elective-editable {
+.elective-editable, .coop-editable {
 	padding: .7em;
 	background: #e2e2e2;
 	border-radius: .7em;
 }
-.elective-editable.selected {
+.elective-editable.selected, .coop-editable.selected {
 	box-shadow: 0px 0px 5px blue;
 }
-.elective-editable input {
+.elective-editable input, .coop-editable input {
 	margin: 3px;
 }
-.elective-editable .delete-elective {
+.elective-editable .delete-elective, .coop-editable .delete-elective {
 	float: right;
 	padding-top: 4px;
 	padding-bottom: 4px;
+}
+#coop-list {
+	list-style-type: none;
+}
+#coop-list li{
+	margin-bottom: 1em;
 }
 
 
