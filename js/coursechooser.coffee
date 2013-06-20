@@ -2091,8 +2091,8 @@ class ElectivesButtonEditor extends Electives
         update = (event) =>
             if @manager
                 @manager.updateElectivesButton(@)
-        @$elm.find('.title input').change update
-        @$elm.find('.requirements input').change update
+        @$elm.find('.title input').change(update).keyup(-> window.setTimeout(update,0))
+        @$elm.find('.requirements input').change(update).keyup(-> window.setTimeout(update,0))
 
         return @elm
 

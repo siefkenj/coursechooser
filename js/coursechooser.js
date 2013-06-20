@@ -3303,8 +3303,12 @@ ElectivesButtonEditor = (function(_super) {
         return _this.manager.updateElectivesButton(_this);
       }
     };
-    this.$elm.find('.title input').change(update);
-    this.$elm.find('.requirements input').change(update);
+    this.$elm.find('.title input').change(update).keyup(function() {
+      return window.setTimeout(update, 0);
+    });
+    this.$elm.find('.requirements input').change(update).keyup(function() {
+      return window.setTimeout(update, 0);
+    });
     return this.elm;
   };
 
