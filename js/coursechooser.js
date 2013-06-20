@@ -886,7 +886,6 @@ $(document).ready(function() {
         return;
       }
       edge.properties.coreq = !edge.properties.coreq;
-      console.log(edge, edge.properties, 'coreq');
       updatePreview({
         preserveSelection: true,
         start: function() {
@@ -3704,7 +3703,7 @@ Graph = (function() {
       console.log(numDeleted, 'edges deleted');
     }
     for (hash in this.edges) {
-      this.edges[hash] = originalEdges[hash];
+      this.edges[hash] = originalEdges[hash] || this.edges[hash];
     }
     for (hash in originalEdges) {
       edge = originalEdges[hash];
