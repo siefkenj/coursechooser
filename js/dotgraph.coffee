@@ -23,7 +23,7 @@ astToStr = (ast, indentLevel=0, indentChar='\t') ->
         if /^[a-zA-Z0-9]+$/.test(s) and not /^(graph|digraph|subgraph|node|edge|strict)$/.test(s)
             return s
         else
-            return "\"#{(''+s).replace('"', '\\"', 'g')}\""
+            return "\"#{(''+s).replace(/"/g, '\\"')}\""
     attrListToStr = (l) ->
         if not l or l.length is 0
             return ""

@@ -106,7 +106,12 @@ SVGDot = (function() {
       height: abs(this.graph.rootGraph.attrs.bb[3] - this.graph.rootGraph.attrs.bb[1])
     };
     this.svg = createElmNS('svg');
-    this.banners = JSON.parse(this.graph.rootGraph.attrs.banners || '[]');
+    try {
+      this.banners = JSON.parse(this.graph.rootGraph.attrs.banners || '[]');
+    } catch (e) {
+      this.banners = [];
+      console.log("Failed to parse JSON: " + this.graph.rootGraph.attrs.banners);
+    }
     width = Math.round(this.boundingBox.width + this.PADDING);
     height = Math.round(this.boundingBox.height + 1.5 * this.PADDING + this.HEADING_HEIGHT + this.banners.length * this.BANNER_HEIGHT);
     this.svg.attr({
@@ -179,7 +184,6 @@ SVGDot = (function() {
     for (name in _ref) {
       graph = _ref[name];
       if (graph.attrs.bb && ('' + graph.id).slice(0, 7) === 'cluster') {
-        console.log(graph, this);
         elec = this.createElectivesNode({
           bb: graph.attrs.bb,
           label: graph.attrs.label
@@ -800,7 +804,6 @@ renderToSvg = function(graph) {
             return _results;
           })()).join('\n');
         } catch (e) {
-          console.log(label.value);
           label = '' + label.value;
         }
       }

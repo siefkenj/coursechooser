@@ -42,7 +42,7 @@ dupObject = (obj) ->
 # escape <,>,& in a string
 htmlEncode = (str) ->
     str = '' + str
-    str = str.replace('&','&amp;','g').replace('<','&lt;','g').replace('>','&gt;','g')
+    str = str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
     return str
 htmlUnencode = (str) ->
     str = '' + str
@@ -89,7 +89,7 @@ escapeJSON = (str) ->
     escaped = str.replace(/&.*?;/g, htmlEscapeToChar)
     # Next, escape <,>,& for xml
     for c in ['<', '>', '&']
-        escaped = escaped.replace(c, encodeURIComponent(c), 'g')
+        escaped = escaped.replace(new RegExp(c,'g'), encodeURIComponent(c))
     # encode any unicode characetrs
     escaped = escaped.replace(/./g, encodeUnicode)
     return escaped
@@ -439,8 +439,8 @@ $(document).ready ->
         if not (svgManager and svgManager.selected[0] and svgManager.selected[1])
             return
         else
-            elm1 = svgManager.selected[0].getAttribute('id').replace('-',' ')
-            elm2 = svgManager.selected[1].getAttribute('id').replace('-',' ')
+            elm1 = svgManager.selected[0].getAttribute('id').replace(/-/g,' ')
+            elm2 = svgManager.selected[1].getAttribute('id').replace(/-/g,' ')
             edge = window.courseManager.graphState.edges[[elm1,elm2]]
             edge = edge || window.courseManager.graphState.edges[[elm2,elm1]]
             if edge
@@ -468,8 +468,8 @@ $(document).ready ->
         if not (svgManager and svgManager.selected[0] and svgManager.selected[1])
             return
         else
-            elm1 = svgManager.selected[0].getAttribute('id').replace('-',' ')
-            elm2 = svgManager.selected[1].getAttribute('id').replace('-',' ')
+            elm1 = svgManager.selected[0].getAttribute('id').replace(/-/g,' ')
+            elm2 = svgManager.selected[1].getAttribute('id').replace(/-/g,' ')
             edge = window.courseManager.graphState.edges[[elm1,elm2]]
             edge = edge || window.courseManager.graphState.edges[[elm2,elm1]]
             if not edge
@@ -490,8 +490,8 @@ $(document).ready ->
         if not (svgManager and svgManager.selected[0] and svgManager.selected[1])
             return
         else
-            elm1 = svgManager.selected[0].getAttribute('id').replace('-',' ')
-            elm2 = svgManager.selected[1].getAttribute('id').replace('-',' ')
+            elm1 = svgManager.selected[0].getAttribute('id').replace(/-/g,' ')
+            elm2 = svgManager.selected[1].getAttribute('id').replace(/-/g,' ')
             edge = window.courseManager.graphState.edges[[elm1,elm2]]
             edge = edge || window.courseManager.graphState.edges[[elm2,elm1]]
             if edge

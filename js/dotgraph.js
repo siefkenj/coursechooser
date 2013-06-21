@@ -34,7 +34,7 @@ astToStr = function(ast, indentLevel, indentChar) {
     if (/^[a-zA-Z0-9]+$/.test(s) && !/^(graph|digraph|subgraph|node|edge|strict)$/.test(s)) {
       return s;
     } else {
-      return "\"" + (('' + s).replace('"', '\\"', 'g')) + "\"";
+      return "\"" + (('' + s).replace(/"/g, '\\"')) + "\"";
     }
   };
   attrListToStr = function(l) {

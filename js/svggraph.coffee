@@ -61,7 +61,11 @@ class SVGDot
             height: abs(@graph.rootGraph.attrs.bb[3] - @graph.rootGraph.attrs.bb[1])
         @svg = createElmNS('svg')
         # list of banners to appear in the year chart; should appear as a JSON array as the root graph attribute.  e.g. graph [banners="[\"banner1\",\"banner2\"]"]
-        @banners = JSON.parse(@graph.rootGraph.attrs.banners || '[]')
+        try
+            @banners = JSON.parse(@graph.rootGraph.attrs.banners || '[]')
+        catch e
+            @banners = []
+            console.log("Failed to parse JSON: #{@graph.rootGraph.attrs.banners}")
         width = Math.round(@boundingBox.width + @PADDING)
         height = Math.round(@boundingBox.height + 1.5*@PADDING + @HEADING_HEIGHT + @banners.length*@BANNER_HEIGHT)
         @svg.attr
@@ -120,7 +124,6 @@ class SVGDot
         # draw all the elective cluster backgrounds first so we don't worry about z-order
         for name,graph of @graph.graphs
             if graph.attrs.bb and (''+graph.id).slice(0,7) is 'cluster'
-                console.log graph, @
                 elec = @createElectivesNode
                     bb: graph.attrs.bb
                     label: graph.attrs.label
@@ -472,7 +475,6 @@ renderToSvg = (graph) ->
                     xml = parser.parseFromString("<root>#{label.value}</root>", "text/xml")
                     label = (x.textContent for x in xml.querySelectorAll('font')).join('\n')
                 catch e
-                    console.log label.value
                     label = ''+label.value
 
             rx = parseFloat(n.attrs.width)*36

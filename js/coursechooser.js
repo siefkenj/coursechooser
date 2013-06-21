@@ -83,7 +83,7 @@ dupObject = function(obj) {
 
 htmlEncode = function(str) {
   str = '' + str;
-  str = str.replace('&', '&amp;', 'g').replace('<', '&lt;', 'g').replace('>', '&gt;', 'g');
+  str = str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
   return str;
 };
 
@@ -397,7 +397,7 @@ escapeJSON = function(str) {
   _ref = ['<', '>', '&'];
   for (_i = 0, _len = _ref.length; _i < _len; _i++) {
     c = _ref[_i];
-    escaped = escaped.replace(c, encodeURIComponent(c), 'g');
+    escaped = escaped.replace(new RegExp(c, 'g'), encodeURIComponent(c));
   }
   escaped = escaped.replace(/./g, encodeUnicode);
   return escaped;
@@ -844,8 +844,8 @@ $(document).ready(function() {
     if (!(svgManager && svgManager.selected[0] && svgManager.selected[1])) {
 
     } else {
-      elm1 = svgManager.selected[0].getAttribute('id').replace('-', ' ');
-      elm2 = svgManager.selected[1].getAttribute('id').replace('-', ' ');
+      elm1 = svgManager.selected[0].getAttribute('id').replace(/-/g, ' ');
+      elm2 = svgManager.selected[1].getAttribute('id').replace(/-/g, ' ');
       edge = window.courseManager.graphState.edges[[elm1, elm2]];
       edge = edge || window.courseManager.graphState.edges[[elm2, elm1]];
       if (edge) {
@@ -878,8 +878,8 @@ $(document).ready(function() {
     if (!(svgManager && svgManager.selected[0] && svgManager.selected[1])) {
 
     } else {
-      elm1 = svgManager.selected[0].getAttribute('id').replace('-', ' ');
-      elm2 = svgManager.selected[1].getAttribute('id').replace('-', ' ');
+      elm1 = svgManager.selected[0].getAttribute('id').replace(/-/g, ' ');
+      elm2 = svgManager.selected[1].getAttribute('id').replace(/-/g, ' ');
       edge = window.courseManager.graphState.edges[[elm1, elm2]];
       edge = edge || window.courseManager.graphState.edges[[elm2, elm1]];
       if (!edge) {
@@ -904,8 +904,8 @@ $(document).ready(function() {
     if (!(svgManager && svgManager.selected[0] && svgManager.selected[1])) {
 
     } else {
-      elm1 = svgManager.selected[0].getAttribute('id').replace('-', ' ');
-      elm2 = svgManager.selected[1].getAttribute('id').replace('-', ' ');
+      elm1 = svgManager.selected[0].getAttribute('id').replace(/-/g, ' ');
+      elm2 = svgManager.selected[1].getAttribute('id').replace(/-/g, ' ');
       edge = window.courseManager.graphState.edges[[elm1, elm2]];
       edge = edge || window.courseManager.graphState.edges[[elm2, elm1]];
       if (edge) {
