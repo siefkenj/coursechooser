@@ -2302,6 +2302,9 @@ CourseManager = (function() {
     if (this.loadingStatus[subject] === 'loading' && !ops.force) {
       return;
     }
+    if (this.loadingStatus[subject] === 'failed' && !ops.force) {
+      return;
+    }
     this.loadingStatus[subject] = 'loading';
     error = function(e) {
       console.log('ajax error');
@@ -2461,7 +2464,7 @@ CourseManager = (function() {
       ops = {};
     }
     hash = BasicCourse.hashCourse(course);
-    if (!this.courseData[hash] && this.loadedSubjects[course.subject]) {
+    if ((!this.courseData[hash] && this.loadedSubjects[course.subject]) || this.loadingStatus[course.subject] === 'failed') {
       if (ops.error) {
         ops.error();
       }

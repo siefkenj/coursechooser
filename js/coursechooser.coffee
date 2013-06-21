@@ -1481,6 +1481,8 @@ class CourseManager
             return
         if @loadingStatus[subject] is 'loading' and not ops.force
             return
+        if @loadingStatus[subject] is 'failed' and not ops.force
+            return
         @loadingStatus[subject] = 'loading'
 
         error = (e) ->
@@ -1566,7 +1568,7 @@ class CourseManager
     ensureDisplayedInYearChart: (course, ops={}) ->
         hash = BasicCourse.hashCourse(course)
         # this is a course that cannot be added since it doesn't exist in a subject
-        if not @courseData[hash] and @loadedSubjects[course.subject]
+        if (not @courseData[hash] and @loadedSubjects[course.subject]) or @loadingStatus[course.subject] is 'failed'
             ops.error() if ops.error
             throw new Error("#{hash} cannot be loaded.  Does not appear to exist...")
         # if we don't have the course's data, load it and try to display the course again
