@@ -1127,7 +1127,7 @@ class CourseManager
             for _,c of @sortableCourses[course].courses
                 @sortableCourses[course].$elm.parent().append(c.$elm)
                 @updateCourseState(c, {required:false, elective:false})
-            @sortableCourses[course].removeCourse(c, {detach: false})
+                @sortableCourses[course].removeCourse(c, {detach: false})
             delete @sortableCourses[course]
         for c in @courses[course]
             c.removeButton()

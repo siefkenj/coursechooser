@@ -1798,10 +1798,10 @@ CourseManager = (function() {
           required: false,
           elective: false
         });
+        this.sortableCourses[course].removeCourse(c, {
+          detach: false
+        });
       }
-      this.sortableCourses[course].removeCourse(c, {
-        detach: false
-      });
       delete this.sortableCourses[course];
     }
     _ref1 = this.courses[course];
