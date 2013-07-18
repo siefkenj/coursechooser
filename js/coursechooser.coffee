@@ -375,12 +375,13 @@ $(document).ready ->
                 elmName: 'coursemapper'
                 data: escapeJSON(window.courseManager.graphState.toJSON())
             # set our width/height so we print properly and we convert to a pdf letter size
-            clonedSvg.setAttribute('width', '8.5in')
-            clonedSvg.setAttribute('height', '11in')
-            clonedSvg.setAttribute('preserveAspectRatio', 'xMinYMin meet')
+            #clonedSvg.setAttribute('width', '8.5in')
+            #clonedSvg.setAttribute('height', '11in')
+            #clonedSvg.setAttribute('preserveAspectRatio', 'xMinYMin meet')
 
-            if parseFloat(clonedSvg.getAttribute('aspect')) > 8.5/11
-                clonedSvg.setAttribute('width', '8.5in')
+            #if parseFloat(clonedSvg.getAttribute('aspect')) > 8.5/11
+            #    clonedSvg.setAttribute('width', '8.5in')
+
             data = $('<div></div>').append(clonedSvg).html()
             mimeType = 'image/svg+xml'
         downloadManager = new DownloadManager(name, data, mimeType)

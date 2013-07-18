@@ -768,12 +768,6 @@ $(document).ready(function() {
         elmName: 'coursemapper',
         data: escapeJSON(window.courseManager.graphState.toJSON())
       });
-      clonedSvg.setAttribute('width', '8.5in');
-      clonedSvg.setAttribute('height', '11in');
-      clonedSvg.setAttribute('preserveAspectRatio', 'xMinYMin meet');
-      if (parseFloat(clonedSvg.getAttribute('aspect')) > 8.5 / 11) {
-        clonedSvg.setAttribute('width', '8.5in');
-      }
       data = $('<div></div>').append(clonedSvg).html();
       mimeType = 'image/svg+xml';
     }

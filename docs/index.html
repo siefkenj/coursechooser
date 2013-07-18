@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>CourseMapper Documentation</title>
+	<meta charset="UTF-8" />
+	<style>
+		body {
+			width: 100%;
+			padding: 0px;
+			margin: 0px;
+		}
+		#help {
+			max-width: 50em;
+			padding: 1em;
+			margin-left: auto;
+			margin-right: auto;
+		}
+		#topic-list {
+			list-style: none;
+		}
+		.doc-image {
+			display: block;
+			margin-left: auto;
+			margin-right: auto;
+			border: 2px solid black;
+		}
+		op {
+			font-weight: bold;
+		}
+		emph {
+			font-style: italic;
+		}
+	</style>
+	<script>
+		window.onload = function(){
+			/*
+			 * Make all the images zoom to full scale when you click them.
+			 */
+			var imgs = Array.prototype.slice.call(document.querySelectorAll('.doc-image'));
+			imgs.forEach(function(img){
+				img._width = img.width;
+				img.setAttribute('style', "cursor: pointer;");
+				img.onclick = function() {
+					if (img.getAttribute('width')) {
+						img.removeAttribute('width');
+					} else {
+						img.setAttribute('width', img._width);
+					}
+				}
+			})
+		}
+	</script>
+</head>
+<body id="welcome">
+<div id="help">
+	<p>Welcome to the documentation for CourseMapper.  Choose from the list of topics below.</p>
+	<h2>Help Topics</h2>
+	<ul id="topic-list">
+		<li><a href="#basic-usage">Basic Usage</a>
+			<ul>
+				<li><a href='#StructureofCourseMapper'>Structure of CourseMapper</a></li>
+				<li><a href='#Navigation'>Navigation</a></li>
+				<li><a href='#CreatingaChart'>Creating a Chart</a></li>
+			</ul>
+		</li>
+		<li><a href="#exporting">Exporting to Other Graphical Formats</a>
+			<ul>
+				<li><a href='#ExportingtoImagePNG'>Exporting to Image (PNG)</a></li>
+				<li><a href='#ExportingtoPDF'>Exporting to PDF</a></li>
+			</ul>
+		</li>
+		<li><a href="#adjusting">Adjusting Your Chart</a>
+			<ul>
+				<li><a href='#ChangingtheYearofaCourse'>Changing the Year of a Course</a></li>
+				<li><a href='#HidingorCreatingArrows'>Hiding or Creating Arrows</a></li>
+				<li><a href='#CreatingaCorequisite'>Creating a Co-requisite</a></li>
+			</ul>
+		</li>
+		<li><a href="#prereqs">Checking Prerequisites</a>
+			<ul>
+				<li><a href='#IndividualCoursesPrerequisites'>Individual Course's Prerequisites</a></li>
+				<li><a href='#CheckingaProgramsUnmetPrerequisites'>Checking a Program's Unmet Prerequisites</a></li>
+			</ul>
+		</li>
+		<li><a href="#electives">Adding Electives</a>
+			<ul>
+				<li><a href='#ElectiveDescriptors'>Elective Descriptors</a></li>
+				<li><a href='#ElectiveBlock'>Elective Block</a></li>
+				<li><a href='#DeletingElectives'>Deleting Electives</a></li>
+			</ul>
+		</li>
+		<li><a href="#coops">Adding Co-ops</a></li>
+		<br />
+		<li><a href="#creation">Who created CourseMapper?</a></li>
+	</ul>
+
+	<h2 id="basic-usage">Basic Usage</h2>
+	<p>CourseMapper allows you to create charts
+	showing how an ideal student might progress through
+	a particular major (possibly with specialty).
+	These charts can be used for planning purposes, or
+	they can be embedded on your department webpage to help
+	students navigate their degree program.  <emph>Charts produced
+	by CourseMapper are meant to give perspective on the flow
+	of a program, but are not meant to include every detail of
+	a particular major or in any way replace the calendar as 
+	the source for university requirements.</emph></p>
+
+	<h4 id="StructureofCourseMapper">Structure of CourseMapper</h4>
+	<p>The CourseMapper application
+	has two main components: Course Chooser and Preview. 
+	Each component of CourseMapper can be accessed via the black menubar
+	at the top of the CourseMapper page.  Course Chooser allows you to load
+	and inspect (look at pre-reqs, course descriptions, historical offerings)
+	any courses from the Banner database and then select the courses
+	you wish to include in your program.  Preview is where you see a
+	flow-chart representation of your program with arrows 
+	representing prerequisites. In Preview you can also adjust which arrows
+	show up, make co-requisites, and add extra data about electives
+	(like links to detailed webpage descriptions).</p>
+	
+	<h4 id="Navigation">Navigation</h4>
+	<p>Changing views as well as loading and saving is done via the black
+	navigation bar at the top of the CourseMapper page.  This bar should be used
+	to change between <emph>Welcome</emph>, <emph>Course Chooser</emph>, and <emph>Preview</emph> views
+	instead of the browsers forward and back buttons.</p>
+	
+	<h4 id="CreatingaChart">Creating a Chart</h4>
+	<p>
+		To create a chart, go to the <emph>Welcome</emph> page, enter the 
+		title of your program and click <op>Next</op> to proceed to the
+		<emph>Course Chooser</emph> page.  If there is already an old course map loaded,
+		click the <op>New</op> button in the top right of the black menubar to
+		clear the current chart and start afresh.
+		
+		<img class="doc-image" src="basic-1.png" width="500px">
+	</p>
+	<p>
+		In the <emph>Subjects to Add</emph> textbox,
+		enter subjects or courses you wish to choose from in
+		a comma separated list; then, click <op>Show</op>. If you enter
+		a course subject, for example <emph>MATH</emph>, then all courses
+		from that subject will be shown. If you enter a full course designation,
+		for example <emph>MATH 100</emph>, then only that particular course will
+		be displayed.  (This
+		means, if you already know exactly which courses belong in your program,
+		you can just enter them in a comma-separated list and only those courses will
+		be loaded).  <emph>Note: courses loaded here come directly from a clone
+		of the banner database,
+		so courses that do not exist on banner cannot be loaded.</emph>
+		
+		<img class="doc-image" src="basic-2.png" width="500px">
+	</p>
+	<p>
+		After you hit <op>Show</op>, you will see a host of gray courses
+		displayed in the year chart.  Gray courses will not show up in your final
+		graph.  Instead, we must mark courses that we want to include as <emph>Required</emph>.
+	</p>
+	<p>
+		Marking courses as Required can be done in two ways: double click a course or
+		click a course once and then in the <emph>Course Info</emph> tab on the right,
+		click the <op>Required</op> button.  A course can be made not required similarly,
+		by double clicking or clicking the <op>Not Included</op> button after selecting the course.
+	</p>
+	<p>
+		After you have selected all the courses required for your program, click
+		the <op>Preview</op> button in the top menubar to be taken to the graphical
+		version of your chart.
+		
+		<img class="doc-image" src="basic-3.png" width="500px">
+	</p>
+	<p>
+		If you're happy with your program chart, you can click <op>Save</op> in
+		the top menubar, or you can click <op>Course Chooser</op> to
+		return to editing the courses in your chart.
+		
+		<img class="doc-image" src="basic-4.png" width="500px">
+	</p>
+	<p>
+		Course charts are saved in the <emph>SVG</emph> file format.  This file format
+		can be displayed by most web browsers and can be loaded back in CourseMapper
+		for future editing.  However, for maximum portability, you can export your
+		<emph>SVG</emph> to an image or <emph>PDF</emph>. See <a href="#exporting">Exporting
+		to Other Graphical Formats</a>.
+	</p>
+	
+	<h2 id="exporting">Exporting to Other Graphical Formats</h2>
+	<p>
+		When you save a chart from CourseMapper, it is saved as an
+		<emph>SVG</emph> image.  Embedded in this image is all the data
+		needed to reload and continue working on/edit your chart in the future.
+		However, you may wish to convert your chart to different file formats
+		for putting on your webpage or distributing.
+	</p>
+	<p>
+		To convert your chart you will need the free program 
+		<emph>Inkscape</emph>. You can download Inkscape for Mac,
+		Windows, and Linux at
+		<a href="http://inkscape.org/">inkscape.org</a>.
+	</p>
+	<h4 id="ExportingtoImagePNG">Exporting to Image (PNG)</h4>
+	<p>
+		<emph>PNG</emph> is a static image format suitable to include
+		on your department webpage.  To export your chart to a PNG,
+		first open it in Inkscape. Then, choose <emph>File</emph> &gt; 
+		<emph>Export Bitmap</emph> from the Inkscape menu.
+	</p>
+	<p>
+		When the export dialog appears, click <op>Browse</op> to choose
+		a file name.  Make sure you include a <emph>.png</emph> at
+		the end of your filename.
+		Finally, click the <op>Export</op> button, and your image
+		will be saved.
+		<img class="doc-image" src="export-png.png" width="500px">
+	</p>
+	<h4 id="ExportingtoPDF">Exporting to PDF</h4>
+	<p>
+		To export your chart to a <emph>PDF</emph>, open the <emph>SVG</emph>
+		version in Inkscape, and then select <emph>File</emph> &gt; <emph>Save As</emph>
+		from the Inkscape menu. Then, select <emph>Portable Document Format</emph> from
+		the list of Save-As types in the Save As dialog.
+		<img class="doc-image" src="export-pdf-1.png" width="500px">
+	</p>
+	<p>
+		Click <op>Save</op> and when presented with the <emph>PDF</emph> export options,
+		click <op>OK</op>.  Your <emph>PDF</emph> should now be saved.
+		<img class="doc-image" src="export-pdf-2.png" width="500px">
+	</p>
+
+
+	<h2 id="adjusting">Adjusting Your Chart</h2>
+	<p>
+		Outlined are many of the ways you may wish to fine-tune your
+		chart.  
+	</p>
+	<h4 id="ChangingtheYearofaCourse">Changing the Year of a Course</h4>
+	<p>
+		By default, courses are sorted into years by their course number.
+		If you wish to change the year a course should be taken in, go
+		to the <emph>Course Chooser</emph> page and drag and
+		drop that course to the appropriate year in the year chart.
+		<img class="doc-image" src="adjusting-year.png" width="500px">
+	</p>
+	<h4 id="HidingorCreatingArrows">Hiding or Creating Arrows</h4>
+	<p>
+		By default, all arrows that appear are given
+		by prerequisites listed in Banner. You may want to add or hide
+		arrows to help the flow of your program.  To hide an
+		arrow, go to the <emph>Preview</emph>
+		page and click the two courses connected by the arrow you wish to hide.
+		Then click the <op>Remove Arrow</op> button.
+		<img class="doc-image" src="adjusting-remove-arrow.png" width="500px">
+	</p>
+	<p>
+		To create an arrow, from the <emph>Preview</emph> page, select the two courses
+		you wish to create an arrow between from tail to head.  That is, <emph>if you
+		want an arrow from course A to course B, select course A first, and then select
+		course B</emph>.  Then, click the <op>Create Arrow</op> button.  If you mistakenly
+		create an arrow in the wrong direction, click <op>Remove Arrow</op>, deselect the 
+		two courses (by clicking on each of them once more), select them in the opposite
+		order, and click <op>Create Arrow</op> again.
+		<img class="doc-image" src="adjusting-create-arrow.png" width="500px">
+	</p>
+	<h4 id="CreatingaCorequisite">Creating a Co-requisite</h4>
+	<p>
+		By default, all requirements are shown as prerequisites, but your program
+		may have co-requisites.  To create a co-requisite, select the two courses
+		you wish to be co-requisite (there must already be an arrow between them
+		or you must create an arrow between them for the next step) and click the 
+		<op>Make Corequisite</op> button.  The arrow will now be headless and the two
+		courses should be shown in the same column.  To return a course to a pre-requisite,
+		select the two co-requisite courses and click <op>Make Prerequisite</op>.
+		<img class="doc-image" src="adjusting-coreq.png" width="500px">
+	</p>
+	
+	<h2 id="prereqs">Checking Prereqs</h2>
+	<p>
+		CourseMapper has knowledge of all the prerequisites listed in Banner and gives you two
+		different ways to view this information.  It should be noted that CourseMapper interprets every
+		requirement in Banner as a pre-requisite.  Co-requisites must be specified manually as explained
+		in the <a href="#adjusting">Adjusting</a> section.
+	</p>
+	<h4 id="IndividualCoursesPrerequisites">Individual Course's Prerequisites</h4>
+	<p>
+		To view an individual course's prerequisites, while on the <emph>Course Chooser</emph>,
+		click the <op>Course Info</op> tab on the right side.  Under the words <emph>Pre-requisites</emph>
+		will be a list of all the course's prerequisites. Prerequisites are either in a boxed group, which
+		means any of the courses in the box may fulfill the requirement, or they are separated by the word
+		<emph>and</emph> to signify that course or block of courses is required.  Courses you have already 
+		marked as required or elective in your chart are shown as required or elective in the prerequisites
+		list.  Courses that are half-grayed out are courses listed as prerequisites in Banner but are no
+		longer offered.
+	</p>
+	<p>
+		To fulfill missing requirements, either add the course and make it required via the <emph>Subjects to Add</emph>
+		textbox, or click the course in the <emph>Pre-requisites</emph> list to have it automatically added.  The graphic
+		shows that our program is missing one of the requirements for MATH342.
+		<img class="doc-image" src="prereq-1.png" width="500px">
+	</p>
+	<h4 id="CheckingaProgramsUnmetPrerequisites">Checking a Program's Unmet Prerequisites</h4>
+	<p>
+		Because verifying that every course's prerequisites are satisfied one at a time is time tedious, 
+		CourseMapper provides a way to look at all unmet prerequisites.  From the <emph>Course Chooser</emph> page,
+		clicking the <op>Prerequisites</op> tab on the right-hand side will give a (possibly empty) list
+		of unmet prerequisites.  If the list is empty, all prerequisites for all required courses in your program
+		are met.  Otherwise, as is the case in the image, you will see a list of prerequisites that need to be 
+		satisfied.  Once they are satisfied, they will disappear from this list.
+		<img class="doc-image" src="prereq-2.png" width="500px">
+	</p>
+	<p>
+		The unmet prerequisites list will dynamically update as you change your program.  For example, if we unrequire
+		MATH100 and MATH101 from our program, we see they appear in the unmet prerequisites list (with MATH101 appearing
+		twice because it is required by both MATH200 and MATH201).
+		<img class="doc-image" src="prereq-3.png" width="500px">
+	</p>
+	<h2 id="electives">Adding Electives</h2>
+	<p>
+		CourseMapper allows you to add two different types of electives: an electives descriptor 
+		and an electives block.  An electives descriptor will appear as a gray box displaying
+		the text you specify on your graphical
+		chart.  An elective block contains an explicit list of options for courses that satisfy 
+		that elective.
+	</p>
+	<p>
+		Note that <emph>Electives</emph> is just the word we use to describe an element of your
+		graph where a student has a choice.  It may be a requirement of your program, and you need
+		not have the word "elective" appear on your graphical chart.
+	</p>
+	<h4 id="ElectiveDescriptors">Elective Descriptors</h4>
+	<p>
+		To create an elective descriptor, from the <emph>Course Chooser</emph> page, click the <op>Electives</op>
+		tab to the right.  Then, click on <op>Create New Electives Block</op>. A gray electives box will show
+		up on your year chart.  
+		<img class="doc-image" src="electives-1.png" width="500px">
+	</p>
+	<p>
+		You may drag and drop this electives box to the desired year and edit the title and required
+		number of units to suit your needs.
+		<img class="doc-image" src="electives-2.png" width="500px">
+	</p>
+	<p>
+		Elective descriptors can also include extra descriptions and links to further information.  To
+		add this data, go to the <emph>Preview and click your elective descriptor.  On the right
+		you will be presented with a place to enter a description and a link to more information.
+		<img class="doc-image" src="electives-3.png" width="500px">
+	</emph></p>
+	<h4 id="ElectiveBlock">Elective Block</h4>
+	<p>
+		The difference between an elective descriptor and an elective block is that an elective block has an
+		explicit list of courses listed to choose from.  To create an elective block, the procedure is the
+		same: From the <emph>Course Chooser</emph> page, click the <op>Electives</op> tab to the right and 
+		click <op>Create New Electives Block</op>.
+	</p>
+	<p>
+		In the same way as elective descriptors, you can edit the text and required units of your
+		elective block.
+	</p>
+	<p>
+		To populate your elective block with courses, drag and drop them into the elective block.
+		<img class="doc-image" src="electives-block-1.png" width="500px">
+	</p>
+	<p>
+		Your electives block will show up in your graphical chart as a gray box enclosing every 
+		course you specified.  It should be noted that the prerequisites of the courses specified
+		in your elective block will be included in the <emph>Prerequisites</emph> tab in CourseMapper
+		and prerequisite arrows will appear in the graphical chart.  If your course options have complicated
+		prerequisites between eachother, CourseMapper will attempt to structure them, but this
+		may result in a strange looking chart.
+		<img class="doc-image" src="electives-block-2.png" width="500px">
+	</p>
+	<h4 id="DeletingElectives">Deleting Electives</h4>
+	<p>
+		To delete an elective descriptor or an elective block, from the <emph>Course Chooser</emph> page, click the 
+		<op>Electives</op> tab and click the trash icon in the upper-right of the elective you wish to delete.
+		<img class="doc-image" src="electives-4.png" width="500px">
+	</p>
+	
+	<h2 id="basic-usage">Co-ops</h2>
+	<p>
+		Co-ops are treated differently by CourseMapper than a regular course, 
+		since co-op requirement normally span several years and offer great flexibility
+		as to the term they are taken in.  To create a co-op, from the <emph>Course Chooser</emph>
+		page, click the <op>Co-ops</op> tab to the right and then click <op>Create New Co-op</op>
+		<img class="doc-image" src="coop-1.png" width="500px">
+	</p>
+	<p>
+		You co-op will not show up in list of courses on the <emph>Course Chooser</emph> page,
+		but it will show up in the graphical version of your chart.  After creating a co-op,
+		you should specify its label (description), the year-span you wish it to show up for,
+		and a link to more information about that co-op and its requirements.
+		<img class="doc-image" src="coop-2.png" width="500px">
+	</p>
+	<p>
+		When you click <op>Preview</op> you will now see a co-op banner spanning the years 
+		you specified.
+		<img class="doc-image" src="coop-3.png" width="500px">
+	</p>
+	
+	<h2 id="creation">Who created CourseMapper?</h2>
+	<p>
+		CourseMapper was originally the idea of <a href="http://ltc.uvic.ca/about/contacts.php">Teresa Dawson</a> of the
+		UVic Learning and Teaching Center.  She was hoping for a tool to help faculties design and redesign their
+		curricula. She teamed up with Math Ph.D. candidate <a href="http://web.uvic.ca/~siefkenj/homepage/index.html">Jason Siefken</a>
+		for the technical and programming part, and the results of their collaboration have far exceeded anyones initial expectations.
+	</p>
+</div>
+</body>
+</html>
