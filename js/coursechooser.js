@@ -460,14 +460,14 @@ parseCourseListString = function(val) {
   unknownCourses = [];
   val = val.toUpperCase();
   val = val.replace(/([A-Z])(\d)/g, "$1 $2");
-  val = val.split(/[^a-zA-Z0-9]+/);
+  val = val.split(/[^a-zA-Z0-9-]+/);
   subject = null;
   for (i = _i = 0, _len = val.length; _i < _len; i = ++_i) {
     v = val[i];
     if (v.length === 0) {
       continue;
     }
-    if (v.match(/^[a-zA-Z]/)) {
+    if (v.match(/^[a-zA-Z-]/)) {
       subject = v;
       if (!((_ref = val[i + 1]) != null ? _ref.match(/^\d/) : void 0)) {
         subjects[subject] = true;

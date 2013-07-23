@@ -159,12 +159,12 @@ parseCourseListString = (val) ->
 
     val = val.toUpperCase()
     val = val.replace(/([A-Z])(\d)/g, "$1 $2")
-    val = val.split(/[^a-zA-Z0-9]+/)
+    val = val.split(/[^a-zA-Z0-9-]+/)
     subject = null
     for v,i in val
         if v.length is 0
             continue
-        if v.match (/^[a-zA-Z]/)
+        if v.match (/^[a-zA-Z-]/)
             subject = v
             # subjects contain only subjects for which we load every course.  ie. only lone
             # subjects. e.g. "math, biol" adds math and biol to the subject list,
