@@ -369,3 +369,17 @@ body {
 #tab-electives-graphical input {
 	width: 100%;
 }
+
+/* copyright notice */
+.copyright {
+	position: absolute;
+	right: 20px;
+	bottom: 2px;
+	font-size: smaller;
+	font-style: italic;
+	background: #eeede8;
+	background: rgba(238,237,232,.7);
+	padding: 2px;
+	border-radius: 5px;
+	pointer-events: none; /* Have mouse events pass through this element */
+}
