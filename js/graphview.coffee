@@ -1,23 +1,31 @@
 loadSVG = (url, callback) ->
     xhr = new XMLHttpRequest
     xhr.onreadystatechange = ->
+        ###
         # when running from file:// xhr.status is always 0
         #if xhr.readyState is 4 and xhr.status is 200
+        ###
         if xhr.readyState is 4
             graph = document.getElementById('graphview-graph')
             graph.innerHTML = xhr.responseText
             callback?(graph.childNodes[0])
+        return
 
     xhr.open('GET', url, true)
     xhr.setRequestHeader('Content-type', 'image/svg+xml')
     xhr.send()
+    return
 
+###
 # pass in a Date object and returns {year: .., term: ..}
 # object corresponding to the school year
+###
 computeTermFromDate = (date) ->
+    ###
     # summer: 5-8
     # fall: 9-12
     # spring: 1-5   in this case we need to subtract 1 from the year, 'cause it counts as the previous year!
+    ###
     year = date.getYear() + 1900
     month = date.getMonth()
     if 0 <= month <= 4
@@ -31,16 +39,19 @@ computeTermFromDate = (date) ->
 
 makeResizableAndClickable = (svg, container=document) ->
     #svg.setAttribute('preserveAspectRatio', 'none')
-    window.zoomer = new SVGZoomer(svg)
+    zoomer = new SVGZoomer(svg)
     zoomer.zoomFit()
     container.querySelector('#graphview-zoom-in').onclick = ->
         zoomer.zoomIn()
+        return
     container.querySelector('#graphview-zoom-out').onclick = ->
         zoomer.zoomOut()
+        return
     container.querySelector('#graphview-zoom-fit').onclick = ->
         zoomer.zoomFit()
+        return
 
-    window.manager = new GraphManager(svg, zoomer, container)
+    manager = new GraphManager(svg, zoomer, container)
     return manager
 
 ###
@@ -51,30 +62,43 @@ class GraphviewCreator
     constructor: ->
         @loadError = false
         @templateText = ''
+        ###
+        # the make file dynamically injects NAV_TEMPLATE into graphview.coffee, but we should
+        # be able to use it without compiling
+        ###
+        if typeof NAV_TEMPLATE isnt 'undefined'
+            @templateText = NAV_TEMPLATE
         @loadTemplate('graphview.html')
 
     loadTemplate: (url, callback=(->)) ->
         if @loadError
             return
+        ###
         # if things are already loaded, don't try to reload
+        ###
         if @templateText
             (callback.bind(@))()
+            return
 
         xhr = new XMLHttpRequest
-        # TODO this is not actually handling errors...
-        xhr.onerror = =>
-            @loadError = true
         xhr.onreadystatechange = =>
+            ###
             # when running from file:// xhr.status is always 0
             #if xhr.readyState is 4 and xhr.status is 200
+            ###
             if xhr.readyState is 4
+                if not xhr.responseText
+                    @loadError = true
                 @templateText = xhr.responseText
+                ###
                 # call our callback, but to avoid hassle, make sure
                 # we call it with the appropriate _this_ context.
+                ###
                 (callback.bind(@))()
         xhr.open('GET', url, true)
         xhr.setRequestHeader('Content-type', 'image/svg+xml')
         xhr.send()
+        return
     injectHeader: ->
         if @loadError
             return
@@ -88,10 +112,12 @@ class GraphviewCreator
             document.body.appendChild(elm)
         for elm in frag.querySelectorAll('style')
             document.body.appendChild(elm)
+        ###
         # clean up, just in case
+        ###
         frag.innerHTML = ''
         return
-    createGraphviewInstance: (svgUrl) ->
+    createGraphviewInstance: (svgUrl, imgElm) ->
         if @loadError
             return
         if not @templateText
@@ -102,39 +128,63 @@ class GraphviewCreator
         frag.innerHTML = @templateText
         graphviewDiv = frag.querySelector('#graphview')
 
+        ###
         # once the svg is loaded, link it all up and inject it
+        ###
         onSvgLoadComplete = (svgText) =>
+            if not svgText or not imgElm.parentNode
+                return
+            ###
+            # if we successfully have SVG text, we'll replace the image
+            ###
+            imgElm.parentNode.replaceChild(graphviewDiv, imgElm)
+
             parent = graphviewDiv.querySelector('#graphview-graph')
             parent.innerHTML = svgText
-            makeResizableAndClickable(parent.childNodes[0], graphviewDiv)
+            makeResizableAndClickable(parent.querySelector('svg'), graphviewDiv)
+            return
 
+        ###
         # start the load request
+        ###
         xhr = new XMLHttpRequest
         xhr.onreadystatechange = =>
+            ###
             # when running from file:// xhr.status is always 0
             #if xhr.readyState is 4 and xhr.status is 200
+            ###
             if xhr.readyState is 4
                 onSvgLoadComplete(xhr.responseText)
+            return
         xhr.open('GET', svgUrl, true)
         xhr.setRequestHeader('Content-type', 'image/svg+xml')
         xhr.send()
 
+        ###
         # graphviewDiv will be dynamically updated when the svg has loaded
+        ###
         return graphviewDiv
+    ###
     # pass in an <img> element and replaceImage will find the src url,
     # replace the extension with .svg and attempt to make an interactive
     # graph that replaces the imgElm
+    ###
     replaceImage: (imgElm) ->
         afterTemplateLoads = =>
             url = imgElm.getAttribute('src')
-            console.log imgElm, url
+            ###
             # replace the extension
+            ###
             url = url.replace(/\.\w*$/, '.svg')
-            instance = @createGraphviewInstance(url)
-
-            imgElm.parentNode.replaceChild(instance, imgElm)
+            
+            ###
+            # let's try and replace ourselves with our ajax loaded svg
+            ###
+            @createGraphviewInstance(url, imgElm)
+            return
 
         @loadTemplate('graphview.html', afterTemplateLoads)
+        return
 
 
 ###
@@ -171,7 +221,9 @@ Mat =
             for j in [0...rows]
                 ret[i][j] = mat[j][i]
         return ret
+    ###
     # in-place greather-than
+    ###
     gt: (mat, num) ->
         rows = mat.length
         cols = mat[0].length
@@ -179,7 +231,9 @@ Mat =
             for j in [0...cols]
                 mat[i][j] = (mat[i][j] > num) | 0
         return mat
+    ###
     # in-place sum
+    ###
     sum: (mat1, mat2) ->
         rows = mat1.length
         cols = mat1[0].length
@@ -189,13 +243,17 @@ Mat =
                 ret[i][j] = mat1[i][j] + mat2[i][j]
         return ret
 
+    ###
     # dot product of two vectors
+    ###
     dot: (vec1, vec2) ->
         ret = 0
         for i in [0...vec1.length]
             ret += vec1[i]*vec2[i]
         return ret
+    ###
     # multiply two matrices
+    ###
     mul: (mat1, mat2) ->
         mat2t = Mat.transpose(mat2)
         rows = mat1.length
@@ -205,10 +263,14 @@ Mat =
             for j in [0...cols]
                 ret[i][j] = Mat.dot(mat1[i], mat2t[j])
         return ret
+    ###
     # raise a matrix to a power
+    ###
     pow: (mat, pow) ->
+        ###
         # to be efficient, we compute successive squares
         # and then multiply those together to get the end result
+        ###
         bin = Mat.numToBinary(pow)
         powers = new Array(bin.length)
         curr = mat
@@ -219,9 +281,11 @@ Mat =
         for a,i in bin when a
             ret = Mat.mul(ret, powers[i])
         return ret
+    ###
     # returns a matrix that is a sum of at least
     # one of ever power of mat up to power at least pow.
     # e.g. powerSum(A, 3) = I + aA + bA^2 +cA^3
+    ###
     powerSum: (mat, pow) ->
         bin = Mat.numToBinary(pow)
         curr = mat
@@ -253,15 +317,21 @@ class SVGZoomer
     constructor: (@svg) ->
         @parent = @svg.parentNode
 
+        ###
         # compatibility stuff
+        ###
         try
+            ###
             # see if we can successfully execute the builtin getElementById by trying to locate a bogus element
+            ###
             @svg.querySelector('boguselement')
         catch e
             @svg.querySelector = (str) => @parent.querySelector(str)
             @svg.querySelectorAll = (str) => @parent.querySelectorAll(str)
 
+        ###
         # get the dimensions
+        ###
         if @svg.getAttribute('viewBox')
             dims = @svg.getAttribute('viewBox').split(/[^\w]+/)
             dims = (parseFloat(d) for d in dims)
@@ -273,11 +343,13 @@ class SVGZoomer
             @svg.setAttribute('viewBox', "0 0 #{@width} #{@height}")
         @currentZoomFactor = 1
         @aspect = @width/@height
-
-        @lastZoomAction = null # keep track of whether our last call was zoomFit or not.
+        ### keep track of whether our last call was zoomFit or not. ###
+        @lastZoomAction = null
         @zoom()
 
+        ###
         # panning state
+        ###
         @buttonPressed = false
         @oldMousePos = [-1, -1]
         @panning = false
@@ -285,15 +357,18 @@ class SVGZoomer
         @svg.addEventListener('mousedown', @_onMouseDown, false)
         document.body.addEventListener('mouseup', @_onMouseUp, false)
         @svg.addEventListener('mousemove', @_onMouseMove, false)
+        return
     _onMouseUp: (event) =>
         @buttonPressed = false
-        # reset the pan state
+        ### reset the pan state ###
         @totalPan[0] = 0
         @totalPan[1] = 1
         @panning = false
+        return
     _onMouseDown: (event) =>
         if event.button is 0
             @buttonPressed = true
+        return
     _onMouseMove: (event) =>
         x = event.clientX
         y = event.clientY
@@ -309,7 +384,9 @@ class SVGZoomer
 
         @totalPan[0] += dx
         @totalPan[1] += dy
+        ###
         # the first time we have moved more than @PAN_TOLERANCE, we should pan by the amount accumulated
+        ###
         if (not @panning) and Math.abs(@totalPan[0]) + Math.abs(@totalPan[1]) > @PAN_TOLERANCE
             @panning = true
             dx = @totalPan[0]
@@ -327,15 +404,18 @@ class SVGZoomer
         @lastZoomAction = 'in'
         @currentZoomFactor *= factor
         @zoom()
+        return
     zoomOut: (factor=@ZOOM_FACTOR) ->
         @lastZoomAction = 'out'
         @currentZoomFactor /= factor
         @zoom()
+        return
     zoomFit: () ->
         @lastZoomAction = 'fit'
         {width, height} = @parent.getBoundingClientRect()
         @currentZoomFactor = width/@width
         @zoom()
+        return
     zoom: (factor=@currentZoomFactor) ->
         width = Math.round(@width*factor)
         height = Math.round(@height*factor)
@@ -343,8 +423,11 @@ class SVGZoomer
         @zoomedHeight = height
         @svg.setAttribute('width', width)
         @svg.setAttribute('height', height)
+        ###
         # webkit hack: For some reason svg attribute values for width don't work when theyre smaller than viewbox width
+        ###
         @svg.setAttribute('style', "width: #{width}; height: #{height};")
+        return
 
 class GraphManager
     hashCourse = (course) ->
@@ -358,41 +441,24 @@ class GraphManager
         if oldCls.split(/\s+/).indexOf(cls) >= 0
             return
         elm.setAttribute('class', oldCls + ' ' + cls)
+        return
     removeClass = (elm, cls) ->
         oldCls = elm.getAttribute('class') || ''
         if not oldCls.match(cls)
             return
         newCls = (c for c in oldCls.split(/\s+/) when c isnt cls)
         elm.setAttribute('class', newCls.join(' '))
-
-    # from http://dzone.com/snippets/javascript-function-checks-dom
-    # checkes whether an element is visible or not
-    #isVisible = (obj) ->
-    #    return true  if obj is document
-    #    return false unless obj
-    #    return false unless obj.parentNode
-    #    if obj.style
-    #        return false if obj.style.display is "none"
-    #        return false if obj.style.visibility is "hidden"
-    #
-    #    #Try the computed style in a standard way
-    #    if window.getComputedStyle
-    #        style = window.getComputedStyle(obj, "")
-    #        return false if style.display is "none"
-    #        return false if style.visibility is "hidden"
-    #
-    #    #Or get the computed style using IE's silly proprietary way
-    #    style = obj.currentStyle
-    #    if style
-    #        return false if style["display"] is "none"
-    #        return false if style["visibility"] is "hidden"
-    #    return isVisible obj.parentNode
+        return
 
     constructor: (@svg, @zoomer, @container=document) ->
+        ###
         # compatibility stuff
+        ###
         try
+            ###
             # see if we can successfully execute the builtin querySelector by trying to locate a bogus element
             # It is not enought to check @svg.querySelector == null, since it is defined in Firefox 10, but throws an error
+            ###
             @svg.querySelector('boguselement')
         catch e
             @svg.querySelector = (str) => @parent.querySelector(str)
@@ -405,14 +471,17 @@ class GraphManager
         @currentlySelected = null
         @currentlySelectedTerms = {fall: true, spring: true, summer: true}
 
+        ###
         # remove any styles that have been inserted, we will use stylesheets instead
+        ###
         for elm in @svg.querySelectorAll('*')
             elm.removeAttribute('style')
         @data = JSON.parse(decodeURIComponent(@svg.querySelector('coursemapper').textContent))
         @processData()
-        console.log @data
 
+        ###
         # ensure nodes are clickable and set their title appropriately
+        ###
         for elm in @svg.querySelectorAll('g.node')
             elm.addEventListener('click', @_onCourseClicked, true)
             info = @courses[elm.courseHash]
@@ -422,27 +491,47 @@ class GraphManager
                     elm.setAttribute('title', desc)
                 catch e
                     ''
-        console.log @courses
+        # make all the coop links work
+        for coop in @data.coops || []
+            try
+                elm = @svg.getElementById(coop.id)
+                elm._coopLink = coop.url
+                elm.setAttribute('title', coop.label)
+                if elm._coopLink
+                    elm.onclick = (event) ->
+                        window.open(event.currentTarget._coopLink)
+                        return
+            catch e
+                ''
 
+        ###
         # closable infoarea
+        ###
         closeInfoArea = =>
             @setCourseinfoVisibility(false)
+            ###
             # if you zoom-fit while the infoarea was open and you
             # close it, you expect the graph to fit to the newly-enlarged area
+            ###
             if @zoomer?.lastZoomAction is 'fit'
                 @zoomer.zoomFit()
+            return
 
         @divCourseinfo.querySelector('.graphview-close-button').addEventListener('click', closeInfoArea, true)
 
+        ###
         # set up the term selection menu
+        ###
         @divNav.querySelector('#graphview-term-menu-fall').addEventListener('click', @_createTermToggler('fall'), true)
         @divNav.querySelector('#graphview-term-menu-spring').addEventListener('click', @_createTermToggler('spring'), true)
         @divNav.querySelector('#graphview-term-menu-summer').addEventListener('click', @_createTermToggler('summer'), true)
 
         #@svg.addEventListener('click', @_onClick, false)
+    ###
     # Get a list of all the nodes and their corresponding
     # dom elements and tag each dom element with an expando
     # property linking back to its name
+    ###
     processData: ->
         @courses = {}
         @coursesList = []
@@ -453,14 +542,18 @@ class GraphManager
             @coursesList.push hash
             course.listPos = i
             course.year = node.year
+            ###
             # mark each clickable node with a reference to its unmangled hash so we
             # can get back to it.
+            ###
             elm = @svg.querySelector("##{sanitizeId(hash)}")
             if elm
                 course.elm = elm
                 elm.courseHash = hash
+        ###
         # make sure any electives that aren't explicitly
         # specified have a reference to their info for use on click
+        ###
         for cluster in @data.clusters when cluster.courses?.length is 0
             course = cluster.cluster
             course.isElectivesNode = true
@@ -471,7 +564,9 @@ class GraphManager
                 course.elm = elm
                 elm.courseHash = hash
 
+        ###
         # compute adjacency matrices
+        ###
         numNodes = @coursesList.length
         @adjacencyMat = Mat.zeros(numNodes, numNodes)
         for edge in @data.edges
@@ -482,7 +577,9 @@ class GraphManager
             @adjacencyMat[i][j] = 1
             if edge.properties.coreq
                 @adjacencyMat[i][j] = 2
+        ###
         # compute coreq adjacencies
+        ###
         @adjacencyMatCoreq = Mat.gt(Mat.copy(@adjacencyMat), 1)
         @adjacencyMatCoreq = Mat.sum(@adjacencyMatCoreq, Mat.transpose(@adjacencyMatCoreq))
 
@@ -490,43 +587,61 @@ class GraphManager
         @span = Mat.gt(Mat.powerSum(@adjacencyMat, @adjacencyMat.length), 0)
         @correqSpan = Mat.gt(Mat.powerSum(@adjacencyMatCoreq, @adjacencyMatCoreq.length), 0)
         return
+    ###
     # returns a list of all the prereqs/coreqs for a course
+    ###
     coursePrereqs: (course, excludeCorreqs=false) ->
         hash = hashCourse(course)
+        ###
         # if we're not a standard course (e.g. an electives node), we wont have a listPos.
         # Bail in this case.
+        ###
         if not @courses[hash].listPos?
             return []
         spanT = Mat.transpose(@span)
-        adjT = @adjacencyMatCoreq   # this doesn't need to be transposed because the coreq matrix is symmetric
+        ### this doesn't need to be transposed because the coreq matrix is symmetric ###
+        adjT = @adjacencyMatCoreq
         index = @courses[hash].listPos
         ret = []
+        ###
         # we can get into funny situations where we appear in our own span.  We should never appear
         # in our own prereq list.
+        ###
         for e,i in spanT[index] when (e and not (hash is @coursesList[i]))
+            ###
             # if we're in the span 'cause we're a coreq, move along
+            ###
             if excludeCorreqs and adjT[index][i]
                 continue
             ret.push @coursesList[i]
         return ret
+    ###
     # returns a list of all the prereqs/coreqs for a course
+    ###
     courseCoreqs: (course) ->
         hash = hashCourse(course)
+        ###
         # if we're not a standard course (e.g. an electives node), we wont have a listPos.
         # Bail in this case.
+        ###
         if not @courses[hash].listPos?
             return []
-        adjT = @adjacencyMatCoreq   # this doesn't need to be transposed because the coreq matrix is symmetric
+        ### this doesn't need to be transposed because the coreq matrix is symmetric ###
+        adjT = @adjacencyMatCoreq
         index = @courses[hash].listPos
         ret = []
+        ###
         # we can get into funny situations where we appear in our own span.  We should never appear
         # in our own prereq list.
+        ###
         for e,i in adjT[index] when (e and not (hash is @coursesList[i]))
             ret.push @coursesList[i]
         return ret
+    ###
     # returns a callback to be executed whenever
     # the visibility checkbox for that term is checked
     # term is in ['fall','spring','summer','any']
+    ###
     _createTermToggler: (term) ->
         callback = =>
             switch term
@@ -536,13 +651,16 @@ class GraphManager
                     @currentlySelectedTerms['spring'] = not @currentlySelectedTerms['spring']
                 when 'summer'
                     @currentlySelectedTerms['summer'] = not @currentlySelectedTerms['summer']
+            ###
             # set the proper icons on the menu
+            ###
             for t in ['fall', 'spring', 'summer']
                 if @currentlySelectedTerms[t]
                     @divNav.querySelector("#graphview-term-menu-#{t} i").setAttribute('class', 'icon-check')
                 else
                     @divNav.querySelector("#graphview-term-menu-#{t} i").setAttribute('class', 'icon-check-empty')
             @filterClassesByTerm(@currentlySelectedTerms)
+            return
         return callback
 
 
@@ -551,24 +669,32 @@ class GraphManager
         if event.target.getAttribute('class')?.match(/course/) or true
             event.currentTarget = event.target
             @_onCourseClicked(event)
+        return
     _onCourseClicked: (event) =>
         elm = event.currentTarget
         if @currentlySelected is elm.courseHash
             @deselectAll()
         else
             @selectCourse(elm.courseHash)
+        return
+    ###
     # select a course and highlight all its prereqs
+    ###
     selectCourse: (course) ->
         hash = hashCourse(course)
         prereqs = @coursePrereqs(hash)
+        ###
         # highlight all the course nodes
+        ###
         for _,c of @courses
             removeClass(c.elm, 'highlight')
             removeClass(c.elm, 'highlight2')
         for prereq in prereqs
             addClass(@courses[prereq].elm, 'highlight')
         addClass(@courses[hash].elm, 'highlight')
+        ###
         # highlight all the prereq arrows
+        ###
         for elm in @svg.querySelectorAll('g.edge')
             removeClass(elm, 'highlight')
         for prereq in prereqs.concat([hash])
@@ -578,6 +704,7 @@ class GraphManager
         @createCourseSummary(course)
         @currentlySelected = course
         @setCourseinfoVisibility(true)
+        return
 
     deselectAll: ->
         for _,c of @courses
@@ -587,6 +714,7 @@ class GraphManager
             removeClass(elm, 'highlight')
         @currentlySelected = null
         @setCourseinfoVisibility(false)
+        return
 
     courseRequirementsSummary: (course) ->
         hash = hashCourse(course)
@@ -608,7 +736,9 @@ class GraphManager
         course = @courses[course]
         infoArea = @container.querySelector('#graphview-courseinfo')
 
+        ###
         # we have a special display if we're an electives node
+        ###
         if course.isElectivesNode
             addClass(infoArea.querySelector('#graphview-courseinfo-text'), 'invisible')
             infoArea = infoArea.querySelector('#graphview-electivesinfo-text')
@@ -632,8 +762,10 @@ class GraphManager
             infoArea.querySelector('.title')?.textContent = requirement
 
             if course.data?.description
+                ###
                 # let's do some pretty formatting of the description so it looks
                 # more like how it was typed
+                ###
                 emailRegexp = /([\w\-\.]+@[\w\-\.]+)/gi
                 urlRegex = /((http:|https:)\/\/[\w\-\.~%?\/\#]+)/gi
 
@@ -654,7 +786,9 @@ class GraphManager
         infoArea.querySelector('.name')?.textContent = hash
         infoArea.querySelector('.title')?.textContent = course.data?.title
 
+        ###
         # prepare the appropriate calendar link
+        ###
         academicTerm = computeTermFromDate(new Date)
         link = "http://web.uvic.ca/calendar#{academicTerm.year}/CDs/#{course.subject}/#{course.number}.html"
         calendarLink = infoArea.querySelector('#graphview-calendar-link')
@@ -669,7 +803,9 @@ class GraphManager
                 addClass(elm, "hidden")
         infoArea.querySelector('.description')?.textContent = course.data?.description
 
+        ###
         # construct the prereq list
+        ###
         years = @courseRequirementsSummary(course)
         numPrereqs = years[1].length + years[2].length + years[3].length + years[4].length
         if numPrereqs > 0
@@ -687,7 +823,9 @@ class GraphManager
                     addClass(parent, "invisible")
                 else
                     removeClass(parent, "invisible")
+                ###
                 # make the pre-reqs highlight on hover and make the clickable
+                ###
                 for li in elm?.querySelectorAll('li') || []
                     li.onmouseover = @_onPrereqHoverEnter
                     li.onmouseout = @_onPrereqHoverLeave
@@ -695,9 +833,12 @@ class GraphManager
                         elm = event.currentTarget
                         course = elm.getAttribute('course')
                         @selectCourse(course)
+                        return
         else
             addClass(infoArea.querySelector('.prereq'), "invisible")
+        ###
         # construct the prereq list
+        ###
         parent = infoArea.querySelector(".coreq")
         elm = parent.querySelector('ul')
         list = []
@@ -706,7 +847,9 @@ class GraphManager
             list.push "<li title='#{c.subject} #{c.number}: #{c.data.title}'>#{hashCourse(c)}</li>"
         list.sort()
         elm?.innerHTML = list.join('')
+        ###
         # make the co-reqs highlight on hover and make the clickable
+        ###
         for li in elm?.querySelectorAll('li') || []
             li.onmouseover = @_onPrereqHoverEnter
             li.onmouseout = @_onPrereqHoverLeave
@@ -714,16 +857,19 @@ class GraphManager
                 elm = event.currentTarget
                 course = elm.getAttribute('course')
                 @selectCourse(course)
+                return
         if list.length is 0
             addClass(parent, "invisible")
         else
             removeClass(parent, "invisible")
+        return
     _onPrereqHoverEnter: (event) =>
         elm = event.currentTarget
         courseHash = elm.getAttribute('course')
         course = @courses[courseHash]
         if course
             addClass(course.elm, 'highlight2')
+        return
 
     _onPrereqHoverLeave: (event) =>
         elm = event.currentTarget
@@ -731,8 +877,11 @@ class GraphManager
         course = @courses[courseHash]
         if course
             removeClass(course.elm, 'highlight2')
+        return
+    ###
     # sets whether the courseinfo area is visible or not.
     # This function handles resizing of the graph area, etc.
+    ###
     setCourseinfoVisibility: (visible=true) ->
         if visible
             removeClass(@divCourseinfo, 'invisible')
@@ -740,8 +889,11 @@ class GraphManager
         else
             addClass(@divCourseinfo, 'invisible')
             removeClass(@divGraph, 'sidepanel-visible')
+        return
+    ###
     # pass in an object with the terms you want to be visible.
     # Courses only offered in other terms will be transparent
+    ###
     filterClassesByTerm: (terms={summer: true, fall: true, spring: true}) ->
         isOfferedInTerms = (course) ->
             for term,v of terms when v
@@ -757,12 +909,18 @@ class GraphManager
                 addClass(elm, 'transparent')
         return
 
+###
 # set it up so that images with the graphview attribute
 # are dynamically replaced with interactive maps
+###
 onLoad = ->
-    creator = new GraphviewCreator
-    creator.injectHeader()
-    for elm in document.querySelectorAll('[graphview=true]')
-        creator.replaceImage(elm)
+    ###
+    # only attempt to make the picture fancy if the browser has support for SVG images in the first place
+    ###
+    if window.SVGElement?
+        creator = new GraphviewCreator
+        creator.injectHeader()
+        for elm in document.querySelectorAll('[graphview=true]')
+            creator.replaceImage(elm)
 
 window.addEventListener('load', onLoad, true)

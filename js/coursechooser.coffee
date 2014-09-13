@@ -13,8 +13,9 @@ attachedToDom = (elm) ->
 
 objValsToArray = (obj) ->
     return (v for k,v of obj)
-
+###
 # returns the things in obj1 missing from obj2 and the things in obj2 missing from obj1
+###
 symmetricDiffObjects = (obj1, obj2) ->
     ret1 = {}
     ret2 = {}
@@ -33,20 +34,26 @@ objKeysEqual = (obj1, obj2) ->
         if not obj1[k]?
             return false
     return true
+###
 # do a shallow copy of obj
+###
 dupObject = (obj) ->
     ret = {}
     for k,v of obj
         ret[k] = v
     return ret
+###
 # escape <,>,& in a string
+###
 htmlEncode = (str) ->
     str = '' + str
     str = str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
     return str
 htmlUnencode = (str) ->
     str = '' + str
+    ###
     # inefficient way to do it, but all the functions already exist
+    ###
     return unescape(escapeJSON(str))
 
 parseUrlHash = (hash) ->
@@ -58,9 +65,10 @@ parseUrlHash = (hash) ->
         if h.match('=')
             ret.args.push h.split('=')
     return ret
-
+###
 # escapes JSON so that it may be included in XML
 # to decode use decodeURIComponent
+###
 escapeJSON = (str) ->
     if typeof str isnt 'string'
         throw new Error('escapeJSON must be called with a string only')
@@ -68,42 +76,58 @@ escapeJSON = (str) ->
         if str.charAt(1) is '#'
             num = parseInt(str.slice(2,str.length - 1), 10)
             return String.fromCharCode(num)
+        ###
         # list of html escape sequences from http://www.w3.org/TR/html4/sgml/entities.html
         # except &nbsp; has been replaced with a regular space
+        ###
         htmlChars = {nbsp: 32, iexcl: 161, cent: 162, pound: 163, curren: 164, yen: 165, brvbar: 166, sect: 167, uml: 168, copy: 169, ordf: 170, laquo: 171, not: 172, shy: 173, reg: 174, macr: 175, deg: 176, plusmn: 177, sup2: 178, sup3: 179, acute: 180, micro: 181, para: 182, middot: 183, cedil: 184, sup1: 185, ordm: 186, raquo: 187, frac14: 188, frac12: 189, frac34: 190, iquest: 191, Agrave: 192, Aacute: 193, Acirc: 194, Atilde: 195, Auml: 196, Aring: 197, AElig: 198, Ccedil: 199, Egrave: 200, Eacute: 201, Ecirc: 202, Euml: 203, Igrave: 204, Iacute: 205, Icirc: 206, Iuml: 207, ETH: 208, Ntilde: 209, Ograve: 210, Oacute: 211, Ocirc: 212, Otilde: 213, Ouml: 214, times: 215, Oslash: 216, Ugrave: 217, Uacute: 218, Ucirc: 219, Uuml: 220, Yacute: 221, THORN: 222, szlig: 223, agrave: 224, aacute: 225, acirc: 226, atilde: 227, auml: 228, aring: 229, aelig: 230, ccedil: 231, egrave: 232, eacute: 233, ecirc: 234, euml: 235, igrave: 236, iacute: 237, icirc: 238, iuml: 239, eth: 240, ntilde: 241, ograve: 242, oacute: 243, ocirc: 244, otilde: 245, ouml: 246, divide: 247, oslash: 248, ugrave: 249, uacute: 250, ucirc: 251, uuml: 252, yacute: 253, thorn: 254, yuml: 255, fnof: 402, Alpha: 913, Beta: 914, Gamma: 915, Delta: 916, Epsilon: 917, Zeta: 918, Eta: 919, Theta: 920, Iota: 921, Kappa: 922, Lambda: 923, Mu: 924, Nu: 925, Xi: 926, Omicron: 927, Pi: 928, Rho: 929, Sigma: 931, Tau: 932, Upsilon: 933, Phi: 934, Chi: 935, Psi: 936, Omega: 937, alpha: 945, beta: 946, gamma: 947, delta: 948, epsilon: 949, zeta: 950, eta: 951, theta: 952, iota: 953, kappa: 954, lambda: 955, mu: 956, nu: 957, xi: 958, omicron: 959, pi: 960, rho: 961, sigmaf: 962, sigma: 963, tau: 964, upsilon: 965, phi: 966, chi: 967, psi: 968, omega: 969, thetasym: 977, upsih: 978, piv: 982, bull: 8226, hellip: 8230, prime: 8242, Prime: 8243, oline: 8254, frasl: 8260, weierp: 8472, image: 8465, real: 8476, trade: 8482, alefsym: 8501, larr: 8592, uarr: 8593, rarr: 8594, darr: 8595, harr: 8596, crarr: 8629, lArr: 8656, uArr: 8657, rArr: 8658, dArr: 8659, hArr: 8660, forall: 8704, part: 8706, exist: 8707, empty: 8709, nabla: 8711, isin: 8712, notin: 8713, ni: 8715, prod: 8719, sum: 8721, minus: 8722, lowast: 8727, radic: 8730, prop: 8733, infin: 8734, ang: 8736, and: 8743, or: 8744, cap: 8745, cup: 8746, int: 8747, there4: 8756, sim: 8764, cong: 8773, asymp: 8776, ne: 8800, equiv: 8801, le: 8804, ge: 8805, sub: 8834, sup: 8835, nsub: 8836, sube: 8838, supe: 8839, oplus: 8853, otimes: 8855, perp: 8869, sdot: 8901, lceil: 8968, rceil: 8969, lfloor: 8970, rfloor: 8971, lang: 9001, rang: 9002, loz: 9674, spades: 9824, clubs: 9827, hearts: 9829, diams: 9830, quot: 34, amp: 38, lt: 60, gt: 62, OElig: 338, oelig: 339, Scaron: 352, scaron: 353, Yuml: 376, circ: 710, tilde: 732, ensp: 8194, emsp: 8195, thinsp: 8201, zwnj: 8204, zwj: 8205, lrm: 8206, rlm: 8207, ndash: 8211, mdash: 8212, lsquo: 8216, rsquo: 8217, sbquo: 8218, ldquo: 8220, rdquo: 8221, bdquo: 8222, dagger: 8224, Dagger: 8225, permil: 8240, lsaquo: 8249, rsaquo: 8250, euro: 8364}
         code = str.slice(1, str.length - 1)
         num = htmlChars[code]
+        ###
         # if we unescape a quote, make sure to re-escape it for JSON!
+        ###
         if num is 34
             return "\\\""
         if num
             return String.fromCharCode(num)
         return str
     encodeUnicode = (str) ->
+        ###
         # valid ascii range
+        ###
         if 32 <= str.charCodeAt(0) <= 126
             return str
         return encodeURIComponent(str)
-
+    ###
     # First we eliminate any of the html escape sequences that may be in our string.
+    ###
     escaped = str.replace(/&.*?;/g, htmlEscapeToChar)
+    ###
     # Next, escape <,>,& for xml
+    ###
     for c in ['<', '>', '&']
         escaped = escaped.replace(new RegExp(c,'g'), encodeURIComponent(c))
+    ###
     # encode any unicode characetrs
+    ###
     escaped = escaped.replace(/./g, encodeUnicode)
     return escaped
-
+###
 # Attempts to return the number of en's wide
 # str is by counting capital letters and wide letters
+###
 strWidthInEn = (str='') ->
     str = '' + str
+    ###
     # capitals (excluding I) and m and w are the "wide"
+    ###
     numWide = str.match(/[A-HJ-Zmw]/)?.length || 0
     numSkinny = str.match(/[Iijlt:]/)?.length || 0
     numSpaces = str.match(/[ ]/)?.length || 0
+    ###
     # assume wide letters are 1.2x a normal letter
     # and skinny letters are .3x a normal letter
+    ###
     return str.length + .2*numWide - .7*numSkinny - .2*numSpaces
 
 titleCaps = (str) ->
@@ -118,25 +142,35 @@ titleCaps = (str) ->
     ret = ''
     firstWord = true
     for word,i in tokens
+        ###
         # all words should be capitalized by default
+        ###
         shouldCapitalize = true
+        ###
         # if they are exceptional words, don't capitalize
+        ###
         if word.match(exceptionalWords)
             shouldCapitalize = false
+        ###
         # but if we are the first word in the sentence, capitalize
+        ###
         if firstWord
             shouldCapitalize = true
+        ###
         # if we are surrounded by &;, we are an html escape sequence, we should never be captialized
+        ###
         if tokens[i-1]?.slice(-1) == '&' and tokens[i+1]?.charAt(0) == ';'
             shouldCapitalize = false
-
+        ###
         # As soon as we encounter a non-whitespace word, we have seen the first
         # word in the sentence, so we don't need to worry about capitalizing it any longer
+        ###
         if firstWord and word.match(/\b/)
             firstWord = false
-
+        ###
         # check to see if we are a roman numeral.  If we are, capitalize specially, or else check if we
         # should capitalize the first letter
+        ###
         if word.match(/^(i|v|x|l|c|d|m)+$/i)
             word = word.toUpperCase()
         else if shouldCapitalize
@@ -144,6 +178,7 @@ titleCaps = (str) ->
         ret += word
     return ret
 
+###
 # parses a string list of courses and returns an object {coures:[...], unknownCoures:[...], subjects:{...}}
 # we parse in an extremely tolerant way. The string
 #     math100,math 102, math 104, "math 202", engl 344,355, 295
@@ -152,6 +187,7 @@ titleCaps = (str) ->
 #    math,engl
 # is parsed as the subjects math, engl
 # unknownCoures is a list of coures numbers whose subject could not be determined
+###
 parseCourseListString = (val) ->
     subjects = {}
     courses = []
@@ -166,9 +202,11 @@ parseCourseListString = (val) ->
             continue
         if v.match (/^[a-zA-Z-]/)
             subject = v
+            ###
             # subjects contain only subjects for which we load every course.  ie. only lone
             # subjects. e.g. "math, biol" adds math and biol to the subject list,
             # but "math 100" shouldn't add math to the subject list
+            ###
             if not val[i+1]?.match(/^\d/)
                 subjects[subject] = true
         else
@@ -177,8 +215,9 @@ parseCourseListString = (val) ->
                 continue
             courses.push {subject: subject, number: v}
     return {courses: courses, subjects: subjects, unknownCourses: unknownCourses}
-
+###
 # reparents an element with an optional animation
+###
 reparent = (elm, newParent, ops={}) ->
     if not ops.animate
         $(elm).appendTo(newParent)
@@ -203,9 +242,13 @@ reparent = (elm, newParent, ops={}) ->
             if ops.complete and not ops.complete.hasRun
                 ops.complete()
                 ops.complete.hasRun = true
+            return
+
     return
 
+###
 # prints the contents of '#welcome-steps'
+###
 printInstructions = ->
     printWindow = window.open('', 'Instructions', 'menubar=yes,status=1,width=350,height=150')
     printWindow.document.write("""<html><head><title>Instructions</title><link rel='stylesheet' href='css/coursechooser.css'></head>""")
@@ -213,20 +256,28 @@ printInstructions = ->
     printWindow.onafterprint = ->
         close = ->
             printWindow.close()
+            return
         printWindow.setTimeout(close, 0)
+        return
     newSteps = $('#welcome-steps').clone()
+    ###
     # make sure the details are fully expanded
+    ###
     newSteps.find('*').show()
     newSteps.find('a.more').hide()
     $(printWindow.document.body).html(newSteps)
+    ###
     # TODO It appears the @media print styles do not show up at this point in Firefox...
+    ###
     printWindow.print()
+    return
 
 localStorageWrapper = (action='get', data) ->
     $.jStorage.reInit()
     if action is 'get'
         return $.jStorage.get('coursechooser')
     $.jStorage.set('coursechooser', data)
+    return
 
 $(document).ready ->
     $('.course-status').buttonset().disableSelection()
@@ -234,24 +285,22 @@ $(document).ready ->
     departmentList = $('#department-list').combobox().combobox('value', '')
     departmentList.combobox('activate', -> $('#show-courses').click())
     $('#tabs,.tabs').tabs()
-    ###
-    $(document).tooltip
-        show:
-            effect: 'fade'
-            delay: 1000
-    ###
 
+    ###
     # location.hash could have the form '#hash?other,stuff' so filter it out!
+    ###
     locHash = parseUrlHash(window.location.hash)
-    window.location.hash = window.location.hash || '#welcome' # we should start with the welcome hash so the back button works
+    ### we should start with the welcome hash so the back button works ###
+    window.location.hash = window.location.hash || '#welcome'
     prepareWelcomePage()
     prepareNavMenu()
 
     window.courseManager = new CourseManager
     window.courses = window.courseManager.courses
 
-
+    ###
     # based on the url hash arguments, decide to pre-show some subjects
+    ###
     preloadSubjects = []
     for arg in locHash.args
         if arg[0] is 'load'
@@ -277,6 +326,7 @@ $(document).ready ->
                 return ->
                     errorMsgHash["Could not load subject '#{sub}'"] = true
                     $('#department-list').combobox('showError', (e for e of errorMsgHash).join('<br/>'))
+                    return
             try
                 window.courseManager.showCoursesOfSubject(v, {error: createErrorCallback(v), animate: 'slow'})
             catch e
@@ -287,12 +337,14 @@ $(document).ready ->
                 return ->
                     errorMsgHash["Could not load course '#{sub.subject} #{sub.number}'"] = true
                     $('#department-list').combobox('showError', (e for e of errorMsgHash).join('<br/>'))
+                    return
             createDisplayCallback = (c) ->
                 return ->
                     try
                         window.courseManager.ensureDisplayedInYearChart(c, {error: createErrorCallback(c), animate: 'slow'})
                     catch e
                         console.log e
+                    return
             try
                 window.courseManager.loadSubjectData(c.subject, createDisplayCallback(c), {error: createErrorCallback(c), animate: 'slow'})
             catch e
@@ -300,12 +352,17 @@ $(document).ready ->
         for c in unknownCourses
             errorMsgHash["Could not determine subject code for course '#{c}'"] = true
             $('#department-list').combobox('showError', (e for e of errorMsgHash).join('<br/>'))
+        return
+    ###
     # whenever we are doing ajax, let's spin the throbber since
     # it primarly happens whenever we are loading courses in this view
+    ###
     $('#show-courses .throbber').ajaxStart(->
         $(@).show()
+        return
     ).ajaxComplete(->
         $(@).hide()
+        return
     )
     $('#hide-courses').click ->
         subjects = {}
@@ -319,8 +376,11 @@ $(document).ready ->
             window.courseManager.hideCoursesOfSubject(v, {animate: 'slow'})
         for c in courses
             window.courseManager.hideCourse(c, {animate: 'slow'})
+        return
 
+    ###
     # make the years droppable
+    ###
     $('.year').droppable
         hoverClass: 'highlight'
         tolerance: 'pointer'
@@ -329,8 +389,11 @@ $(document).ready ->
             courses.appendChild(ui.draggable[0])
             window.courseManager.courseMoved(ui.draggable[0].course)
             window.courseManager.selectCourse(ui.draggable[0].course)
+            return
 
+    ###
     # setup the electives area
+    ###
     $('#create-new-electives').click ->
         elective = new ElectivesButtonEditor({title:'Electives'}, window.courseManager)
         electiveButton = new ElectivesButton(elective)
@@ -343,28 +406,40 @@ $(document).ready ->
         window.courseManager.makeElectivesButtonDroppable(electiveButton)
         window.courseManager.makeElectivesButtonClickable(electiveButton)
         window.courseManager.makeElectivesButtonClickable(elective)
+        return
 
+    ###
     # setup the coops area
+    ###
     $('#create-new-coop').click ->
         window.courseManager.addCoop()
+        return
 
+    ###
     # set up the load and save buttons
+    ###
     $('#save').click ->
         window.courseManager.updateGraphState()
         baseName = (window.courseManager.graphState.title || "course-map").replace(/\W/g,'_')
+        ###
         # if we are currently looking at a preview, save a visual version, otherwise save
         # the json
+        ###
         name = baseName + ".json"
         data = window.courseManager.graphState.toJSON()
         mimeType = 'application/json'
         if $('a[page=#preview]').hasClass('active')
             name = baseName + '.svg'
+            ###
             # clone our svg.  We don't want these inlined styles to be persistent after we've saved
+            ###
             clonedSvg = window.courseManager.svgManager.svgGraph.svg.cloneNode(true)
-
+            
+            ###
             # we don't wany any highlight's or selection to show up when our
             # styles are inlined.  Unfortunately, we cannot use jQuery's removeClass
             # on SVG nodes.
+            ###
             for elm in $(clonedSvg).find('.highlight')
                 SVGGraphManager.utils.removeClass(elm, 'highlight')
             for elm in $(clonedSvg).find('.selected')
@@ -386,8 +461,11 @@ $(document).ready ->
             mimeType = 'image/svg+xml'
         downloadManager = new DownloadManager(name, data, mimeType)
         downloadManager.download()
+        return
     $('#load').click ->
+        ###
         # fallback 'cause we cannot trigger a click on a file input...
+        ###
         dialog = $('''
             <div>
             <h3>Browse for the file you wish to upload</h3>
@@ -399,11 +477,14 @@ $(document).ready ->
             files = event.target.files
             FileHandler.handleFiles(files)
             dialog.remove()
+            return
+        return
     $('#new').click ->
         clearAll = ->
             window.courseManager.clearAll()
             $('#program-info input').val('')
             showPage('#welcome')
+            return
         dialog = $('''
             <div title="Start a new Program?">
             <p><span class="ui-icon ui-icon-alert" style="float: left; margin: 0 7px 20px 0;"></span>
@@ -419,8 +500,11 @@ $(document).ready ->
                 'Continue': ->
                     dialog.remove()
                     clearAll()
+                    return
                 'Cancel': ->
                     dialog.remove()
+                    return
+        return
     ZOOM_FACTOR = 1.25
     $('#zoom-preview-in').click ->
         svg = $('#map-container svg')[0]
@@ -428,12 +512,14 @@ $(document).ready ->
         height = parseFloat svg.getAttribute('height')
         svg.setAttribute('width', width*ZOOM_FACTOR)
         svg.setAttribute('height', height*ZOOM_FACTOR)
+        return
     $('#zoom-preview-out').click ->
         svg = $('#map-container svg')[0]
         width = parseFloat svg.getAttribute('width')
         height = parseFloat svg.getAttribute('height')
         svg.setAttribute('width', width/ZOOM_FACTOR)
         svg.setAttribute('height', height/ZOOM_FACTOR)
+        return
 
     $('#toggleEdge').click ->
         svgManager = window.courseManager.svgManager
@@ -445,9 +531,11 @@ $(document).ready ->
             edge = window.courseManager.graphState.edges[[elm1,elm2]]
             edge = edge || window.courseManager.graphState.edges[[elm2,elm1]]
             if edge
+                ###
                 # if we have an exising edge and its invisible, turn it visible
                 # and visa versa.  If we turn a user-created edge invisible, also
                 # delete it.
+                ###
                 if edge.properties.style?.match(/invis/)
                     edge.properties.style = ''
                 else
@@ -461,9 +549,11 @@ $(document).ready ->
                 preserveSelection: true
                 start: =>
                     $(@).find('span').append('<img class="throbber" src="image/ajax-loader.gif"/>')
+                    return
                 finish: =>
                     $(@).find('.throbber').remove()
-            return
+                    return
+        return
     $('#toggleCoreq').click ->
         svgManager = window.courseManager.svgManager
         if not (svgManager and svgManager.selected[0] and svgManager.selected[1])
@@ -482,10 +572,14 @@ $(document).ready ->
                 preserveSelection: true
                 start: =>
                     $(@).find('span').append('<img class="throbber" src="image/ajax-loader.gif"/>')
+                    return
                 finish: =>
                     $(@).find('.throbber').remove()
-            return
+                    return
+        return
+    ###
     # TODO Doesnt work!
+    ###
     $('#reverseEdge').click ->
         svgManager = window.courseManager.svgManager
         if not (svgManager and svgManager.selected[0] and svgManager.selected[1])
@@ -496,9 +590,11 @@ $(document).ready ->
             edge = window.courseManager.graphState.edges[[elm1,elm2]]
             edge = edge || window.courseManager.graphState.edges[[elm2,elm1]]
             if edge
+                ###
                 # if we have an exising edge and its invisible, turn it visible
                 # and visa versa.  If we turn a user-created edge invisible, also
                 # delee it.
+                ###
                 if edge.properties.style?.match(/invis/)
                     edge.properties.style = ''
                 else
@@ -511,11 +607,15 @@ $(document).ready ->
                 preserveSelection: true
                 start: =>
                     $(@).find('span').append('<img class="throbber" src="image/ajax-loader.gif"/>')
+                    return
                 finish: =>
                     $(@).find('.throbber').remove()
-            return
+                    return
+        return
 
+    ###
     # set up autosaves and autoloads
+    ###
     saveGraph = ->
         window.courseManager.updateGraphState()
         data = window.courseManager.graphState.toJSON()
@@ -523,34 +623,49 @@ $(document).ready ->
         return
     $(window).bind 'beforeunload', ->
         saveGraph()
-    window.setInterval(saveGraph, 1000*5*60)     # autosave every 5 minutes
-    window.setTimeout (->
+        return
+    ###
+    # autosave every 5 minutes
+    ###
+    window.setInterval(saveGraph, 1000*5*60)
+    timeoutFunc = ->
         data = localStorageWrapper('get')
         if data
             try
                 graph = window.courseManager.loadGraph data
+                ###
                 # figure out if there is anything to this program or if it's blank
                 # (the default state for a new program) so we can adjust the welcome page
                 # accordingly.
+                ###
                 programState = 'newProgram'
                 if graph.title or Object.keys(graph.nodes || {}).length > 0
                     programState = 'existingProgram'
                 updateWelcomePage(programState)
             catch e
-                console.log 'could no load local storage data'), 0
+                console.log 'could no load local storage data'
+        return
+    window.setTimeout(timeoutFunc, 0)
+        
 
+    ###
     # we'd like to show up on the correct tab when we relaod with a hash
+    ###
     window.onhashchange?()
+    return
 
 prepareWelcomePage = ->
     makeLinkShow = (link, elm) ->
         show = ->
             elm.show()
             link.html("Hide Details")
+            return
         hide = ->
             elm.hide()
             link.html("Show Details")
+            return
         link.toggle(show, hide)
+        return
     for elm in $("#welcome li div.more")
         $elm = $(elm)
         $elm.hide()
@@ -559,13 +674,16 @@ prepareWelcomePage = ->
 
     $('#goto-course-chooser').click ->
         showPage('#course-chooser', {animate: true, complete: (-> $('#show-courses').trigger('click'))})
+        return
     $('#welcome-new-program').click ->
         $('#new').click()
+        return
 
     $('#print-instructions').click(printInstructions)
 
     updateWelcomePage()
     return
+###
 # shows and hides things on the welcome page (such as next/new button)
 # based upon the current state.
 #
@@ -574,15 +692,19 @@ prepareWelcomePage = ->
 # is an existing program.
 # Otherwise, the existance of a program is autodetected based on whether there are displayed
 # courses.
+###
 updateWelcomePage = (forceState='') ->
     programState = null
     if forceState is 'newProgram'
         programState = 'newProgram'
     else if forceState is 'existingProgram'
         programState = 'existingProgram'
-    # if there are any sortable courses, assume we are working off an existing
-    # program, otherwise assume a new and empty program
+
     else if window.courseManager?.sortableCourses and Object.keys(window.courseManager.sortableCourses).length is 0
+        ###
+        # if there are any sortable courses, assume we are working off an existing
+        # program, otherwise assume a new and empty program
+        ###
         programState = 'newProgram'
     else
         programState = 'existingProgram'
@@ -603,6 +725,8 @@ prepareNavMenu = ->
     makeLinkShow = (link, target) ->
         link.click ->
             showPage(target, {animate: false})
+            return
+        return
 
     for elm in $('#menu-nav a')
         elm = $(elm)
@@ -610,17 +734,22 @@ prepareNavMenu = ->
         #elm.attr({href: 'javascript: void 0;'})
         makeLinkShow(elm, target)
 
+    ###
     # make sure the back button works--that is when the index.html#foo changes,
     # make the appropriate page display
+    ###
     window.onhashchange  = ->
         hash = parseUrlHash(window.location.hash).hash
         $("a[page=#{hash}]").click()
+        return
     return
 
 showPage = (page, ops={}) ->
     if typeof page isnt 'string'
         throw new Error("showPage expects page to be a string, not #{page}")
+    ###
     # set the nav menu to be properly highlighted
+    ###
     for elm in $('#menu-nav a')
         elm = $(elm)
         if elm.attr('page') is page
@@ -635,9 +764,11 @@ showPage = (page, ops={}) ->
         when '#preview'
             onPreviewPageShow()
 
+    ###
     # if we're not animating, we don't need to do
     # anything fancy, so just ensure our container elements
     # are all filled
+    ###
     if not ops.animate
         $('.page').hide()
         for elm in target.find('.container')
@@ -646,8 +777,10 @@ showPage = (page, ops={}) ->
         target.show()
         return
 
+    ###
     # if we're animating, we need to find the position of each element
     # that's moving to the new page befor we hide anything
+    ###
     currentPageContainers = (elm.getAttribute('contains') for elm in $($('.page:visible')).find('.container'))
     newPageContainers = (elm.getAttribute('contains') for elm in target.find('.container'))
     needsAnimation = []
@@ -670,15 +803,21 @@ showPage = (page, ops={}) ->
         container = target.find(".container[contains=#{elm}]")
         reparent(elm, container, {animate: true, origin: offsets[elm], complete: ops.complete})
 
+    ###
     # special actions to be taken on particular pages
+    ###
     return
 
 updatePreview = (ops={preserveSelection: false}) ->
+    ###
     # we may want to show a progress indicator
+    ###
     ops.start?()
 
     render = ->
+        ###
         # any time we are rendering, let's show the status indicator
+        ###
         $('#preview-status .message-text').text("Updating Graph")
         $('#preview-status').show()
         dotCode = window.courseManager.createDotGraph()
@@ -687,8 +826,10 @@ updatePreview = (ops={preserveSelection: false}) ->
             if data.type isnt 'graph'
                 throw new Error('Need the webworker to return graph type!')
             xdotCode = data.message
+            ###
             # there are some warnings in the xdot code, but they are printed
             # at the beginning, so filter them away
+            ###
             xdotCode = xdotCode.slice(xdotCode.indexOf('digraph {'))
             ast = DotParser.parse(xdotCode)
             svgManager = new SVGGraphManager(new SVGDot(ast), window.courseManager.graphState)
@@ -699,8 +840,10 @@ updatePreview = (ops={preserveSelection: false}) ->
                 for elm in oldSvgManager.selected || [] when elm
                     oldSelection.push elm.getAttribute('id')
             window.courseManager.initializeSVGManager(svgManager)
+            ###
             # restore all of the previous selection.  This list will be empty
             # if preserveSelection == false
+            ###
             for id,i in oldSelection
                 svgManager.select $(svgManager.svg).find("##{id}")[0]
 
@@ -720,8 +863,11 @@ updatePreview = (ops={preserveSelection: false}) ->
 
             ops.finish?()
             $('#preview-status').fadeOut('fast')
+            return
         window.Viz.postMessage(dotCode)
+        return
     window.setTimeout(render, 0)
+    return
 
 onPreviewPageShow = ->
     if not window.Viz?
@@ -732,32 +878,30 @@ onPreviewPageShow = ->
                 $('#preview-status').hide()
                 $('#map-holder').show()
                 updatePreview()
-
-        ###
-        #$('#preview-status').html 'loading graphviz library'
-        $.getScript 'js/viz-2.26.3.js', ->
-            $('#preview-status').hide()
-            $('#map-holder').show()
-            updatePreview()
-        ###
+            return
     else
         window.setTimeout(updatePreview, 0)
+    return
 ###
 # manages click events for for an svg course map.
 # Allows two nodes to be selected so arrows between them can be
 # adjusted.
 ###
 class SVGGraphManager
+    ###
     # jquery's functions don't work on svg elements, so we'll use our own
+    ###
     addClass = (elm, cls) ->
         oldCls = elm.getAttribute('class')
         if oldCls.split(/\s+/).indexOf(cls) >= 0
             return
         elm.setAttribute('class', oldCls + ' ' + cls)
+        return
     removeClass = (elm, cls) ->
         oldCls = elm.getAttribute('class')
         newCls = (c for c in oldCls.split(/\s+/) when c isnt cls)
         elm.setAttribute('class', newCls.join(' '))
+        return
     sanitizeId = (str) ->
         return (''+str).replace(/\W+/g,'-')
 
@@ -778,9 +922,13 @@ class SVGGraphManager
             else
                 course = @graphState.nodes[elm.courseHash]
                 @courseClicked(course.course)
-
-        @selected = [null, null]    # currently selected nodes
+            return
+        # currently selected nodes
+        @selected = [null, null]
+        return
+    ###
     # adds a .courseHash expando property to all svg nodes corresponding to a course
+    ###
     addReferenceToCourseToNodes: ->
         for hash of @graphState.nodes
             elm = @$svg.find("##{sanitizeId(hash)}")[0]
@@ -791,6 +939,7 @@ class SVGGraphManager
             if elm
                 elm.courseHash = hash
                 elm.isElectivesNode = true
+        return
     selectEdgeBetween: (elm1, elm2) ->
         id1 = elm1.getAttribute('id')
         id2 = elm2.getAttribute('id')
@@ -798,20 +947,27 @@ class SVGGraphManager
             addClass(edge, 'highlight')
         for edge in @$svg.find("[target=#{id2}][origin=#{id1}]")
             addClass(edge, 'highlight')
+        return
 
     select: (elm) ->
+        ###
         # special behavior when clicking an electivesNode
+        ###
         if elm.isElectivesNode
             @selected[0] = elm
             addClass(elm, 'selected')
             @selectionChanged?()
             return
+        ###
         # if we have any electivesNodes selected and we click something else, we want
         # to deselect them instead of adding them to the queue.
+        ###
         if @selected[0]?.isElectivesNode or @selected[1]?.isElectivesNode
             @deselectAll()
 
+        ###
         # if the queue is full, cyclically rotate
+        ###
         if @selected[0] and @selected[1]
             @deselct(@selected[0])
             @selected[0] = @selected[1]
@@ -825,12 +981,14 @@ class SVGGraphManager
         if @selected[0] and @selected[1]
             @selectEdgeBetween(@selected[0], @selected[1])
         @selectionChanged?()
+        return
     deselct: (elm) ->
         i = @selected.indexOf(elm)
         if i >= 0
             @selected[i] = null
         removeClass(elm, 'selected')
         @selectionChanged?()
+        return
     deselectAll: ->
         for elm in @$svg.find('.selected')
             removeClass(elm, 'selected')
@@ -839,6 +997,7 @@ class SVGGraphManager
         @selected[0] = null
         @selected[1] = null
         @selectionChanged?()
+        return
 
     courseClicked: (course) ->
         clickedNode = $("##{sanitizeId(BasicCourse.hashCourse(course))}")[0]
@@ -849,23 +1008,29 @@ class SVGGraphManager
         if @selected.indexOf(clickedNode) >= 0
             @deselct(clickedNode)
             return
+        ###
         # if deselected and now the list is [null, item], permute it to [item, null]
+        ###
         if @selected[1] and not @selected[0]
             @selected[0] = @selected[1]
             @selected[1] = null
         @select(clickedNode)
+        return
 
     electivesNodeClicked: (course) ->
         clickedNode = $("##{sanitizeId(BasicCourse.hashCourse(course))}")[0]
         @deselectAll()
 
         @select(clickedNode, true)
+        return
 
     highlightPrereqPath: (course) ->
         for elm in @$svg.find('.highlight')
             removeClass(elm, 'highlight')
 
+        ###
         # highight the node and all its anscestors
+        ###
         highlight = (node) =>
             addClass($(node)[0], "highlight")
             id = $(node).attr('id')
@@ -873,6 +1038,7 @@ class SVGGraphManager
                 addClass(arrow, "highlight")
                 highlight($("##{arrow.attr('origin')}"))
         highlight("##{course.subject}-#{course.number}")
+        return
 
 ###
 # Class to manage and keep the sync of all course on the webpage
@@ -883,33 +1049,47 @@ class CourseManager
     constructor: ->
         @courses = {}
         @courseData = {}
-        @sortableCourses = {}   # all the courses that are displayed in the year chart (and so are sortable)
+        ###
+        # all the courses that are displayed in the year chart (and so are sortable)
+        ###
+        @sortableCourses = {}
         @sortableCoursesStateButtons = {}
         @loadedSubjects = {}
         @loadingStatus = {}
         @onSubjectLoadedCallbacks = {}
         @coops = {}
         @graphState = new Graph
-        @mostRecentTerm = ''    # we'd only like to show course availability for the most recent 2 years (6 most recent terms)
+        ###
+        # we'd only like to show course availability for the most recent 2 years (6 most recent terms)
+        ###
+        @mostRecentTerm = ''
+    ###
     # Based make sure @graphState reflects everything
     # that is in the year chart.
+    ###
     updateGraphState: ->
         @graphState.title = $('#program-info input').val()
         @graphState.mostRecentTerm = @mostRecentTerm
+        ###
         # returns whether or not a single course should be inlcuded in the graph
         # and if given a list, will filter the list so only courses that should be displayed remain
+        ###
         filterDisplayable = (list) =>
             if not list
                 return list
+            ###
             # are we an array?
+            ###
             if not list.length?
                 for state in @DISPLAYABLE_STATES
                     return true if list.state?[state]
                 return false
             return (c for c in list when filterDisplayable(c))
 
+        ###
         # get a list of all the courses that should show up and what year
         # they should be showing up
+        ###
         courses = {}
         for year in [1..4]
             for elm in $(".year#{year} .course")
@@ -919,7 +1099,9 @@ class CourseManager
                     courses[hash] =
                         course: course
                         year: year
+        ###
         # gather all the clusters of electives that should show up
+        ###
         clusters = {}
         for year in [1..4]
             for cluster in $(".year#{year} .electives-block")
@@ -938,16 +1120,20 @@ class CourseManager
         @graphState.pruneOrphanedEdges()
         @graphState.generateEdges()
 
+        ###
         # add the coops
+        ###
         @graphState.coops = []
         for hash,coop of @coops
             @graphState.coops.push dupObject(coop.data)
 
         return @graphState
 
+    ###
     # clears all loaded courses and removes their DOM nodes.
     # this function should make CourseManager reset to a pristine
     # state
+    ###
     clearAll: ->
         for hash,courses of @courses
             for course in courses
@@ -955,7 +1141,10 @@ class CourseManager
             @courses[hash] = null
         @courses = {}
         @courseData = {}
-        @sortableCourses = {}   # all the courses that are displayed in the year chart (and so are sortable)
+        ###
+        # all the courses that are displayed in the year chart (and so are sortable)
+        ###
+        @sortableCourses = {}
         @sortableCoursesStateButtons = {}
         @loadedSubjects = {}
         @loadingStatus = {}
@@ -964,27 +1153,37 @@ class CourseManager
             @removeCoop(coop)
         @coops = {}
         @graphState.clearAll()
+        return
 
 
+    ###
     # takes in JSON representation of a graph and
     # loads all relavent courses, etc.
+    ###
     loadGraph: (str) ->
         @clearAll()
+        ###
         # we'll update graph state and from that repopulate the dom, etc. appropriately
+        ###
         @graphState.fromJSON(str)
 
         $('#program-info input').val(@graphState.title)
 
         courseLoadCallback = {}
+        ###
         #creates a function that reparents course to electivesBlock
+        ###
         createCourseLoadCallback = (electivesBlock) =>
             ret = (course) =>
                 electivesBlock.addCourse(course)
                 @updateElectivesButton(electivesBlock)
+                return
             return ret
 
+        ###
         # load the elective blocks first so they can be populated
         # when ensureDisplayedInYearChart is called
+        ###
         for _,cluster of @graphState.clusters
             elective = new ElectivesButtonEditor(cluster.cluster, @)
             electiveButton = new ElectivesButton(elective)
@@ -1009,9 +1208,13 @@ class CourseManager
         for coop in @graphState.coops
             @addCoop(coop)
 
+        ###
         # display the graph preview when the preview page is active
+        ###
         if $('a[page=#preview]').hasClass('active')
+            ###
             #XXX We need to delay
+            ###
             window.setTimeout(updatePreview, 1000)
         return @graphState
     initializeSVGManager: (svgManager) ->
@@ -1021,8 +1224,10 @@ class CourseManager
 
         @svgManager = svgManager
         @svgManager.selectionChanged = =>
+            ###
             # special behavior for when we click an electives block.
             # We want to be able to edit its extra properties.
+            ###
             if svgManager.selected[0]?.isElectivesNode
                 elm = svgManager.selected[0]
                 course = @sortableCourses[elm.courseHash]
@@ -1047,14 +1252,18 @@ class CourseManager
                 course2 = window.courseManager.createCourseButton(course2)
 
                 edge = window.courseManager.graphState.edges[[course1,course2]]
+                ###
                 # if we have an edge facing the other way, assume the user wanted
                 # to select that edge in the correct order
+                ###
                 if not edge and window.courseManager.graphState.edges[[course2,course1]]
                     edge = window.courseManager.graphState.edges[[course2,course1]]
                     tmp = course1
                     course1 = course2
                     course2 = tmp
+            ###
             # set up the graphical part of selection
+            ###
             if course1
                 $('#course1 .course-container').html course1.$elm
                 $('#course1 .course-standin').hide()
@@ -1076,7 +1285,9 @@ class CourseManager
             else
                 toggleEdge.button('disable')
 
+            ###
             # non-existent edges or invisible edges should not be shown
+            ###
             if not edge or edge.properties.style?.match(/invis/)
                 $('#edge1').attr({class: 'noArrow'})
                 toggleEdge.find('span').text toggleEdge.attr('op1')
@@ -1096,8 +1307,11 @@ class CourseManager
             return
 
         @svgManager.selectionChanged()
+        return
 
+    ###
     # updates the state of all instances of a particular course
+    ###
     updateCourseState: (course, state, ops={updatePrereqs: true}) ->
         hash = BasicCourse.hashCourse(course)
         for c in (@courses[hash] || [])
@@ -1106,9 +1320,12 @@ class CourseManager
                 delete state.selected
             c.setState(state)
         if ops.updatePrereqs
+            ###
             # update the prereqs list asyncronously with a little delay so it isn't
             # so surprising to the user
+            ###
             window.setTimeout((=> @showUnmetPrereqs()), 500)
+        return
     addCourse: (course) ->
         hash = '' + course
         if not @courses[hash]
@@ -1122,9 +1339,12 @@ class CourseManager
         index = @courses[hash].indexOf(course)
         if index >= 0
             @courses[hash].splice(index, 1)
+        return
     removeElective: (course) ->
         if @sortableCourses[course]
+            ###
             # reparent all of the electives children
+            ###
             for _,c of @sortableCourses[course].courses
                 @sortableCourses[course].$elm.parent().append(c.$elm)
                 @updateCourseState(c, {required:false, elective:false})
@@ -1133,16 +1353,20 @@ class CourseManager
         for c in @courses[course]
             c.removeButton()
         delete @courses[course]
+        return
     removeAllCourseInstances: (course) ->
         hash = BasicCourse.hashCourse(course)
         for c in @courses[hash]
+            ###
             # if we are an elective, we have a special delete procedure
+            ###
             if c instanceof Electives
                 @removeElective(course)
                 break
             c.removeButton()
         delete @courses[hash]
         delete @sortableCourses[hash]
+        return
     cleanupUnattachedButtons: (course, buttonType=CourseButton) ->
         clean = =>
             if @needsCleaning = false
@@ -1161,8 +1385,11 @@ class CourseManager
                     @removeCourse(c)
             return
         @needsCleaning = true
+        ###
         # this operation takes a bit of time, so do it asyncronously
+        ###
         window.setTimeout(clean, 1000)
+        return
     addCoop: (data={}) ->
         coop = new CoopButtonEditor(data, @)
         $('#coop-list').append(coop.getButton())
@@ -1171,19 +1398,26 @@ class CourseManager
     removeCoop: (coop) ->
         coop.removeButton()
         delete @coops[coop.hash]
+        return
 
+    ###
     # makes all electivesButtons have the same state as button (including
     # making the list of elective courses the same)
     #
     # returns a list of hashes of all courses that button has as children
+    ###
     updateElectivesButton: (button) ->
         data = button.getValues()
+        ###
         # we will sync the courses manually, we don't want to have a shallow copy of the courses object!
+        ###
         delete data.courses
 
         for electiveButton in (@courses[button] || [])
+            ###
             # make sure each ElectivesButton has a list of the courses that button does
             # and only those courses
+            ###
             diff = symmetricDiffObjects(button.courses, electiveButton.courses)
             for hash,course of diff['missing']
                 newCourse = @createCourseButton(course, {clickable: true, restrictions: 'elective'})
@@ -1194,11 +1428,15 @@ class CourseManager
             electiveButton.update(data)
         return (k for k of button.courses)
 
+    ###
     # out of sortableCourses, ensures only course has the selected state
+    ###
     selectCourse: (course) ->
         if not course
             return
+        ###
         # identify the selected course and set its state
+        ###
         selectedCourse = null
         for hash,c of @sortableCourses
             if c.state.selected
@@ -1211,43 +1449,55 @@ class CourseManager
             return
 
         if selectedCourse instanceof BasicCourse
+            ###
             # set up the course info area for the selected course
+            ###
             stateButtons = @sortableCoursesStateButtons[selectedCourse]
             if not stateButtons
                 stateButtons = @createCourseStateButton(selectedCourse)
             stateButtons.setRestrictions(selectedCourse.restrictions)
             $('.course-info .course-name .course-number').html selectedCourse.hash
             $('.course-info .course-name .course-title').html titleCaps(('' + selectedCourse.data.title).toLowerCase())
+            ###
             # if we don't detach first, jquery removes all bound events and ui widgets, etc.
+            ###
             $('.course-info .course-state').children().detach()
             $('.course-info .course-state').html stateButtons.elm
             $('.course-info .prereq-area').html PrereqUtils.prereqsToDivs(stateButtons.prereqs, @)
             $('.course-info .terms-area').html CourseUtils.historyToDivs(selectedCourse.getTermsOffered(@mostRecentTerm, 2))
+            ###
             #TODO this shouldn't be done with a timeout.  it should be done in a robust way!!
+            ###
             window.setTimeout((=> $('#dot').val @createDotGraph()), 0)
             @cleanupUnattachedButtons()
 
 
+    ###
     # returns a CourseButton for the desired course.  If the course
     # hasn't been loaded yet, it will be loaded and the CourseButton's data will
     # be updated accordingly
+    ###
     createCourseButton: (course, ops={}) ->
+        ###
         # if we've already been loaded, our job is easy
+        ###
         if @courseData[course]
             course = new CourseButton(@courseData[course], true)
         else
+            ###
             # if the course hasn't been loaded, we return a functioning course
             # button whose data will be updated upon load
+            ###
             course = new CourseButton(course)
             updateCourse = =>
                 if not @courseData[course]
                     if course.elm
                         course.$elm.addClass('defunct')
                     return
-                    #throw new Error("Course #{course} was loaded in dep. #{course.subject}, but wasn't available")
                 course.update(@courseData[course])
                 course.setTooltip(titleCaps(course.data.title))
                 course.wasSynced = true
+                return
             @loadSubjectData(course.subject, updateCourse)
         if ops.clickable
             @makeCourseButtonClickable(course, ops)
@@ -1258,20 +1508,27 @@ class CourseManager
         @addCourse(course)
         @initButtonState(course)
         return course
+    ###
     # makes it so that when you click the button,
     # it cycles through the states and ensures all instances
     # are appropriately synced
+    ###
     makeCourseButtonClickable: (button, ops={}) ->
+        ###
         # if we're selectable we should be keyboard navigatable too
+        ###
         if ops.selectable
             button.selectable = true
             button.$elm.attr({tabindex: 1})
             button.$elm.focus ->
+                ###
                 # make sure extra focus events don't trigger extra clicks
                 # (for example, the element is focused, and somebody selects
                 # the webpage titlebar, causing a new focus event to fire)
+                ###
                 if not @course.state.selected
                     @course.$elm.trigger('click')
+                return
             button.$elm.keydown (event) ->
                 self = event.currentTarget
                 siblings = event.currentTarget.parentNode.childNodes
@@ -1286,45 +1543,62 @@ class CourseManager
                     sibs.left = siblings[myIndex - 1]
                 switch event.keyCode
                     when 37     #left
+                        ### left ###
                         $(sibs.left).focus() if sibs.left
                     when 38     #up
+                        ### up ###
                         ''
                     when 39     #right
+                        ### right ###
                         $(sibs.right).focus() if sibs.right
                     when 40     #down
+                        ### down ###
                         ''
                     when 32,13      # space and return
+                        ### space or return ###
                         $(self).click()
 
         $(button.getButton()).click (evt) =>
+            ###
             # defunct classes also cannot be clicked
+            ###
             if $(evt.currentTarget).hasClass('defunct')
                 return
             evt.stopPropagation()
             if ops.selectable and not button.state.selected
+                ###
                 # if we click on a button and it results in the selection changing,
                 # we don't want to toggle the state at all.  We just want to update
                 # the display area
+                ###
                 @selectCourse(button)
 
+                ###
                 # trigger a focus even on ourselves so we can continue
                 # using keyboard navigation from this element
+                ###
                 $(evt.currentTarget).focus()
 
                 return
+            ###
             # check to see if we've just been dragged by seeing if we have a noclick class
+            ###
             if $(evt.currentTarget).hasClass('noclick')
                 $(evt.currentTarget).removeClass('noclick')
                 return
             newState = CourseManager.toggleState(button.state, button.restrictions)
+            ###
             # we need to make sure that the course appears in the yearchart if this option
             # is set
+            ###
             if ops.insertOnClick
                 try
                     @ensureDisplayedInYearChart(button)
                 catch e
                     console.log e
             @updateCourseState(button, newState)
+            return
+        return
     makeCourseButtonDraggable: (button, ops={}) ->
         $(button.getButton()).draggable
             #appendTo: '#course-chooser'
@@ -1335,14 +1609,19 @@ class CourseManager
             distance: '25'
             opacity: 0.7
             zIndex: 1000
+        return
 
+    ###
     # makes the drop area of an ElectivesButton a drop target. If
     # clone is truthy instead of moving the course, a copy of the
     # course will be created.
+    ###
     makeElectivesButtonDroppable: (button, ops={clone: false}) ->
         button.getButton()
         button.$coursesDiv.droppable
-            #TODO this seems to mess up the parent sometimes!
+            ###
+            # TODO this seems to mess up the parent sometimes!
+            ###
             greedy: true
             hoverClass: 'highlight'
             tolerance: 'pointer'
@@ -1352,29 +1631,42 @@ class CourseManager
                 if not ui.draggable[0].course
                     return false
                 button.addCourse(ui.draggable[0].course)
+                ###
                 # calling the courseMoved method will ensure that
                 # all electivesButtons are synced up and updated with
                 # their new contents
+                ###
                 @courseMoved(ui.draggable[0].course)
                 @selectCourse(ui.draggable[0].course)
+                ###
                 # when we drop a course on an electives block, assume
                 # we want it automatically to be marked as an elective
+                ###
                 @updateCourseState(ui.draggable[0].course, {required:false, elective:true})
+                return
+        return
     makeElectivesButtonClickable: (button, ops={}) ->
         button.$elm.click(=> @selectCourse(button))
+        return
 
+    ###
     # this method is called whenever a course changes levels or
     # gets added or removed from an elective's block
+    ###
     courseMoved: (course) ->
         electivesChildren = []
+        ###
         # see if any of our electivesButtons have changed
         # and if so, update them
+        ###
         for hash,c of @sortableCourses
             if c instanceof ElectivesButton
                 children = @updateElectivesButton(c)
                 electivesChildren = electivesChildren.concat children
+        ###
         # we now have a list of all child courses of electives.  update course's
         # state accordingly
+        ###
         electivesChildren = (BasicCourse.hashCourse(c) for c in electivesChildren)
         state = dupObject(course.state)
         if electivesChildren.indexOf(BasicCourse.hashCourse(course)) >= 0
@@ -1391,30 +1683,39 @@ class CourseManager
                 @updateCourseState(course, state)
         return
 
+    ###
     # returns a CourseStateButton for the desired course.  If the course
     # hasn't been loaded yet, it will be loaded and the CourseButton's data will
     # be updated accordingly
+    ###
     createCourseStateButton: (course) ->
+        ###
         # if we've already been loaded, our job is easy
+        ###
         if @courseData[course]
             course = new CourseStateButton(@courseData[course], true)
         else
+            ###
             # if the course hasn't been loaded, we return a functioning course
             # button whose data will be updated upon load
+            ###
             course = new CourseStateButton(course)
             updateCourse = =>
                 if not @courseData[course]
                     throw new Error("Course #{course} was loaded in dep. #{course.subject}, but wasn't available")
                 course.update(@courseData[course])
                 course.wasSynced = true
+                return
             @loadSubjectData(course.subject, updateCourse)
         @sortableCoursesStateButtons[course] = course
         @makeCourseStateButtonClickable(course)
         @addCourse(course)
         @initButtonState(course)
         return course
+    ###
     # makes it so that when you click the button,
     # the appropriate state is broadcast
+    ###
     makeCourseStateButtonClickable: (button) ->
         button.$elm.find('input').bind 'change', (evt) =>
             val = $(evt.currentTarget).parent().find('input:checked').val()
@@ -1425,23 +1726,34 @@ class CourseManager
             if val is 'elective'
                 state = {required: false, elective: true}
             @updateCourseState(button, state)
+            return
+        return
+    
+    ###
     # computes an updated state that cycles from none -> required -> elective -> none
     # Does not specify selected or prereq
+    ###
     @toggleState: (state, restrictions) ->
         ret =
             required: false
             elective: false
         switch restrictions
-            # toggle between elective and none
             when 'elective'
+                ###
+                # toggle between elective and none
+                ###
                 if not state.elective
                     ret.elective = true
-            # toggle between required and none
             when 'nonelective'
+                ###
+                # toggle between required and none
+                ###
                 if not state.required
                     ret.required = true
-            # toggle required -> elective -> none
             else
+                ###
+                # toggle required -> elective -> none
+                ###
                 if state.required
                     ret.elective = true
                 if state.elective
@@ -1450,25 +1762,30 @@ class CourseManager
                     ret.required = true
         return ret
 
+    ###
     # sets the button state to match the state of
     # the other course buttons currently being managed.
     # If the course isn't currently being managed, nothing is done
+    ###
     initButtonState: (button) ->
         if not @courses[button] or @courses[button].length is 0
             return
         c = @courses[button][0]
         state = {required:c.state.required, elective:c.state.elective}
         button.setState(state, {forceUpdate: true})
+        return
     getSelectedCourses: ->
         ret = []
         for hash,list of @courses
             if list[0]?.state.required or list[0]?.state.elective
                 ret.push list[0]
         return ret
+    ###
     # performs an ajax call to load a subject.
     # If loadSubjectData is called multiple times before the ajax call
     # has finished, the callbacks are queued and executed after the ajax call
     # finishes. (the ajax call is only made once, so call this function as often as you like)
+    ###
     loadSubjectData: (subject, callback, ops={}) ->
         @onSubjectLoadedCallbacks[subject] = @onSubjectLoadedCallbacks[subject] || []
         @onSubjectLoadedCallbacks[subject].push callback
@@ -1476,6 +1793,7 @@ class CourseManager
             while func = @onSubjectLoadedCallbacks[subject].shift()
                 func()
             @loadingStatus[subject] = 'loaded'
+            return
 
         if @loadedSubjects[subject] and not ops.force
             doAllCallbacks()
@@ -1497,13 +1815,16 @@ class CourseManager
             error: [(=> @loadingStatus[subject] = 'failed'), (ops.error || error)]
             complete: doAllCallbacks
         $.ajax ajaxArgs
+        return
 
     courseDataLoaded: (data, textState, jsXHR) =>
         for c in data
             hash = BasicCourse.hashCourse(c)
             @courseData[hash] = c
+            ###
             # when the data was scraped it may contain html escape characters like '&amp;'
             # remove all of these so they won't show up anywhere accidentally.
+            ###
             @courseData[hash].title = htmlUnencode(@courseData[hash].title)
             @courseData[hash].description = htmlUnencode(@courseData[hash].description)
 
@@ -1511,9 +1832,12 @@ class CourseManager
             if c.terms_offered
                 for term of c.terms_offered when term > @mostRecentTerm
                     @mostRecentTerm = term
+        return
+    ###
     # shows courses from a particular department.  If buttons
     # already exist for the department, those buttons are made visible.
     # If not, the buttons are created
+    ###
     showCoursesOfSubject: (subject, ops={}) ->
         showCourses = =>
             for hash,course of @sortableCourses
@@ -1531,8 +1855,10 @@ class CourseManager
                 ops.error() if ops.error
                 console.log Error("Reached maximum recusion depth when loading #{subject}")
         return
+    ###
     # hide all courses from a particular department
     # that aren't marked as required or as an elective
+    ###
     hideCoursesOfSubject: (subject, ops={}) ->
         for hash,course of @sortableCourses
             if course.subject is subject and course.state.required is false and course.state.elective is false
@@ -1545,10 +1871,13 @@ class CourseManager
             course = @sortableCourses[hash]
             if course.state.required is false and course.state.elective is false
                 course.$elm?.hide(ops.animate)
+        return
     populateYearChartWithSubject: (subject, ops) ->
         years = {}
         for hash,data of @courseData
+            ###
             # find everything of matching subject for which a button hasn't already been created
+            ###
             if data.subject is subject and not @sortableCourses[hash]
                 leadingNumber = data.number.charAt(0)
                 years[leadingNumber] = years[leadingNumber] || []
@@ -1568,16 +1897,22 @@ class CourseManager
         return
     ensureDisplayedInYearChart: (course, ops={}) ->
         hash = BasicCourse.hashCourse(course)
+        ###
         # this is a course that cannot be added since it doesn't exist in a subject
+        ###
         if (not @courseData[hash] and @loadedSubjects[course.subject]) or @loadingStatus[course.subject] is 'failed'
             ops.error() if ops.error
             throw new Error("#{hash} cannot be loaded.  Does not appear to exist...")
+        ###
         # if we don't have the course's data, load it and try to display the course again
+        ###
         if not @courseData[hash]
             @loadSubjectData(course.subject, (=> @ensureDisplayedInYearChart(course, ops)), ops)
             return
 
+        ###
         # if we've already been displayed in the year chart, our job is easy
+        ###
         if @sortableCourses[hash]
             @updateCourseState(course, ops.state) if ops.state
             if ops.year?
@@ -1586,8 +1921,10 @@ class CourseManager
             @sortableCourses[hash].$elm.show(ops.animate)
             return
 
+        ###
         # A course should show up in the year specified.  If not,
         # it should clamp to year 1 or year 4
+        ###
         leadingNumber = @courseData[hash].number.charAt(0)
         leadingNumber = '1' if leadingNumber < '1'
         leadingNumber = '4' if leadingNumber > '4'
@@ -1601,9 +1938,12 @@ class CourseManager
         if ops.animate
             course.$elm?.hide()
             course.$elm?.show(ops.animate)
+        return
 
     showUnmetPrereqs: ->
+        ###
         # we need a list of courses that are required or electives to find their prereqs
+        ###
         activeCourses = []
         for hash, course of @sortableCourses
             if course.state.required or course.state.elective
@@ -1611,16 +1951,21 @@ class CourseManager
         prereqs = PrereqUtils.computePrereqTree(activeCourses, activeCourses)
         div = PrereqUtils.prereqsToDivs(prereqs, @)
         $('#unmet-prereq-list').html div
+        return
 
+    ###
     # returns a string formatted in graphviz's dot language
     # consisting of all the selected courses of each year and
     # with prereqs given by arrows
+    ###
     createDotGraph: ->
         @updateGraphState()
         return @graphState.toDot()
+    ###
     # binds text boxes to the extra data belonging
     # to an electivesNode (e.g. description, link to more
     # info, etc.)
+    ###
     bindElectivesDescription: (course) ->
         data = course.data
         $('#electives-description').val(data.description || '')
@@ -1629,16 +1974,24 @@ class CourseManager
         descriptionChange = ->
             val = $('#electives-description').val()
             data.description = val
+            return
         urlChange = ->
             val = $('#electives-url').val()
             data.url = val
+            return
 
+        ###
         # let's bind the old way so our new binding
         # always replaces our old
+        ###
         $('#electives-description')[0].onkeyup = ->
             window.setTimeout(descriptionChange, 0)
+            return
         $('#electives-url')[0].onkeyup = ->
             window.setTimeout(urlChange, 0)
+            return
+
+        return
 
 
 
@@ -1648,7 +2001,9 @@ class CourseManager
 CourseUtils =
     historyToDivs: (hist={}) ->
         ret = ""
+        ###
         # add the divs in this order
+        ###
         for term in ['fall', 'spring', 'summer']
             if hist[term]
                 ret += "<div class='availability #{term}'>#{titleCaps(term)}</div>"
@@ -1661,15 +2016,19 @@ PrereqUtils =
         if prereq.subject
             return Course.hashCourse(prereq)
         if prereq.op
+            ###
             # only give a pretty result if our data is formatted correctly
+            ###
             if typeof prereq.op is 'string'
                 return "(" + (PrereqUtils.prereqsToString(p) for p in prereq.data).join(" #{prereq.op} ") + ")"
             else
                 return ""
         return
+    ###
     # returns the prereq pruned so that any branches whose
     # requirements are met are no longer there
     # courses should be a list of course hashes
+    ###
     prunePrereqs: (prereq, courses) ->
         if not prereq?
             throw new Error("Yikes.  We errored while pruning the prereqs (found #{prereq} for courses #{courses}!)")
@@ -1682,32 +2041,44 @@ PrereqUtils =
             when 'or'
                 ret.op = 'or'
                 for course in prereq.data
+                    ###
                     # our prereq data isn't completely clean.  Sometimes
                     # there are null values for strange course requirements.
                     # e.g. ECON225 has "Univ English Requirement (Y=1) 1"
                     # skip past any of these nulls
+                    ###
                     if not course?
                         continue
+                    ###
                     # if we're in an 'or' list and we've found one of our items,
                     # we're done!  Return an empty list
+                    ###
                     prunedBranch = PrereqUtils.prunePrereqs(course, courses)
                     if prunedBranch.data?.length == 0
                         return {op: 'and', data: []}
+                    ###
                     # if our branch isn't empty, we better keep it around
+                    ###
                     ret.data.push prunedBranch
             when 'and'
                 for course in prereq.data
                     if not course?
                         continue
+                    ###
                     # if we're in an 'and' list, we need to keep any branches
                     # that have not been fully met
+                    ###
                     prunedBranch = PrereqUtils.prunePrereqs(course, courses)
                     if prunedBranch.data?.length != 0
+                        ###
                         # if our branch isn't empty, we better keep it around
+                        ###
                         ret.data.push prunedBranch
         return ret
+    ###
     # Takes prereq object and simplifies it by remove unnecessary 'parens'
     # eg. (MATH100) and (MATH101) -> MATH100 and MATH101
+    ###
     simplifyPrereqs: (prereq) ->
         removeParen = (prereq) ->
             if not prereq.data?
@@ -1716,7 +2087,9 @@ PrereqUtils =
                 return removeParen(prereq.data[0])
             return {op: prereq.op, data: (removeParen(p) for p in prereq.data)}
         return removeParen(prereq)
+    ###
     # returns a flat list of all prereqs.
+    ###
     flattenPrereqs: (prereq) ->
         if prereq?.subject
             return [prereq]
@@ -1727,9 +2100,13 @@ PrereqUtils =
             return ret
         return []
 
+    ###
     # creates a dom element with all the prereqs as buttons synced with manager (instace of CourseManager)
+    ###
     prereqsToDivs: (prereq, manager) ->
+        ###
         # create a string representing the dom structure
+        ###
         prereqsToDivs = (prereq) ->
             if not prereq?
                 return ""
@@ -1737,17 +2114,21 @@ PrereqUtils =
                 hash = BasicCourse.hashCourse(prereq)
                 return "<course id='#{hash}' subject='#{prereq.subject}' number='#{prereq.number}'>#{hash}</course>"
             if prereq.op
+                ###
                 # only give a pretty result if our data is formatted correctly
+                ###
                 if typeof prereq.op is 'string'
                     return "<ul class='prereq-tree prereq-#{prereq.op}'><li class='prereq-tree prereq-#{prereq.op}'>" + (prereqsToDivs(p) for p in prereq.data).join("</li><li class='prereq-tree prereq-#{prereq.op}'>") + "</ul>"
                 else
                     return ""
             return
+        ###
         # first create the structure for all the prereqs.  We will then go and replace
         # all the <course/> tags with CourseButton s if a manager (CourseManager) is present.
         # We wrap everything in an extra div so that jQuery.find('course') will find the course
         # tag even if prereqsToDivs returns "<course />" (also, this ensures every <course/> has
         # a parent)
+        ###
         prereqsStr = prereqsToDivs(prereq)
         if not prereqsStr
             return "<div class='noprereqs'>No prerequsites</div>"
@@ -1761,12 +2142,16 @@ PrereqUtils =
             courseElm = course.getButton()
             elm.parentNode.replaceChild(courseElm, elm)
         return divs
+    ###
     # given a list of courses and a list of selected courses, returns a tree of prereqs
     # unmet by the selected courses
+    ###
     computePrereqTree: (courses, selected=[]) ->
         if not courses?
             throw new Error("computePrereqTree requires a list of course hashes")
+        ###
         # selected should be a list of hashes, so if it's not, convert it!
+        ###
         hashify = (s) ->
             if typeof s is 'string'
                 return s
@@ -1781,7 +2166,9 @@ PrereqUtils =
             if course.prereqs?
                 pruned = PrereqUtils.prunePrereqs(course.prereqs, selected)
                 if pruned.data?.length > 0
+                    ###
                     # tag this branch of prereqs so that we know who requires it
+                    ###
                     pruned.requiredBy = course
                     ret.data.push pruned
         ret = PrereqUtils.simplifyPrereqs(ret)
@@ -1803,17 +2190,22 @@ class BasicCourse
             elective: false
             selected: false
             prereq: false
-        @wasSynced = synced  # false if the course only has @subject and @number, true if it has the rest of the course details
+        ### false if the course only has @subject and @number, true if it has the rest of the course details ###
+        @wasSynced = synced
+        return
     toString: ->
         return @hash
     update: (@data) ->
         @prereqs = @data.prereqs
+        return
 
     getTermsOffered: (currentTerm='', goBackNYears=0)->
         currentYear = parseInt(currentTerm.slice(-4,-2), 10)
         ret = {}
         for k of @data.terms_offered || {}
+            ###
             # We may only want to include terms a course was offered in recent years
+            ###
             if goBackNYears > 0 and currentTerm
                 if parseInt(k.slice(-4,-2), 10) < currentYear - goBackNYears
                     continue
@@ -1827,8 +2219,10 @@ class BasicCourse
                     ret['summer'] = (ret['summer'] || 0) + 1
         return ret
 
+    ###
     # set the course's state and return only
     # the items in the state that changed
+    ###
     setState: (state) ->
         ret = {}
         for s,v of state
@@ -1844,11 +2238,14 @@ class CourseButton extends BasicCourse
     constructor: (data) ->
         super(data)
         @getButton()
+        return
     setState: (state, ops={}) ->
         changedState = super(state)
         if not ops.forceUpdate
             state = changedState
+        ###
         # update the classes on the button if it exists
+        ###
         if not @elm
             return state
         for s,v of state
@@ -1865,18 +2262,23 @@ class CourseButton extends BasicCourse
         @$elm.disableSelection()
         @elm = @$elm[0]
         @elm.course = @
+        ###
         # make sure to initialize the state.  We may have changed it before we created the button element!
+        ###
         @setState(@state)
         return @elm
     removeButton: ->
         if not @elm
             return
-        @elm.course = null  #make sure we remove the circular ref so we can be garbage collected
+        ### make sure we remove the circular ref so we can be garbage collected ###
+        @elm.course = null
         @$elm.remove()
         @elm = @$elm = null
+        return
     setTooltip: (tip) ->
         if tip
             @$elm.attr({title: tip})
+        return
 ###
 # Set of three toggle buttons that change (and reflect) the state of a course
 ###
@@ -1884,6 +2286,7 @@ class CourseStateButton extends BasicCourse
     constructor: (data) ->
         super(data)
         @getButton()
+        return
     getButton: ->
         if @elm
             return @elm
@@ -1894,11 +2297,14 @@ class CourseStateButton extends BasicCourse
         </div>""")
         @$elm.buttonset()
         @elm = @$elm[0]
+        return
     setState: (state, ops={}) ->
         changedState = super(state)
         if not ops.forceUpdate
             state = changedState
+        ###
         # update the classes on the button if it exists
+        ###
         if (not @elm or Object.keys(state).length is 0) and not ops.forceUpdate
             return state
         @$elm.find('input').attr('checked', false)
@@ -1909,18 +2315,24 @@ class CourseStateButton extends BasicCourse
         else
             @$elm.find('input[value=none]').attr('checked', true)
         #@$elm.buttonset('refresh')
+        ###
         #TODO I don't know why i need to do this...
+        ###
         window.setTimeout((=> @$elm.buttonset('refresh')), 0)
 
         return state
     removeButton: ->
         if not @elm
             return
-        @elm.course = null  #make sure we remove the circular ref so we can be garbage collected
+        ### make sure we remove the circular ref so we can be garbage collected ###
+        @elm.course = null
         @$elm.remove()
         @elm = @$elm = null
+        return
+    ###
     # set to be 'elective' or 'nonelective' options
     # only.  setRestrictions(null) removes the restrictions
+    ###
     setRestrictions: (restriction) ->
         switch restriction
             when 'elective'
@@ -1932,6 +2344,7 @@ class CourseStateButton extends BasicCourse
             else
                 @$elm.find('input[value=elective]').button('enable')
                 @$elm.find('input[value=required]').button('enable')
+        return
 ###
 # Holds a group of courses
 ###
@@ -1939,22 +2352,28 @@ class Electives
     constructor: (data) ->
         {@title, @requirements, @number} = data
         @data = data.data || {}
+        ###
         # make sure we don't just use the courses object that was passed in,
         # we want to shallow copy so we actually have an internal copy!
+        ###
         @courses = dupObject(data.courses || {})
 
         @state = {}
         if not @requirements?
             @requirements={units:1.5, unitLabel:'units'}
         @subject = @title
-        @number = @number || Math.random().toFixed(8) # give us a random number so we never hash-collide with other electives blocks with the same name
+        ### give us a random number so we never hash-collide with other electives blocks with the same name ###
+        @number = @number || Math.random().toFixed(8)
         @hash = BasicCourse.hashCourse(@)
+        return
     toString: ->
         return @hash
     addCourse: (course) ->
         @courses[course] = course
+        return
     removeCourse: (course) ->
         delete @courses[course]
+        return
     setState: (state) ->
         ret = {}
         for s,v of state
@@ -1968,6 +2387,7 @@ class Electives
         # we'd like to keep the subject fixed for hashing purposes
         #@subject = @title
         @hash = BasicCourse.hashCourse(@)
+        return
     getValues: ->
         return {@title, @requirements, @number, @courses}
 
@@ -1980,7 +2400,9 @@ class ElectivesButton extends Electives
         changedState = super(state)
         if not ops.forceUpdate
             state = changedState
+        ###
         # update the classes on the button if it exists
+        ###
         if not @elm
             return state
         for s,v of state
@@ -1993,16 +2415,18 @@ class ElectivesButton extends Electives
         if @elm
             return @elm
         @$elm = $("""<div class="electives-block" subject="#{@subject}" number="#{@number}">
-		<div class="title">#{@title}</div>
-		<div class="requirement">At least #{@requirements.units} #{@requirements.unitLabel}</div>
-		<div class="courses-list"><span class="droptext">Drop Here to Add Courses</span></div>
-	</div>""")
+                <div class="title">#{@title}</div>
+                <div class="requirement">At least #{@requirements.units} #{@requirements.unitLabel}</div>
+                <div class="courses-list"><span class="droptext">Drop Here to Add Courses</span></div>
+        </div>""")
         @elm = @$elm[0]
         @elm.course = @
         @$coursesDiv = @$elm.find('.courses-list')
 
+        ###
         # populate with all the courses in our course list, creating buttons
         # if they have none
+        ###
         for hash,course of @courses
             @addCourse(course)
         return @elm
@@ -2013,6 +2437,7 @@ class ElectivesButton extends Electives
             course = @courses[BasicCourse.hashCourse(course)] = new CourseButton(course.data)
         @$coursesDiv.append(course.elm)
         @updateDropTextVisibility()
+        return
 
     removeCourse: (course, ops={detach: true}) ->
         if ops.detach
@@ -2020,18 +2445,22 @@ class ElectivesButton extends Electives
             $elm.detach() if $elm
         super(course)
         @updateDropTextVisibility()
+        return
     removeButton: (ops={detach: true}) ->
         if not @elm
             return
         for course of @courses
             @removeCourse(course, ops)
-        @elm.course = null  #make sure we remove the circular ref so we can be garbage collected
+        ### make sure we remove the circular ref so we can be garbage collected ###
+        @elm.course = null
         @$elm.remove()
         @elm = @$elm = null
         return
     update: (data) ->
         super(data)
+        ###
         # make sure our internal courses list is up to date
+        ###
         @courses = {}
         for elm in @$elm.find('.courses-list').children()
             if elm.course
@@ -2040,12 +2469,16 @@ class ElectivesButton extends Electives
         @$elm.find('.requirement').html "At least #{@requirements.units} #{@requirements.unitLabel}"
         @$elm.attr({@subject, @number})
         @updateDropTextVisibility()
+        return
+    ###
     # hides the drop text if we have children and shows it otherwise
+    ###
     updateDropTextVisibility: ->
         if Object.keys(@courses).length == 0
             @$elm.find('.droptext').show()
         else
             @$elm.find('.droptext').hide()
+        return
 
 class ElectivesButtonEditor extends Electives
     constructor: (data, @manager) ->
@@ -2056,7 +2489,9 @@ class ElectivesButtonEditor extends Electives
         changedState = super(state)
         if not ops.forceUpdate
             state = changedState
+        ###
         # update the classes on the button if it exists
+        ###
         if not @elm
             return state
         for s,v of state
@@ -2084,16 +2519,22 @@ class ElectivesButtonEditor extends Electives
         @$elm.find('.delete-elective').click =>
             if @manager
                 @manager.removeElective(@)
+            return
 
+        ###
         # populate with all the courses in our course list, creating buttons
         # if they have none
+        ###
         for hash,course of @courses
             @addCourse(course)
 
+        ###
         # set up callbacks for when we've been edited
+        ###
         update = (event) =>
             if @manager
                 @manager.updateElectivesButton(@)
+            return
         @$elm.find('.title input').change(update).keyup(-> window.setTimeout(update,0))
         @$elm.find('.requirements input').change(update).keyup(-> window.setTimeout(update,0))
 
@@ -2105,6 +2546,7 @@ class ElectivesButtonEditor extends Electives
             course = @courses[BasicCourse.hashCourse(course)] = new CourseButton(course.data)
         @$coursesDiv.append(course.elm)
         @updateDropTextVisibility()
+        return
 
     removeCourse: (course, ops={detach: true}) ->
         if ops.detach
@@ -2112,12 +2554,14 @@ class ElectivesButtonEditor extends Electives
             $elm.detach() if $elm
         super(course)
         @updateDropTextVisibility()
+        return
     removeButton: (ops={detach: true}) ->
         if not @elm
             return
         for course of @courses
             @removeCourse(course, ops)
-        @elm.course = null  #make sure we remove the circular ref so we can be garbage collected
+        ### make sure we remove the circular ref so we can be garbage collected ###
+        @elm.course = null
         @$elm.remove()
         @elm = @$elm = null
         return
@@ -2126,24 +2570,31 @@ class ElectivesButtonEditor extends Electives
         @$elm.find('.title input').val @title
         @$elm.find('.requirements .input').val @requirements.units
         @updateDropTextVisibility()
+        return
+    ###
     # returns the values of @title and @requirement, updating
     # them if they differ from the values in @elm
+    ###
     getValues: ->
         @title = @$elm.find('.title input').val()
         @requirements.units = @$elm.find('.requirements input').val()
         return super()
+    ###
     # hides the drop text if we have children and shows it otherwise
+    ###
     updateDropTextVisibility: ->
         if Object.keys(@courses).length == 0
             @$elm.find('.droptext').show()
         else
             @$elm.find('.droptext').hide()
+        return
 
 class CoopButtonEditor
     constructor: (@data, @manager) ->
         @hash = @data.id = "#{Math.random().toFixed(8).slice(3)}"
         @getButton()
         @update()
+        return
     getButton: ->
         if @elm
             return @elm
@@ -2168,15 +2619,21 @@ class CoopButtonEditor
         @$elm.find('.delete-elective').click =>
             if @manager
                 @manager.removeCoop(@)
+            return
 
+        ###
         # set up callbacks for when we've been edited
+        ###
         update = (event) =>
             @data['label'] = @$elm.find('.title input').val()
             @data['start-year'] = @$elm.find('[name=startyear]').val()
             @data['end-year'] = @$elm.find('[name=endyear]').val()
             @data['url'] = @$elm.find('[name=infolink]').val()
+            return
 
+        ###
         # text boxes only change when they blur, so also register on keyup
+        ###
         @$elm.find('.title input').change(update).keyup( -> window.setTimeout(update, 0) )
         @$elm.find('[name=infolink]').change(update).keyup( -> window.setTimeout(update, 0) )
         @$elm.find('[name=startyear]')
@@ -2193,11 +2650,14 @@ class CoopButtonEditor
         return
     update: (data) ->
         @data = data if data
+        ###
         # if @data == {}, we want to instantiate the defaults, not undefined
+        ###
         @$elm.find('.title input').val(@data['label'] || '')
         @$elm.find('[name=startyear]').val(@data['start-year'] || 1)
         @$elm.find('[name=endyear]').val(@data['end-year'] || 4)
         @$elm.find('[name=infolink]').val(@data['url'] || '')
+        return
 
 ###
 # Class to hold the state of the current graph.  This object
@@ -2206,13 +2666,16 @@ class CoopButtonEditor
 ###
 class Graph
     constructor: () ->
-        @dirty = true   # whether we've regenerated our adjacency matrices since the last update
+        ### whether we've regenerated our adjacency matrices since the last update ###
+        @dirty = true
         @nodes = {}
         @edges = {}
         @clusters = {}
+        ###
         # list of objects {'start-year': ..., 'end-year': ..., 'label': ..., 'id': ...}
         # coops will show up as the banners attribute of the root graph when converted to Dot
         # format.
+        ###
         @coops = []
     toJSON: (stringify=true) ->
         ret =
@@ -2271,11 +2734,15 @@ class Graph
         @coops = data.coops || []
         return @
     clearAll: ->
-        @dirty = true   # whether we've regenerated our adjacency matrices since the last update
+        ###
+        # whether we've regenerated our adjacency matrices since the last update
+        ###
+        @dirty = true
         @nodes = {}
         @edges = {}
         @clusters = {}
         @coops = []
+        return
 
     addNode: (course, ops={}) ->
         @dirty = true
@@ -2283,33 +2750,43 @@ class Graph
             course: course
             year: ops.year
             term: ops.term
+        return
     removeNode: (course) ->
         @dirty = true
         delete @nodes[course]
+        return
     addEdge: (edge, ops={}) ->
         @dirty = true
         @edges[edge] =
             edge: edge
             properties: ops.properties || {}
+        return
     removeEdge: (edge) ->
         @dirty = true
         delete @edges[edge]
+        return
+    ###
     # @edges and @clusters may be updated dynamically without
     # changing @edges.  This function finds any edges that refer to nodes
     # not in @nodes and removes them
+    ###
     pruneOrphanedEdges: ->
         for hash,edge of @edges
             if (not @nodes[edge.edge[0]]) or (not @nodes[edge.edge[1]])
                 @removeEdge(hash)
+    ###
     # generates edges based on the prereqs
     # of each node.  The generated edges are compared
     # with the existing edges.  If an edge has properties.autoGenerated falsy
     # it is preserved.
+    ###
     generateEdges: (ops={optimize: true}) ->
         originalEdges = @edges
         @edges = {}
 
+        ###
         # find all edges given by prerequisites
+        ###
         for _,node of @nodes
             course = node.course
             if course.prereqs?
@@ -2324,8 +2801,10 @@ class Graph
             numDeleted = 0
             {mat, list} = @_generateAdjacencyMatrix()
             optimizedMat = @_optimizeEdges(mat)
+            ###
             # find everything in our original matrix that isn't
             # in our optimized matrix and delete it
+            ###
             for row,i in mat
                 for v,j in row when v
                     if not optimizedMat[i][j]
@@ -2334,16 +2813,22 @@ class Graph
                         delete @edges[edge]
             console.log numDeleted, 'edges deleted'
 
+        ###
         # now that we have pruned the excess edges,
         # restore the corresponding original edges, since they may have style
         # information/be coreqs, etc.
+        ###
         for hash of @edges
+            ###
             # If this edge existed before, preserve all its original properties,
             # but if this is the first time it is created, keep the default
             # properties (don't override them with undefined)
+            ###
             @edges[hash] = originalEdges[hash] || @edges[hash]
 
+        ###
         # restore any edges that weren't autogenerated that may have been pruned
+        ###
         for hash,edge of originalEdges
             if not edge.properties?.autoGenerated
                 @edges[hash] = edge
@@ -2355,11 +2840,15 @@ class Graph
             subgraph.attrs['rank'] = 'same'
             return subgraph
 
+        ###
         #
         # Start creating the graph
         #
+        ###
         graph = new DotGraph()
+        ###
         # set up the root properties
+        ###
         graph.rootGraph.type = 'digraph'
         graph.rootGraph.attrs['rankdir'] = 'LR'
         if @title
@@ -2367,12 +2856,16 @@ class Graph
             graph.rootGraph.attrs['_title'] = "#{@title}"
             graph.rootGraph.attrs['labelloc'] = "top"
             graph.rootGraph.attrs['labelfontsize'] = 30
+        ###
         # make sure coops show up as an attribute of the root graph
+        ###
         graph.rootGraph.attrs['banners'] = JSON.stringify(@coops)
 
+        ###
         #
         # Initialize each year with 3 terms
         #
+        ###
         yearSubgraphs = {}
         termSubgraphs = {}
         for year in [1..4]
@@ -2383,8 +2876,10 @@ class Graph
                 termSubgraph = createAnonymousSubgraph(yearSubgraph)
                 termSubgraph.attrs['rank'] = 'same'
                 termSubgraphs[year][term] = termSubgraph
+                ###
                 # each term has an invisible node to keep the spacing
                 # this node needs to be added before all others so it doesn't interfere
+                ###
                 marker = "YEAR#{year}TERM#{term}"
                 termSubgraph.nodes[marker] = true
                 graph.nodes[marker] =
@@ -2397,16 +2892,21 @@ class Graph
                         fixedsize: 'false'
                         height: 0
                         width: 1
+        ###
         # add the edges
+        ###
         for _,edge of @edges
             edgeObj = {edge: edge.edge, attrs: {}}
             if edge.properties?.style is 'invis'
                 edgeObj.attrs['style'] = 'invis'
             if edge.properties?.coreq
                 edgeObj.attrs['arrowhead'] = 'none'
-                edgeObj.attrs['weight'] = 5     # coreqs should be placed as near to eachother as possible
+                ### coreqs should be placed as near to eachother as possible ###
+                edgeObj.attrs['weight'] = 5
             graph.edges[edge.edge] = [edgeObj]
+        ###
         # add the nodes
+        ###
         for _,node of @nodes
             course = node.course
             hash = BasicCourse.hashCourse(course)
@@ -2417,20 +2917,28 @@ class Graph
                     _year: node.year
                     shape: 'box'
                     style: 'rounded'
+        ###
         # add all the rank=same subgraphs based on the number of terms are required
+        ###
         for year in [1..4]
             {mat, list} = @_generateAdjacencyMatrix({filterByYear: year})
             levels = @_stratify(mat)
             for termClust,i in levels
-                rankSubgraph = termSubgraphs[year][i+1]     #the term is i+1
+                ### the term is i+1 ###
+                rankSubgraph = termSubgraphs[year][i+1]
                 for index in termClust
                     course = list[index]
-                    rankSubgraph.nodes[course] = true   # subgraphs just have a list of nodes, they never store node attributes
+                    ### subgraphs just have a list of nodes, they never store node attributes ###
+                    rankSubgraph.nodes[course] = true
+        ###
         # add all the clusters
+        ###
         for _,cluster of @clusters
             {year, courses} = cluster
             elective = cluster.cluster
+            ###
             # if we have no children, add ourselves as a regular node
+            ###
             if courses.length is 0
                 subgraph = termSubgraphs[year][1]
                 hash = BasicCourse.hashCourse(elective)
@@ -2444,8 +2952,10 @@ class Graph
                         color: 'invis'
                         fillcolor: 'gray'
                 subgraph.nodes[elective] = true
-            # if we have children, we must create a new group
             else
+                ###
+                # if we have children, we must create a new group
+                ###
                 subgraph = graph.addSubgraph("cluster#{Math.random().toFixed(8).slice(3)}")
                 subgraph.attrs =
                     style: 'rounded,filled'
@@ -2461,17 +2971,21 @@ class Graph
                     graph.nodes[hash].attrs['style'] = 'rounded,filled'
                     graph.nodes[hash].attrs['_inElectivesBlock'] = true
 
+        ###
         # clean up any excess term markers.
         # to ensure proper spacing, an invisible node is placed in
         # each term.  We should cleanup any term that only has the
         # marker node in it, lest we have a bunch of blank columns
         # in our chart.
+        ###
         prevMarker = null
         for year in [1..4]
             for term in [1..3]
                 termSubgraph = termSubgraphs[year][term]
+                ###
                 # each term has an invisible node to keep the spacing
                 # this node needs to be added before all others so it doesn't interfere
+                ###
                 marker = "YEAR#{year}TERM#{term}"
                 if Object.keys(termSubgraph.nodes).length > 1 or term is 1
                     if prevMarker
@@ -2482,9 +2996,13 @@ class Graph
                     graph.removeNode(marker)
                     graph.removeSubgraph(termSubgraph)
 
+        ###
         # We need to size every node manually since viz.js cannot process html labels.
+        ###
         for hash,node of graph.nodes
+            ###
             # invisible nodes should be ignored
+            ###
             if node.attrs['style']?.match(/invis/)
                 node.attrs['label'] = ''
                 continue
@@ -2497,13 +3015,17 @@ class Graph
 
 
     _generateAdjacencyMatrix: (ops={}) ->
+        ###
         # returns 2 if coreq, 1 if truthy and 0 otherwise
+        ###
         adjacencyEntry = (n) ->
             if n is 'coreq'
                 return 2
             return +(!!n)
+        ###
         # returns a row of the adjacency matrix corresponding to
         # the object e's keys
+        ###
         createRow = (e) ->
             return (adjacencyEntry(e[n]) for n in nodeList)
 
@@ -2511,22 +3033,32 @@ class Graph
             nodeList = (n for n of @nodes when @nodes[n].year == ops.filterByYear)
         else
             nodeList = (n for n of @nodes)
+        ###
         # for each node, generate a list of all the out edges it has
+        ###
         outEdges = {}
         for _,e of @edges
             edge = e.edge
             outEdges[edge[0]] = (outEdges[edge[0]] || {})
             outEdges[edge[0]][edge[1]] = true
+            ###
             # keep track if we are a coreq edge
+            ###
             if e.properties?.coreq
                 outEdges[edge[0]][edge[1]] = 'coreq'
+        ###
         # build the actual matrix
+        ###
         ret = (createRow(outEdges[n] || {}) for n in nodeList)
+        ###
         # if there are no nodes we should still return a 2-dim matrix
+        ###
         if ret.length is 0
             ret.push []
         return {mat:ret, list:nodeList}
+    ###
     # computes powers of the adjacency matrix to find the span of each node
+    ###
     _matrixSpan: (mat) ->
         size = mat[0].length
         if size <= 1
@@ -2535,21 +3067,27 @@ class Graph
         for i in [0...iters]
             mat = numeric.add(numeric.dot(mat, mat), mat)
         return numeric.gt(mat, 0)
+    ###
     # returns a pruned adjaency matrix.  If there is more
     # than one route from a->b, only the longer one is kept
+    ###
     _optimizeEdges: (mat) ->
         ret = numeric.clone(mat)
         mat_transpose = numeric.transpose(mat)
         mat_span = @_matrixSpan(mat)
 
         nodes = [0...mat[0].length]
+        ###
         # the idea is, suppose we have a->b->d->c and a->c
         # If node=c, then we have immediate predecessors a,d, but d
         # is in the span of a, so the edge a->c is redundant since
         # there exists a longer path a->..->c
+        ###
         for node in nodes
             predicessors = mat_transpose[node]
+            ###
             # loops through our predicessors
+            ###
             for v,i in predicessors when (v > 0 and i != node)
                 span = mat_span[i]
                 existsOtherRoute = false
@@ -2560,6 +3098,7 @@ class Graph
                 if existsOtherRoute
                     ret[i][node] = 0
         return ret
+    ###
     # returns a list of lists of nodes
     # where if a->b then a is in a lower
     # level than b. We will attempt
@@ -2569,10 +3108,13 @@ class Graph
     #
     # coreqs arrows are first collapsed into a single node so they
     # should always end up on the same level
+    ###
     _stratify: (mat, maxLevels=3, coreqsOnSameLevel=true) ->
         if mat[0].length is 0
             return []
+        ###
         # puts everything of a particular rank on its own array
+        ###
         unflatten = (ranks) ->
             levels = ([] for i in [0...3])
             for rank,i in ranks
@@ -2587,16 +3129,22 @@ class Graph
             incrementRanks = (nodes) ->
                 for v,i in nodes when v > 0
                     ranks[i] += 1
+            ###
             # `nodes` is a boolean list.  forwardSpan generates a boolean
             # list of all nodes reachable in one step by the ones listed in `nodes`
+            ###
             forwardSpan = (nodes) ->
                 ret = (false for i in [0...numNodes])
                 for v,i in nodes when v > 0
+                    ###
                     # mat_span[i] is precisely the nodes reachable by v
+                    ###
                     numeric.oreq(ret, mat_span[i])
                 return ret
 
+            ###
             # iteratively bump up the level of each relevant node
+            ###
             for level in [0...maxLevels-1]
                 nodesOfCurrentLevel = (l == level for l in ranks)
                 needUpdating = forwardSpan(nodesOfCurrentLevel)
@@ -2607,6 +3155,7 @@ class Graph
         if not coreqsOnSameLevel
             return unflatten(stratify(mat, maxLevels))
 
+        ###
         # if we want coreqs on the same levels, we do the following:
         #     * identify all connected components of coreqs
         #     * pick a representative from each component
@@ -2615,10 +3164,13 @@ class Graph
         #     to a single node (while preserving edges)
         #     * rank in the usual way
         #     * assign ranks to the non-representatives
+        ###
 
+        ###
         # pass in a mask specifying true/false for
         # whether each row/column should zeroed in the returned
         # matrix.
+        ###
         zeroedSubmatrix = (mat, mask) ->
             mat = numeric.clone(mat)
             for m,i in mask
@@ -2628,8 +3180,10 @@ class Graph
                     numeric.muleq(mat[i], mask)
             return mat
 
+        ###
         # find the connected components of coreqs so we can pick a
         # representative from each one
+        ###
         coreqAdj = numeric.clone(mat)
         coreqAdj = numeric.eq(coreqAdj,2)
         coreqAdj = numeric.or(coreqAdj, numeric.transpose(coreqAdj))
@@ -2638,29 +3192,39 @@ class Graph
         mask = (true for _ in [0...coreqAdj[0].length])
         reps = (v for v in [0...coreqAdj[0].length])
         for row,i in coreqAdj when mask[i]
+            ###
             # for each row, mask everything that appears except for ourselves.
             # This forces one representative from each connected component.
+            ###
             for val,j in row when (i != j and val)
                 mask[j] = false
                 reps[j] = i
 
         oreqRow = (mat, row1, row2) ->
             numeric.oreq(mat[row1], mat[row2])
+            return
         oreqCol = (mat, col1, col2) ->
             for row in mat
                 row[col1] |= row[col2]
+            return
 
         collapsedMat = numeric.clone(mat)
         for rep,i in reps
+            ###
             # add all the outgoing arrows of anything
             # in our connected component.
+            ###
             oreqRow(collapsedMat, rep, i)
+            ###
             # add all the incoming arrows of anything
             # in our connected component.
+            ###
             oreqCol(collapsedMat, rep, i)
+        ###
         # eliminate any self loops that were necessarily introduced
         # because every rep that is part of a non-trivial component
         # points to something else in that component.
+        ###
         for i in [0...collapsedMat[0].length]
             collapsedMat[i][i] = 0
         repMat = zeroedSubmatrix(collapsedMat, mask)
@@ -2681,15 +3245,20 @@ class Graph
 class DownloadManager
     DOWNLOAD_SCRIPT: 'download.php'
     constructor: (@filename, @data, @mimetype='application/octet-stream') ->
-    # a null status means no checks have been performed on whether that method will work
+        ###
+        # a null status means no checks have been performed on whether that method will work
+        ###
         @downloadMethodAvailable =
             serverBased: null
             blobBased: null
             dataUriBased: null
+        return
 
+    ###
     # run through each download method and if it works,
     # use that method to download the graph. @downloadMethodAvailable
     # starts as all null and will be set to true or false after a test has been run
+    ###
     download: () =>
         if @downloadMethodAvailable.serverBased == null
             @testServerAvailability(@download)
@@ -2711,6 +3280,7 @@ class DownloadManager
         if @downloadMethodAvailable.dataUriBased == true
             @downloadDataUriBased()
             return
+        return
 
     testServerAvailability: (callback = ->) =>
         $.ajax
@@ -2722,9 +3292,12 @@ class DownloadManager
                 else
                     @downloadMethodAvailable.serverBased = false
                 callback.call(this)
+                return
             error: (data, status, response) =>
                 @downloadMethodAvailable.serverBased = false
                 callback.call(this)
+                return
+        return
 
     testBlobAvailability: (callback = ->) =>
         if (window.webkitURL or window.URL) and (window.Blob or window.MozBlobBuilder or window.WebKitBlobBuilder)
@@ -2732,41 +3305,56 @@ class DownloadManager
         else
             @downloadMethodAvailable.blobBased = true
         callback.call(this)
+        return
 
     testDataUriAvailability: (callback = ->) =>
         # not sure how to check for this ...
         @downloadMethodAvailable.dataUriBased = true
         callback.call(this)
+        return
 
     downloadServerBased: () =>
         input1 = $('<input type="hidden"></input>').attr({name: 'filename', value: @filename})
+        ###
         # encode our data in base64 so it doesn't get mangled by post (i.e., so '\n' to '\n\r' doesn't happen...)
+        ###
         input2 = $('<input type="hidden"></input>').attr({name: 'data', value: btoa(@data)})
         input3 = $('<input type="hidden"></input>').attr({name: 'mimetype', value: @mimetype})
+        ###
         # target=... is set to our hidden iframe so we don't change the url of our main page
+        ###
         form = $('<form action="'+@DOWNLOAD_SCRIPT+'" method="post" target="downloads_iframe"></form>')
         form.append(input1).append(input2).append(input3)
 
+        ###
         # submit the form and hope for the best!
+        ###
         form.appendTo(document.body).submit().remove()
+        return
 
     downloadBlobBased: (errorCallback=@download) =>
         try
+            ###
             # first convert everything to an arraybuffer so raw bytes in our string
             # don't get mangled
+            ###
             buf = new ArrayBuffer(@data.length)
             bufView = new Uint8Array(buf)
             for i in [0...@data.length]
                 bufView[i] = @data.charCodeAt(i) & 0xff
 
             try
+                ###
                 # This is the recommended method:
+                ###
                 blob = new Blob(buf, {type: 'application/octet-stream'})
             catch e
+                ###
                 # The BlobBuilder API has been deprecated in favour of Blob, but older
                 # browsers don't know about the Blob constructor
                 # IE10 also supports BlobBuilder, but since the `Blob` constructor
                 # also works, there's no need to add `MSBlobBuilder`.
+                ###
                 bb = new (window.WebKitBlobBuilder || window.MozBlobBuilder)
                 bb.append(buf)
                 blob = bb.getBlob('application/octet-stream')
@@ -2775,16 +3363,22 @@ class DownloadManager
 
             downloadLink = $('<a></a>').attr({href: url, download: @filename})
             $(document.body).append(downloadLink)
+            ###
             # trigger the file save dialog
+            ###
             downloadLink[0].click()
+            ###
             # clean up when we're done
+            ###
             downloadLink.remove()
         catch e
             @downloadMethodAvailable.blobBased = false
             errorCallback.call(this)
+        return
 
     downloadDataUriBased: () =>
         document.location.href = "data:application/octet-stream;base64," + btoa(@data)
+        return
 
 ###
 # utilities for client-side reading files
@@ -2796,7 +3390,7 @@ FileHandler =
         data = decodeURIComponent(dataURI.substr(content + 1))
         data = atob(data) if /;\s*base64\s*[;,]/.test(meta)
         data = decodeURIComponent(escape(data)) if /;\s*charset=[uU][tT][fF]-?8\s*[;,]/.test(meta)
-        data
+        return data
 
     handleFiles: (files) ->
         file = files[0]
@@ -2805,17 +3399,21 @@ FileHandler =
         reader.onprogress = FileHandler.handleReaderProgress
         reader.onloadend = FileHandler.handleReaderLoadEnd
         reader.readAsDataURL file
+        return
 
     handleReaderProgress: (evt) ->
         percentLoaded = (evt.loaded / evt.total) if evt.lengthComputable
+        return
 
     handleReaderLoadEnd: (evt) ->
         if evt.target.error
             throw new Error(evt.target.error + " Error Code: " + evt.target.error.code + " ")
             return
         data = FileHandler.decodeDataURI(evt.target.result)
+        ###
         # process the data depending on the file format.  We're going
         # to do this by trial and error, assuming different formats
+        ###
         try
             try
                 jsonData = JSON.parse(data)
@@ -2829,6 +3427,7 @@ FileHandler =
         catch e
             console.log e
             throw new Error("Not valid JSON or SVG (containing <coursemapper>JSON</coursemapper>) data")
+        return
 
     dragEnter: (evt) ->
         $('#dropcontainer').show()
@@ -2836,6 +3435,7 @@ FileHandler =
         $('#forkme').hide()
         evt.stopPropagation()
         evt.preventDefault()
+        return
     dragExit: (evt) ->
         $('#dropcontainer').hide()
         $('#dropbox').removeClass('dropbox-hover')
@@ -2844,6 +3444,7 @@ FileHandler =
         if evt?
             evt.stopPropagation()
             evt.preventDefault()
+        return
     dragOver: (evt,b) ->
         if not evt?
             $('#dropbox').removeClass('dropbox-hover')
@@ -2851,11 +3452,15 @@ FileHandler =
         $('#dropbox').addClass('dropbox-hover')
         evt.stopPropagation()
         evt.preventDefault()
+        return
     drop: (evt) ->
         evt.stopPropagation()
         evt.preventDefault()
         files = evt.dataTransfer.files
         count = files.length
         FileHandler.handleFiles files if count > 0
+        ###
         # fake the exit of a drag event...
+        ###
         FileHandler.dragExit()
+        return

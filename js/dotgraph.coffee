@@ -15,8 +15,8 @@
 ####
 
 astToStr = (ast, indentLevel=0, indentChar='\t') ->
-    # enclose a string in quotes if it contains any non-letters or if it is a keyword
-    # if the value == null, return double quotes
+    ### enclose a string in quotes if it contains any non-letters or if it is a keyword
+    if the value == null, return double quotes ###
     escape = (s) ->
         if not s?
             return "\"\""
@@ -85,34 +85,36 @@ astToStr = (ast, indentLevel=0, indentChar='\t') ->
 # may be queried for attributes
 ###
 class DotGraph
+    ###
     # returns an 8 digit random string that can be used
     # to give anonymous graphs unique ids.
+    ###
     giveRandomKey = ->
         return Math.random().toFixed(8).slice(2)
-    # adds any attributes of obj2 that are missing from obj1 to obj1
+    ### adds any attributes of obj2 that are missing from obj1 to obj1 ###
     mergeLeftNoOverried = (obj1, obj2) ->
         for k,v of obj2
             if not obj1[k]?
                 obj1[k] = v
         return obj1
-    # adds every attribute from obj2 to obj1 overriding ones that already exist in obj1
+    ### adds every attribute from obj2 to obj1 overriding ones that already exist in obj1 ###
     mergeLeftOverried = (obj1, obj2) ->
         for k,v of obj2
             obj1[k] = v
         return obj1
-    # shallow copy an object
+    ### shallow copy an object ###
     copy = (obj) ->
         ret = {}
         for k,v of obj
             ret[k]=v
         return ret
-    # copy an object two levels deep
+    ### copy an object two levels deep ###
     doubleCopy = (obj) ->
         ret = {}
         for k,v of obj
             ret[k]=copy(v)
         return ret
-    # takes an attr_list from a graphviz dot ast and turns it into a regular object
+    ### takes an attr_list from a graphviz dot ast and turns it into a regular object ###
     attrListToObj = (list) ->
         ret = {}
         for attr in list
@@ -133,7 +135,7 @@ class DotGraph
         toString: ->
             return @id
 
-    # keep the prototype accessible from the outside world
+    ### keep the prototype accessible from the outside world ###
     'DotSubgraph': DotSubgraph
 
     ###***************************************
@@ -144,7 +146,7 @@ class DotGraph
         @edges = {}
         @graphs = {}
         @rootGraph = new DotSubgraph()
-    # walks the current ast and populates @nodes, @edges, and @graphs
+    ### walks the current ast and populates @nodes, @edges, and @graphs  ###
     walk: (ast=@ast) ->
         walk = (tree, state={node:{}, edge:{}, graph:{}}, currentParentGraph) =>
             if tree instanceof Array
@@ -154,52 +156,68 @@ class DotGraph
                 when 'graph', 'digraph', 'subgraph'
                     oldParentGraph = currentParentGraph
                     currentParentGraph = new DotSubgraph(tree.id || null, tree.type, currentParentGraph)
+                    ###
                     # when a subgraph of the same name as an already defined subgraph is mentioned,
                     # it is considered an extension of the original definition--i.e., it doesn't
                     # override the previous definition, so just continue on as if nothing ever happened
+                    ###
                     if @graphs[currentParentGraph]?
                         currentParentGraph = @graphs[currentParentGraph]
                     if oldParentGraph
-                        # every graph should know all its child graphs
+                        ### every graph should know all its child graphs ###
                         oldParentGraph.graphs[currentParentGraph] = currentParentGraph
                     @graphs[currentParentGraph] = currentParentGraph
                     if tree.type in ['graph', 'digraph']
                         @rootGraph = currentParentGraph
                         @rootGraph.strict = tree.strict
+                    ###
                     # when walking a subgraph, we have a new state that inherits
                     # anything lying around from the old state
+                    ###
                     state = doubleCopy(state)
                     walk(tree.children, state, currentParentGraph)
                 when 'node_stmt'
                     id = tree.node_id.id
                     @nodes[id] = @nodes[id] || {attrs: {}}
+                    ###
                     # any attributes that are specified directly with this node override
                     # the attributes previously specified for a node
+                    ###
                     mergeLeftOverried(@nodes[id].attrs, attrListToObj(tree.attr_list))
+                    ###
                     # the global node attributes don't overried specified attributes
+                    ###
                     mergeLeftNoOverried(@nodes[id].attrs, state.node)
 
+                    ###
                     # let's also make sure that we keep track of which subgraph
                     # has this node as a parent; we don't need to store the attr informatation
                     # though, just the nodes existance
+                    ###
                     currentParentGraph.nodes[id] = true
                 when 'attr_stmt'
+                    ###
                     # when we set a node, edge, or graph attribute using "node [attrs]"
                     # syntax, it should affect everything, globally, from here on out,
                     # so we really do want to update by ref
+                    ###
                     mergeLeftOverried(state[tree.target], attrListToObj(tree.attr_list))
                 when 'edge_stmt'
+                    ###
                     # first make sure all the nodes are added
+                    ###
                     for node in tree.edge_list
                         if node.type is 'node_id'
                             walk({type: 'node_stmt', node_id: node, attr_list: []}, state, currentParentGraph)
                         else if node.type is 'subgraph'
                             walk(node, state, currentParentGraph)
+                    ###
                     # now let's build up our edges
                     # TODO: this doesn't actually get all the nodes we're supposed to point to...if
                     # you define a subgraph twice with the same name, it needs to be combined before
                     # computing it's child nodes.  e.g. "x->subgraph a {y}; subgraph a {z}"
                     # should produce edges x->y and x->z.  Not sure of an easy fix atm...
+                    ###
                     heads = getAllNodes(tree.edge_list[0])
                     for node in tree.edge_list.slice(1)
                         tails = getAllNodes(node)
@@ -210,14 +228,18 @@ class DotGraph
                                 @edges[edge] = @edges[edge] || []
                                 @edges[edge].push {edge: edge, attrs: attrs}
                         heads = tails
+            ###
             # any attributes that were set to our graph state nomatter where
             # in the AST should be applied to the current parent.  currentParentGraph
             # is reassigned every time we pass to a subgraph.
+            ###
             currentParentGraph.attrs = state.graph
             return
 
+        ###
         # walks a tree and returns a list of all nodes, disregarding
         # all other elements and attributes
+        ###
         getAllNodes = (tree) ->
             ret = []
             if tree instanceof Array
@@ -274,9 +296,11 @@ class DotGraph
                 type: graph.type
                 id: if graph.autogeneratedId then null else graph.id
                 children: []
+            ###
             # we need to list all clusters first, then other subgraphs
             # this way clusters take priority when a cluster's children
             # belong to more than one rankset
+            ###
             unaddedSubgraphs = []
             for k,v of graph.graphs
                 if k.slice(0,7) is 'cluster'
@@ -299,17 +323,22 @@ class DotGraph
 
         root = genSubgraphAst(@rootGraph)
         root.strict = @strict if @strict
+        ###
         # append all the subgraphs fist, then the nodes, then the edges, then the attributes
+        ###
         root.children = root.children || []
         for k,v of @nodes
             root.children.push genNodeAst(k,v)
         for k,v of @edges
+            ###
             # each element of @edges is a list of edges, so add each of them
+            ###
             for e in v
                 root.children.push genEdgesAst(e)
 
         return root
-    # adds a subgraph whose parent is @rootGraph
+
+    ### adds a subgraph whose parent is @rootGraph ###
     addSubgraph: (id, parent=@rootGraph) ->
         subgraph = new DotSubgraph(id)
         subgraph.parent = parent
@@ -353,8 +382,10 @@ class XDotGraph extends DotGraph
             else
                 ret.push -l
         return ret
+    ###
     # an object with an appropriate toString function
     # so we can convert our graphs back to text form.
+    ###
     class Edge
         constructor: (val, NEGATE_Y_COORD=true, hasArrowhead=true) ->
             @type = 'edge'
@@ -362,13 +393,13 @@ class XDotGraph extends DotGraph
             @arrow = null
             val = toFloatList(val)
             if hasArrowhead
-                # arrow pos are of the form "'e',arrowTargetx,arrowTargety startx,starty  <triplets of bzCurve xy-coords>, "
+                ### arrow pos are of the form "'e',arrowTargetx,arrowTargety startx,starty  <triplets of bzCurve xy-coords>, " ###
                 
-                # get rid of 'e'
+                ### get rid of 'e' ###
                 val.shift()
-                # arrowTargets
+                ### arrowTargets ###
                 arrowTarget = val.splice(0,2)
-                # origin
+                ### origin ###
                 @origin = if NEGATE_Y_COORD then negateYs(val.splice(0,2)) else val.splice(0,2)
 
                 controlPoints = []
@@ -396,12 +427,13 @@ class XDotGraph extends DotGraph
             points = points.concat @arrow.slice(-2)
 
             return "e,#{(points[i]+','+points[i+1] for i in [0...points.length] by 2).join(' ')}"
-
-    dpi: 72     # It seems like this is the value that works even though the docs say 96....
-    NEGATE_Y_COORD: false    # if you're drawing in a conventional environment like canvas or svg, you expect the positve y axis to point down
+    ### It seems like this is the value that works even though the docs say 96.... ###
+    dpi: 72
+    ### if you're drawing in a conventional environment like canvas or svg, you expect the positve y axis to point down ###
+    NEGATE_Y_COORD: false
     walk: ->
         super()
-        # pre-process all edge and node attrs
+        ### pre-process all edge and node attrs ###
         processAttrs = (graph) =>
             if not graph?
                 return
@@ -419,14 +451,17 @@ class XDotGraph extends DotGraph
                 processAttrs(g)
             return
         processAttrs(@)
+        return
 
+    ###
     # recognizes keyword attrs like pos, height, etc.
     # and will parse their arguments and return the correct type
     # accordingly.  Does nothing if attr is not recognized
+    ###
     parseAttr: (attr, val) ->
         if not val
             return null
-        # if we aren't a string, we've already been parsed, and there's no need to parse again
+        ### if we aren't a string, we've already been parsed, and there's no need to parse again ###
         if not (typeof val == 'string')
             return val
         switch attr
@@ -436,18 +471,18 @@ class XDotGraph extends DotGraph
                 val = toFloatList(val)
                 if @NEGATE_Y_COORD
                     val = negateYs(val)
-                    # if we're a bounding box, we need to switch around our coords, 'cause our lower left and upper right are upsidedown
+                    ### if we're a bounding box, we need to switch around our coords, 'cause our lower left and upper right are upsidedown ###
                     if val.length > 2
                         tmp = val[1]
                         val[1] = val[3]
                         val[3] = tmp
                 return val
             when 'pos'
-                # could be x,y-coords for a node pos, or a list for an arrow pos
+                ### could be x,y-coords for a node pos, or a list for an arrow pos ###
                 if val.charAt(0) is 'e'
                     return new Edge(val, @NEGATE_Y_COORD)
                 else
-                    #XXX heuristic: if we have more than 2 values, we assume that we're an edge that doesn't have an arrowhead
+                    ###XXX heuristic: if we have more than 2 values, we assume that we're an edge that doesn't have an arrowhead ###
                     if val.match(/,/g)?.length > 1
                         return new Edge(val, @NEGATE_Y_COORD, false)
                     else
