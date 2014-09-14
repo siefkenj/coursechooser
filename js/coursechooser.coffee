@@ -434,7 +434,7 @@ $(document).ready ->
             # clone our svg.  We don't want these inlined styles to be persistent after we've saved
             ###
             clonedSvg = window.courseManager.svgManager.svgGraph.svg.cloneNode(true)
-            
+
             ###
             # we don't wany any highlight's or selection to show up when our
             # styles are inlined.  Unfortunately, we cannot use jQuery's removeClass
@@ -646,7 +646,7 @@ $(document).ready ->
                 console.log 'could no load local storage data'
         return
     window.setTimeout(timeoutFunc, 0)
-        
+
 
     ###
     # we'd like to show up on the correct tab when we relaod with a hash
@@ -899,7 +899,11 @@ class SVGGraphManager
         return
     removeClass = (elm, cls) ->
         oldCls = elm.getAttribute('class')
-        newCls = (c for c in oldCls.split(/\s+/) when c isnt cls)
+        #newCls = (c for c in oldCls.split(/\s+/) when c isnt cls)
+        newCls = []
+        for c in oldCls.split(/\s+/)
+            if c isnt cls
+                newCls.push c
         elm.setAttribute('class', newCls.join(' '))
         return
     sanitizeId = (str) ->
@@ -1728,7 +1732,7 @@ class CourseManager
             @updateCourseState(button, state)
             return
         return
-    
+
     ###
     # computes an updated state that cycles from none -> required -> elective -> none
     # Does not specify selected or prereq
@@ -1787,6 +1791,7 @@ class CourseManager
     # finishes. (the ajax call is only made once, so call this function as often as you like)
     ###
     loadSubjectData: (subject, callback, ops={}) ->
+        #console.log 'loading dat', @loadingStatus[subject], subject, ops
         @onSubjectLoadedCallbacks[subject] = @onSubjectLoadedCallbacks[subject] || []
         @onSubjectLoadedCallbacks[subject].push callback
         doAllCallbacks = =>
@@ -1814,7 +1819,22 @@ class CourseManager
             success: @courseDataLoaded
             error: [(=> @loadingStatus[subject] = 'failed'), (ops.error || error)]
             complete: doAllCallbacks
-        $.ajax ajaxArgs
+        ###
+        # make the ajax call, but afterwards check on successful calls
+        # always mark that subject as being loaded.  This prevents
+        # subjects that contain no data from being stuck in an infinite
+        # loading loop.
+        ###
+        $.ajax(ajaxArgs).always (data, status, jsXHR) =>
+            if status == 'success'
+                @loadedSubjects[subject] = true
+                ###
+                # special case check the situation where data was loaded
+                # but is an empty array. Throw an error in this case.
+                ####
+                if data?.length == 0
+                    ops.error?()
+            return
         return
 
     courseDataLoaded: (data, textState, jsXHR) =>
@@ -2790,8 +2810,10 @@ class Graph
         for _,node of @nodes
             course = node.course
             if course.prereqs?
-                prereqs = (BasicCourse.hashCourse(c) for c in PrereqUtils.flattenPrereqs(course.prereqs))
-                for p in prereqs
+                #prereqs = (BasicCourse.hashCourse(c) for c in PrereqUtils.flattenPrereqs(course.prereqs))
+                #for p in prereqs
+                for c in PrereqUtils.flattenPrereqs(course.prereqs)
+                    p = BasicCourse.hashCourse(c)
                     if @nodes[p]
                         edge = [p, BasicCourse.hashCourse(course)]
                         @edges[edge] =
@@ -3030,9 +3052,11 @@ class Graph
             return (adjacencyEntry(e[n]) for n in nodeList)
 
         if ops.filterByYear?
-            nodeList = (n for n of @nodes when @nodes[n].year == ops.filterByYear)
+            #nodeList = (n for n of @nodes when @nodes[n].year == ops.filterByYear)
+            nodeList = Object.keys(@nodes).filter( (n) => @nodes[n].year == ops.filterByYear )
         else
-            nodeList = (n for n of @nodes)
+            #nodeList = (n for n of @nodes)
+            nodeList = Object.keys(@nodes)
         ###
         # for each node, generate a list of all the out edges it has
         ###
@@ -3189,8 +3213,10 @@ class Graph
         coreqAdj = numeric.or(coreqAdj, numeric.transpose(coreqAdj))
         coreqAdj = @_matrixSpan(coreqAdj)
 
-        mask = (true for _ in [0...coreqAdj[0].length])
-        reps = (v for v in [0...coreqAdj[0].length])
+        #mask = (true for _ in [0...coreqAdj[0].length])
+        mask = Array.apply(null, Array(coreqAdj[0].length)).map( -> true )
+        #reps = (v for v in [0...coreqAdj[0].length] by 1)
+        reps = Array.apply(null, Array(coreqAdj[0].length)).map( (_,i) -> i )
         for row,i in coreqAdj when mask[i]
             ###
             # for each row, mask everything that appears except for ourselves.
