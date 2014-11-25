@@ -18,10 +18,15 @@
     along with CourseChooser.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-var BasicCourse, CoopButtonEditor, CourseButton, CourseManager, CourseStateButton, CourseUtils, DownloadManager, Electives, ElectivesButton, ElectivesButtonEditor, FileHandler, Graph, PrereqUtils, SVGGraphManager, attachedToDom, dupObject, escapeJSON, htmlEncode, htmlUnencode, localStorageWrapper, objKeysEqual, objToString, objValsToArray, onPreviewPageShow, parseCourseListString, parseUrlHash, prepareNavMenu, prepareWelcomePage, printInstructions, reparent, showPage, strWidthInEn, symmetricDiffObjects, titleCaps, updatePreview, updateWelcomePage,
+/* GLOBAL VARIABLES*/
+
+var BasicCourse, CoopButtonEditor, CourseButton, CourseManager, CourseStateButton, CourseUtils, DownloadManager, Electives, ElectivesButton, ElectivesButtonEditor, FileHandler, Graph, PrereqUtils, SUBJECT_LIST_URL, SVGGraphManager, attachedToDom, dupObject, escapeJSON, htmlEncode, htmlUnencode, loadSubjectList, localStorageWrapper, normalizeCourse, objKeysEqual, objToString, objValsToArray, onPreviewPageShow, parseCourseListString, parseUrlHash, prepareNavMenu, prepareWelcomePage, printInstructions, reparent, showPage, strWidthInEn, symmetricDiffObjects, titleCaps, updatePreview, updateWelcomePage,
   __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+
+SUBJECT_LIST_URL = "pagegrab.php?url=http://dev.uvic.ca/assets/coursemapper/courses.php";
+COURSE_DATA_URL = "pagegrab.php?url=http://dev.uvic.ca/assets/coursemapper/courses.php?subject=";
 
 objToString = function(obj) {
   var p, ret, v;
@@ -564,14 +569,87 @@ titleCaps = function(str) {
 };
 
 /*
-# parses a string list of courses and returns an object {coures:[...], unknownCoures:[...], subjects:{...}}
+# Normalizes the internal data structure of a course. Specifically,
+# if format_version == 1.0, the prereqs are converted from
+# prereqs: [{
+#   courses: [ ... ]
+#   data: [ ... ]
+#   op: "and" || "or"
+# }]
+#
+# where "data" contains additional operators (for example a nested set of
+# ands and ors) and "courses" contains a flat list
+# of courses used with the current operator
+#
+# to the format
+#
+# prereqs: {
+#   data: [ ... ]
+#   op: "and" || "or"
+# }
+#
+# where data is a list containing courses and operators.
+*/
+
+
+normalizeCourse = function(course) {
+  var normalize, uneeded, _i, _len, _ref;
+  normalize = function(e) {
+    /* recursively apply ourselves to each element if we are an array*/
+
+    var uneeded, _i, _len, _ref;
+    if (e instanceof Array) {
+      return e.map(normalize).filter(function(e) { return e !== null; });
+    }
+    /* if we are an operator, combine the "courses" and "data" attributes*/
+
+    if (e.op) {
+      e.data = e.data.concat(e.courses || []).map(normalize);
+    }
+    /* delete some uneeded attributes*/
+
+    _ref = ["courses", "course", "class", "id", "parentPrereq", "parentLevel"];
+    for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+      uneeded = _ref[_i];
+      delete e[uneeded];
+    }
+    /* if the prereq doesn't have a number, it is a non-course prereq (e.g. grade 12 math).
+     * just move along in this case */
+    if ('number' in e && e.number === null) {
+      return null;
+    }
+    return e;
+  };
+  switch (course.format_version) {
+    case "1.0":
+      if (course.prereqs.length > 0) {
+        course.prereqs = normalize(course.prereqs[0]);
+      } else {
+        course.prereqs = null;
+      }
+      course.from_format_version = course.format_version;
+      /* delete some uneeded attributes*/
+
+      _ref = ["format_version", "class", "id"];
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        uneeded = _ref[_i];
+        delete course[uneeded];
+      }
+      return course;
+    default:
+      return course;
+  }
+};
+
+/*
+# parses a string list of courses and returns an object {course:[...], unknownCoures:[...], subjects:{...}}
 # we parse in an extremely tolerant way. The string
 #     math100,math 102, math 104, "math 202", engl 344,355, 295
-# is paresed as the coureses math 100, math 102, mah 104, math 202, engl 344, engl 355, engl 295
+# is paresed as the courses math 100, math 102, mah 104, math 202, engl 344, engl 355, engl 295
 # The string
 #    math,engl
 # is parsed as the subjects math, engl
-# unknownCoures is a list of coures numbers whose subject could not be determined
+# unknownCoures is a list of course numbers whose subject could not be determined
 */
 
 
@@ -718,6 +796,7 @@ $(document).ready(function() {
   departmentList.combobox('activate', function() {
     return $('#show-courses').click();
   });
+  loadSubjectList($('#department-list'));
   $('#tabs,.tabs').tabs();
   /*
   # location.hash could have the form '#hash?other,stuff' so filter it out!
@@ -1180,6 +1259,35 @@ $(document).ready(function() {
     window.onhashchange();
   }
 });
+
+/*
+# Load the subjects list as a JSON and put those subjects
+# as the options in selectElm
+*/
+
+
+loadSubjectList = function(selectElm) {
+  var ajaxArgs, dataLoaded;
+  dataLoaded = function(data, textState, jsXHR) {
+    var d, _i, _len, _results;
+    selectElm.empty();
+    _results = [];
+    for (_i = 0, _len = data.length; _i < _len; _i++) {
+      d = data[_i];
+      _results.push(selectElm.append("<option value='" + d.code + "'>" + d.code + "</option>"));
+    }
+    return _results;
+  };
+  ajaxArgs = {
+    url: SUBJECT_LIST_URL,
+    dataType: 'json',
+    success: dataLoaded,
+    error: function() {
+      return console.log("Error: could not load subject list from '" + SUBJECT_LIST_URL + "'");
+    }
+  };
+  $.ajax(ajaxArgs);
+};
 
 prepareWelcomePage = function() {
   var $elm, $link, elm, makeLinkShow, _i, _len, _ref;
@@ -2923,7 +3031,7 @@ CourseManager = (function() {
       throw e;
     };
     ajaxArgs = {
-      url: "course_data/" + subject + ".json",
+      url: COURSE_DATA_URL + subject,
       dataType: 'json',
       success: this.courseDataLoaded,
       error: [
@@ -2962,7 +3070,7 @@ CourseManager = (function() {
     for (_i = 0, _len = data.length; _i < _len; _i++) {
       c = data[_i];
       hash = BasicCourse.hashCourse(c);
-      this.courseData[hash] = c;
+      this.courseData[hash] = normalizeCourse(c);
       /*
       # when the data was scraped it may contain html escape characters like '&amp;'
       # remove all of these so they won't show up anywhere accidentally.

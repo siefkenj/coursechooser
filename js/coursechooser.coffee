@@ -17,6 +17,10 @@
     along with CourseChooser.  If not, see <http://www.gnu.org/licenses/>.
 ###
 
+
+### GLOBAL VARIABLES ###
+SUBJECT_LIST_URL = "course_data/subject_list.json"
+
 objToString = (obj) ->
     ret = '{ '
     for p,v of obj
@@ -198,14 +202,65 @@ titleCaps = (str) ->
     return ret
 
 ###
-# parses a string list of courses and returns an object {coures:[...], unknownCoures:[...], subjects:{...}}
+# Normalizes the internal data structure of a course. Specifically,
+# if format_version == 1.0, the prereqs are converted from
+# prereqs: [{
+#   courses: [ ... ]
+#   data: [ ... ]
+#   op: "and" || "or"
+# }]
+#
+# where "data" contains additional operators (for example a nested set of
+# ands and ors) and "courses" contains a flat list
+# of courses used with the current operator
+#
+# to the format
+#
+# prereqs: {
+#   data: [ ... ]
+#   op: "and" || "or"
+# }
+#
+# where data is a list containing courses and operators.
+###
+normalizeCourse = (course) ->
+    normalize = (e) ->
+        ### recursively apply ourselves to each element if we are an array ###
+        if e instanceof Array
+            return e.map(normalize)
+        ### if we are an operator, combine the "courses" and "data" attributes ###
+        if e.op
+            e.data = e.data.concat(e.courses || []).map(normalize)
+        ### delete some uneeded attributes ###
+        for uneeded in ["courses", "course", "class", "id", "parentPrereq", "parentLevel"]
+            delete e[uneeded]
+        return e
+
+
+    switch course.format_version
+        when "1.0"
+            if course.prereqs.length > 0
+                course.prereqs = normalize(course.prereqs[0])
+            else
+                course.prereqs = null
+            course.from_format_version = course.format_version
+            ### delete some uneeded attributes ###
+            for uneeded in ["format_version", "class", "id"]
+                delete course[uneeded]
+            return course
+        else
+            return course
+
+
+###
+# parses a string list of courses and returns an object {course:[...], unknownCoures:[...], subjects:{...}}
 # we parse in an extremely tolerant way. The string
 #     math100,math 102, math 104, "math 202", engl 344,355, 295
-# is paresed as the coureses math 100, math 102, mah 104, math 202, engl 344, engl 355, engl 295
+# is paresed as the courses math 100, math 102, mah 104, math 202, engl 344, engl 355, engl 295
 # The string
 #    math,engl
 # is parsed as the subjects math, engl
-# unknownCoures is a list of coures numbers whose subject could not be determined
+# unknownCoures is a list of course numbers whose subject could not be determined
 ###
 parseCourseListString = (val) ->
     subjects = {}
@@ -303,6 +358,7 @@ $(document).ready ->
     $('button').button()
     departmentList = $('#department-list').combobox().combobox('value', '')
     departmentList.combobox('activate', -> $('#show-courses').click())
+    loadSubjectList($('#department-list'))
     $('#tabs,.tabs').tabs()
 
     ###
@@ -672,6 +728,24 @@ $(document).ready ->
     ###
     window.onhashchange?()
     return
+###
+# Load the subjects list as a JSON and put those subjects
+# as the options in selectElm
+###
+loadSubjectList = (selectElm) ->
+    dataLoaded = (data, textState, jsXHR) ->
+        selectElm.empty()
+        for d in data
+            selectElm.append("<option value='#{d.code}'>#{d.code}</option>")
+
+    ajaxArgs =
+        url: SUBJECT_LIST_URL
+        dataType: 'json'
+        success: dataLoaded
+        error: -> console.log("Error: could not load subject list from '#{SUBJECT_LIST_URL}'")
+    $.ajax(ajaxArgs)
+    return
+
 
 prepareWelcomePage = ->
     makeLinkShow = (link, elm) ->
@@ -1859,7 +1933,7 @@ class CourseManager
     courseDataLoaded: (data, textState, jsXHR) =>
         for c in data
             hash = BasicCourse.hashCourse(c)
-            @courseData[hash] = c
+            @courseData[hash] = normalizeCourse(c)
             ###
             # when the data was scraped it may contain html escape characters like '&amp;'
             # remove all of these so they won't show up anywhere accidentally.
