@@ -25,6 +25,10 @@ var BasicCourse, CoopButtonEditor, CourseButton, CourseManager, CourseStateButto
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
+
+var errorMsgHash = {};
+var errorMsgHashClearTimeout = 2000; //after the errorMsgHash is displayed in an error box, its contents are cleared.  The timeout for the contents to be cleared is this value in ms.
+
 SUBJECT_LIST_URL = "pagegrab.php?url=http://dev.uvic.ca/assets/coursemapper/courses.php";
 COURSE_DATA_URL = "pagegrab.php?url=http://dev.uvic.ca/assets/coursemapper/courses.php?subject=";
 
@@ -623,6 +627,9 @@ normalizeCourse = function(course) {
   switch (course.format_version) {
     case "1.0":
       if (course.prereqs.length > 0) {
+        if (course.prereqs.length > 1) {
+            console.log(course.prereqs.length, course, course.prereqs)
+        }
         course.prereqs = normalize(course.prereqs[0]);
       } else {
         course.prereqs = null;
@@ -827,8 +834,7 @@ $(document).ready(function() {
     window.courseManager.showCoursesOfSubject(subject);
   }
   $('#show-courses').click(function() {
-    var c, courses, createDisplayCallback, createErrorCallback, e, errorMsgHash, subjects, unknownCourses, v, _k, _l, _len2, _len3, _ref2;
-    errorMsgHash = {};
+    var c, courses, createDisplayCallback, createErrorCallback, e, subjects, unknownCourses, v, _k, _l, _len2, _len3, _ref2;
     subjects = {};
     courses = [];
     unknownCourses = [];
@@ -848,6 +854,8 @@ $(document).ready(function() {
             for (e in errorMsgHash) {
               _results.push(e);
             }
+            // clear the errorMsgHash after each time it's displayed
+            window.setTimeout(function(){ errorMsgHash = {}; }, errorMsgHashClearTimeout);
             return _results;
           })()).join('<br/>'));
         };
@@ -855,7 +863,7 @@ $(document).ready(function() {
       try {
         window.courseManager.showCoursesOfSubject(v, {
           error: createErrorCallback(v),
-          animate: 'slow'
+          animate: 'slow',
         });
       } catch (_error) {
         e = _error;
@@ -873,6 +881,8 @@ $(document).ready(function() {
             for (e in errorMsgHash) {
               _results.push(e);
             }
+            // clear the errorMsgHash after each time it's displayed
+            window.setTimeout(function(){ errorMsgHash = {}; }, errorMsgHashClearTimeout);
             return _results;
           })()).join('<br/>'));
         };
@@ -882,7 +892,7 @@ $(document).ready(function() {
           try {
             window.courseManager.ensureDisplayedInYearChart(c, {
               error: createErrorCallback(c),
-              animate: 'slow'
+              animate: 'slow',
             });
           } catch (_error) {
             e = _error;
@@ -909,6 +919,8 @@ $(document).ready(function() {
         for (e in errorMsgHash) {
           _results.push(e);
         }
+        // clear the errorMsgHash after each time it's displayed
+        window.setTimeout(function(){ errorMsgHash = {}; }, errorMsgHashClearTimeout);
         return _results;
       })()).join('<br/>'));
     }
@@ -2094,15 +2106,35 @@ CourseManager = (function() {
       }
     }
     _ref2 = this.graphState.nodes;
+    createErrorCallback = function(sub) {
+      return function() {
+        errorMsgHash["Could not load subject '" + sub + "'"] = true;
+        $('#department-list').combobox('showError', ((function() {
+          var _results;
+          _results = [];
+          for (e in errorMsgHash) {
+            _results.push(e);
+          }
+          // clear the errorMsgHash after each time it's displayed
+          window.setTimeout(function(){ errorMsgHash = {}; }, errorMsgHashClearTimeout);
+          return _results;
+        })()).join('<br/>'));
+      };
+    };
     for (_ in _ref2) {
       node = _ref2[_];
       course = node.course;
       hash = BasicCourse.hashCourse(course);
-      this.ensureDisplayedInYearChart(course, {
-        state: course.state,
-        year: node.year,
-        load: courseLoadCallback[hash]
-      });
+      try {
+          this.ensureDisplayedInYearChart(course, {
+            state: course.state,
+            year: node.year,
+            load: courseLoadCallback[hash],
+            error: createErrorCallback(hash)
+          });
+      } catch (_error) {
+         console.log(_error);
+      }
     }
     _ref3 = this.graphState.coops;
     for (_j = 0, _len1 = _ref3.length; _j < _len1; _j++) {
@@ -3228,7 +3260,9 @@ CourseManager = (function() {
       if (ops.error) {
         ops.error();
       }
-      throw new Error("" + hash + " cannot be loaded.  Does not appear to exist...");
+      console.log(new Error("" + hash + " cannot be loaded.  Does not appear to exist..."));
+      //throw new Error("" + hash + " cannot be loaded.  Does not appear to exist...");
+      return;
     }
     /*
     # if we don't have the course's data, load it and try to display the course again
