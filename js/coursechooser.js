@@ -2172,7 +2172,8 @@ CourseManager = (function() {
             _this = this;
         idToCourse = function(id) {
             var number, subject, _ref;
-            _ref = id.split('-'), subject = _ref[0], number = _ref[1];
+            // split based on the last occurance of '-' (negative lookahead regex)
+            _ref = id.split(/-(?!.*-)/), subject = _ref[0], number = _ref[1];
             return {
                 subject: subject,
                 number: number
