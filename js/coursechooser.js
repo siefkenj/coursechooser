@@ -33,35 +33,35 @@ SUBJECT_LIST_URL = "pagegrab.php?url=http://dev.uvic.ca/assets/coursemapper/cour
 COURSE_DATA_URL = "pagegrab.php?url=http://dev.uvic.ca/assets/coursemapper/courses.php?subject=";
 
 objToString = function(obj) {
-  var p, ret, v;
-  ret = '{ ';
-  for (p in obj) {
-    v = obj[p];
-    ret += " " + p + ":" + v + ", ";
-  }
-  return ret + "}";
+    var p, ret, v;
+    ret = '{ ';
+    for (p in obj) {
+        v = obj[p];
+        ret += " " + p + ":" + v + ", ";
+    }
+    return ret + "}";
 };
 
 attachedToDom = function(elm) {
-  if (!elm || (elm.parentNode == null)) {
-    return false;
-  } else if (elm.parentNode === document) {
-    return true;
-  }
-  return attachedToDom(elm.parentNode);
+    if (!elm || (elm.parentNode == null)) {
+        return false;
+    } else if (elm.parentNode === document) {
+        return true;
+    }
+    return attachedToDom(elm.parentNode);
 };
 
 objValsToArray = function(obj) {
-  var k, v;
-  return (function() {
-    var _results;
-    _results = [];
-    for (k in obj) {
-      v = obj[k];
-      _results.push(v);
-    }
-    return _results;
-  })();
+    var k, v;
+    return (function() {
+        var _results;
+        _results = [];
+        for (k in obj) {
+            v = obj[k];
+            _results.push(v);
+        }
+        return _results;
+    })();
 };
 
 /*
@@ -70,38 +70,38 @@ objValsToArray = function(obj) {
 
 
 symmetricDiffObjects = function(obj1, obj2) {
-  var k, ret1, ret2;
-  ret1 = {};
-  ret2 = {};
-  for (k in obj1) {
-    if (!obj2[k]) {
-      ret1[k] = obj1[k];
+    var k, ret1, ret2;
+    ret1 = {};
+    ret2 = {};
+    for (k in obj1) {
+        if (!obj2[k]) {
+            ret1[k] = obj1[k];
+        }
     }
-  }
-  for (k in obj2) {
-    if (!obj1[k]) {
-      ret2[k] = obj2[k];
+    for (k in obj2) {
+        if (!obj1[k]) {
+            ret2[k] = obj2[k];
+        }
     }
-  }
-  return {
-    missing: ret1,
-    excess: ret2
-  };
+    return {
+        missing: ret1,
+        excess: ret2
+    };
 };
 
 objKeysEqual = function(obj1, obj2) {
-  var k;
-  for (k in obj1) {
-    if (obj2[k] == null) {
-      return false;
+    var k;
+    for (k in obj1) {
+        if (obj2[k] == null) {
+            return false;
+        }
     }
-  }
-  for (k in obj2) {
-    if (obj1[k] == null) {
-      return false;
+    for (k in obj2) {
+        if (obj1[k] == null) {
+            return false;
+        }
     }
-  }
-  return true;
+    return true;
 };
 
 /*
@@ -110,13 +110,13 @@ objKeysEqual = function(obj1, obj2) {
 
 
 dupObject = function(obj) {
-  var k, ret, v;
-  ret = {};
-  for (k in obj) {
-    v = obj[k];
-    ret[k] = v;
-  }
-  return ret;
+    var k, ret, v;
+    ret = {};
+    for (k in obj) {
+        v = obj[k];
+        ret[k] = v;
+    }
+    return ret;
 };
 
 /*
@@ -125,37 +125,37 @@ dupObject = function(obj) {
 
 
 htmlEncode = function(str) {
-  str = '' + str;
-  str = str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-  return str;
+    str = '' + str;
+    str = str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    return str;
 };
 
 htmlUnencode = function(str) {
-  str = '' + str;
-  /*
-  # inefficient way to do it, but all the functions already exist
-  */
+    str = '' + str;
+    /*
+    # inefficient way to do it, but all the functions already exist
+    */
 
-  return unescape(escapeJSON(str));
+    return unescape(escapeJSON(str));
 };
 
 parseUrlHash = function(hash) {
-  var h, m, ret, _i, _len;
-  hash = hash.split(/[&?]/);
-  ret = {
-    hash: null,
-    args: []
-  };
-  for (_i = 0, _len = hash.length; _i < _len; _i++) {
-    h = hash[_i];
-    if (m = h.match(/^#[\w-]+/)) {
-      ret.hash = m[0];
+    var h, m, ret, _i, _len;
+    hash = hash.split(/[&?]/);
+    ret = {
+        hash: null,
+        args: []
+    };
+    for (_i = 0, _len = hash.length; _i < _len; _i++) {
+        h = hash[_i];
+        if (m = h.match(/^#[\w-]+/)) {
+            ret.hash = m[0];
+        }
+        if (h.match('=')) {
+            ret.args.push(h.split('='));
+        }
     }
-    if (h.match('=')) {
-      ret.args.push(h.split('='));
-    }
-  }
-  return ret;
+    return ret;
 };
 
 /*
@@ -165,320 +165,320 @@ parseUrlHash = function(hash) {
 
 
 escapeJSON = function(str) {
-  var c, encodeUnicode, escaped, htmlEscapeToChar, _i, _len, _ref;
-  if (typeof str !== 'string') {
-    throw new Error('escapeJSON must be called with a string only');
-  }
-  htmlEscapeToChar = function(str) {
-    var code, htmlChars, num;
-    if (str.charAt(1) === '#') {
-      num = parseInt(str.slice(2, str.length - 1), 10);
-      return String.fromCharCode(num);
+    var c, encodeUnicode, escaped, htmlEscapeToChar, _i, _len, _ref;
+    if (typeof str !== 'string') {
+        throw new Error('escapeJSON must be called with a string only');
     }
-    /*
-    # list of html escape sequences from http://www.w3.org/TR/html4/sgml/entities.html
-    # except &nbsp; has been replaced with a regular space
-    */
+    htmlEscapeToChar = function(str) {
+        var code, htmlChars, num;
+        if (str.charAt(1) === '#') {
+            num = parseInt(str.slice(2, str.length - 1), 10);
+            return String.fromCharCode(num);
+        }
+        /*
+        # list of html escape sequences from http://www.w3.org/TR/html4/sgml/entities.html
+        # except &nbsp; has been replaced with a regular space
+        */
 
-    htmlChars = {
-      nbsp: 32,
-      iexcl: 161,
-      cent: 162,
-      pound: 163,
-      curren: 164,
-      yen: 165,
-      brvbar: 166,
-      sect: 167,
-      uml: 168,
-      copy: 169,
-      ordf: 170,
-      laquo: 171,
-      not: 172,
-      shy: 173,
-      reg: 174,
-      macr: 175,
-      deg: 176,
-      plusmn: 177,
-      sup2: 178,
-      sup3: 179,
-      acute: 180,
-      micro: 181,
-      para: 182,
-      middot: 183,
-      cedil: 184,
-      sup1: 185,
-      ordm: 186,
-      raquo: 187,
-      frac14: 188,
-      frac12: 189,
-      frac34: 190,
-      iquest: 191,
-      Agrave: 192,
-      Aacute: 193,
-      Acirc: 194,
-      Atilde: 195,
-      Auml: 196,
-      Aring: 197,
-      AElig: 198,
-      Ccedil: 199,
-      Egrave: 200,
-      Eacute: 201,
-      Ecirc: 202,
-      Euml: 203,
-      Igrave: 204,
-      Iacute: 205,
-      Icirc: 206,
-      Iuml: 207,
-      ETH: 208,
-      Ntilde: 209,
-      Ograve: 210,
-      Oacute: 211,
-      Ocirc: 212,
-      Otilde: 213,
-      Ouml: 214,
-      times: 215,
-      Oslash: 216,
-      Ugrave: 217,
-      Uacute: 218,
-      Ucirc: 219,
-      Uuml: 220,
-      Yacute: 221,
-      THORN: 222,
-      szlig: 223,
-      agrave: 224,
-      aacute: 225,
-      acirc: 226,
-      atilde: 227,
-      auml: 228,
-      aring: 229,
-      aelig: 230,
-      ccedil: 231,
-      egrave: 232,
-      eacute: 233,
-      ecirc: 234,
-      euml: 235,
-      igrave: 236,
-      iacute: 237,
-      icirc: 238,
-      iuml: 239,
-      eth: 240,
-      ntilde: 241,
-      ograve: 242,
-      oacute: 243,
-      ocirc: 244,
-      otilde: 245,
-      ouml: 246,
-      divide: 247,
-      oslash: 248,
-      ugrave: 249,
-      uacute: 250,
-      ucirc: 251,
-      uuml: 252,
-      yacute: 253,
-      thorn: 254,
-      yuml: 255,
-      fnof: 402,
-      Alpha: 913,
-      Beta: 914,
-      Gamma: 915,
-      Delta: 916,
-      Epsilon: 917,
-      Zeta: 918,
-      Eta: 919,
-      Theta: 920,
-      Iota: 921,
-      Kappa: 922,
-      Lambda: 923,
-      Mu: 924,
-      Nu: 925,
-      Xi: 926,
-      Omicron: 927,
-      Pi: 928,
-      Rho: 929,
-      Sigma: 931,
-      Tau: 932,
-      Upsilon: 933,
-      Phi: 934,
-      Chi: 935,
-      Psi: 936,
-      Omega: 937,
-      alpha: 945,
-      beta: 946,
-      gamma: 947,
-      delta: 948,
-      epsilon: 949,
-      zeta: 950,
-      eta: 951,
-      theta: 952,
-      iota: 953,
-      kappa: 954,
-      lambda: 955,
-      mu: 956,
-      nu: 957,
-      xi: 958,
-      omicron: 959,
-      pi: 960,
-      rho: 961,
-      sigmaf: 962,
-      sigma: 963,
-      tau: 964,
-      upsilon: 965,
-      phi: 966,
-      chi: 967,
-      psi: 968,
-      omega: 969,
-      thetasym: 977,
-      upsih: 978,
-      piv: 982,
-      bull: 8226,
-      hellip: 8230,
-      prime: 8242,
-      Prime: 8243,
-      oline: 8254,
-      frasl: 8260,
-      weierp: 8472,
-      image: 8465,
-      real: 8476,
-      trade: 8482,
-      alefsym: 8501,
-      larr: 8592,
-      uarr: 8593,
-      rarr: 8594,
-      darr: 8595,
-      harr: 8596,
-      crarr: 8629,
-      lArr: 8656,
-      uArr: 8657,
-      rArr: 8658,
-      dArr: 8659,
-      hArr: 8660,
-      forall: 8704,
-      part: 8706,
-      exist: 8707,
-      empty: 8709,
-      nabla: 8711,
-      isin: 8712,
-      notin: 8713,
-      ni: 8715,
-      prod: 8719,
-      sum: 8721,
-      minus: 8722,
-      lowast: 8727,
-      radic: 8730,
-      prop: 8733,
-      infin: 8734,
-      ang: 8736,
-      and: 8743,
-      or: 8744,
-      cap: 8745,
-      cup: 8746,
-      int: 8747,
-      there4: 8756,
-      sim: 8764,
-      cong: 8773,
-      asymp: 8776,
-      ne: 8800,
-      equiv: 8801,
-      le: 8804,
-      ge: 8805,
-      sub: 8834,
-      sup: 8835,
-      nsub: 8836,
-      sube: 8838,
-      supe: 8839,
-      oplus: 8853,
-      otimes: 8855,
-      perp: 8869,
-      sdot: 8901,
-      lceil: 8968,
-      rceil: 8969,
-      lfloor: 8970,
-      rfloor: 8971,
-      lang: 9001,
-      rang: 9002,
-      loz: 9674,
-      spades: 9824,
-      clubs: 9827,
-      hearts: 9829,
-      diams: 9830,
-      quot: 34,
-      amp: 38,
-      lt: 60,
-      gt: 62,
-      OElig: 338,
-      oelig: 339,
-      Scaron: 352,
-      scaron: 353,
-      Yuml: 376,
-      circ: 710,
-      tilde: 732,
-      ensp: 8194,
-      emsp: 8195,
-      thinsp: 8201,
-      zwnj: 8204,
-      zwj: 8205,
-      lrm: 8206,
-      rlm: 8207,
-      ndash: 8211,
-      mdash: 8212,
-      lsquo: 8216,
-      rsquo: 8217,
-      sbquo: 8218,
-      ldquo: 8220,
-      rdquo: 8221,
-      bdquo: 8222,
-      dagger: 8224,
-      Dagger: 8225,
-      permil: 8240,
-      lsaquo: 8249,
-      rsaquo: 8250,
-      euro: 8364
+        htmlChars = {
+            nbsp: 32,
+            iexcl: 161,
+            cent: 162,
+            pound: 163,
+            curren: 164,
+            yen: 165,
+            brvbar: 166,
+            sect: 167,
+            uml: 168,
+            copy: 169,
+            ordf: 170,
+            laquo: 171,
+            not: 172,
+            shy: 173,
+            reg: 174,
+            macr: 175,
+            deg: 176,
+            plusmn: 177,
+            sup2: 178,
+            sup3: 179,
+            acute: 180,
+            micro: 181,
+            para: 182,
+            middot: 183,
+            cedil: 184,
+            sup1: 185,
+            ordm: 186,
+            raquo: 187,
+            frac14: 188,
+            frac12: 189,
+            frac34: 190,
+            iquest: 191,
+            Agrave: 192,
+            Aacute: 193,
+            Acirc: 194,
+            Atilde: 195,
+            Auml: 196,
+            Aring: 197,
+            AElig: 198,
+            Ccedil: 199,
+            Egrave: 200,
+            Eacute: 201,
+            Ecirc: 202,
+            Euml: 203,
+            Igrave: 204,
+            Iacute: 205,
+            Icirc: 206,
+            Iuml: 207,
+            ETH: 208,
+            Ntilde: 209,
+            Ograve: 210,
+            Oacute: 211,
+            Ocirc: 212,
+            Otilde: 213,
+            Ouml: 214,
+            times: 215,
+            Oslash: 216,
+            Ugrave: 217,
+            Uacute: 218,
+            Ucirc: 219,
+            Uuml: 220,
+            Yacute: 221,
+            THORN: 222,
+            szlig: 223,
+            agrave: 224,
+            aacute: 225,
+            acirc: 226,
+            atilde: 227,
+            auml: 228,
+            aring: 229,
+            aelig: 230,
+            ccedil: 231,
+            egrave: 232,
+            eacute: 233,
+            ecirc: 234,
+            euml: 235,
+            igrave: 236,
+            iacute: 237,
+            icirc: 238,
+            iuml: 239,
+            eth: 240,
+            ntilde: 241,
+            ograve: 242,
+            oacute: 243,
+            ocirc: 244,
+            otilde: 245,
+            ouml: 246,
+            divide: 247,
+            oslash: 248,
+            ugrave: 249,
+            uacute: 250,
+            ucirc: 251,
+            uuml: 252,
+            yacute: 253,
+            thorn: 254,
+            yuml: 255,
+            fnof: 402,
+            Alpha: 913,
+            Beta: 914,
+            Gamma: 915,
+            Delta: 916,
+            Epsilon: 917,
+            Zeta: 918,
+            Eta: 919,
+            Theta: 920,
+            Iota: 921,
+            Kappa: 922,
+            Lambda: 923,
+            Mu: 924,
+            Nu: 925,
+            Xi: 926,
+            Omicron: 927,
+            Pi: 928,
+            Rho: 929,
+            Sigma: 931,
+            Tau: 932,
+            Upsilon: 933,
+            Phi: 934,
+            Chi: 935,
+            Psi: 936,
+            Omega: 937,
+            alpha: 945,
+            beta: 946,
+            gamma: 947,
+            delta: 948,
+            epsilon: 949,
+            zeta: 950,
+            eta: 951,
+            theta: 952,
+            iota: 953,
+            kappa: 954,
+            lambda: 955,
+            mu: 956,
+            nu: 957,
+            xi: 958,
+            omicron: 959,
+            pi: 960,
+            rho: 961,
+            sigmaf: 962,
+            sigma: 963,
+            tau: 964,
+            upsilon: 965,
+            phi: 966,
+            chi: 967,
+            psi: 968,
+            omega: 969,
+            thetasym: 977,
+            upsih: 978,
+            piv: 982,
+            bull: 8226,
+            hellip: 8230,
+            prime: 8242,
+            Prime: 8243,
+            oline: 8254,
+            frasl: 8260,
+            weierp: 8472,
+            image: 8465,
+            real: 8476,
+            trade: 8482,
+            alefsym: 8501,
+            larr: 8592,
+            uarr: 8593,
+            rarr: 8594,
+            darr: 8595,
+            harr: 8596,
+            crarr: 8629,
+            lArr: 8656,
+            uArr: 8657,
+            rArr: 8658,
+            dArr: 8659,
+            hArr: 8660,
+            forall: 8704,
+            part: 8706,
+            exist: 8707,
+            empty: 8709,
+            nabla: 8711,
+            isin: 8712,
+            notin: 8713,
+            ni: 8715,
+            prod: 8719,
+            sum: 8721,
+            minus: 8722,
+            lowast: 8727,
+            radic: 8730,
+            prop: 8733,
+            infin: 8734,
+            ang: 8736,
+            and: 8743,
+            or: 8744,
+            cap: 8745,
+            cup: 8746,
+            int: 8747,
+            there4: 8756,
+            sim: 8764,
+            cong: 8773,
+            asymp: 8776,
+            ne: 8800,
+            equiv: 8801,
+            le: 8804,
+            ge: 8805,
+            sub: 8834,
+            sup: 8835,
+            nsub: 8836,
+            sube: 8838,
+            supe: 8839,
+            oplus: 8853,
+            otimes: 8855,
+            perp: 8869,
+            sdot: 8901,
+            lceil: 8968,
+            rceil: 8969,
+            lfloor: 8970,
+            rfloor: 8971,
+            lang: 9001,
+            rang: 9002,
+            loz: 9674,
+            spades: 9824,
+            clubs: 9827,
+            hearts: 9829,
+            diams: 9830,
+            quot: 34,
+            amp: 38,
+            lt: 60,
+            gt: 62,
+            OElig: 338,
+            oelig: 339,
+            Scaron: 352,
+            scaron: 353,
+            Yuml: 376,
+            circ: 710,
+            tilde: 732,
+            ensp: 8194,
+            emsp: 8195,
+            thinsp: 8201,
+            zwnj: 8204,
+            zwj: 8205,
+            lrm: 8206,
+            rlm: 8207,
+            ndash: 8211,
+            mdash: 8212,
+            lsquo: 8216,
+            rsquo: 8217,
+            sbquo: 8218,
+            ldquo: 8220,
+            rdquo: 8221,
+            bdquo: 8222,
+            dagger: 8224,
+            Dagger: 8225,
+            permil: 8240,
+            lsaquo: 8249,
+            rsaquo: 8250,
+            euro: 8364
+        };
+        code = str.slice(1, str.length - 1);
+        num = htmlChars[code];
+        /*
+        # if we unescape a quote, make sure to re-escape it for JSON!
+        */
+
+        if (num === 34) {
+            return "\\\"";
+        }
+        if (num) {
+            return String.fromCharCode(num);
+        }
+        return str;
     };
-    code = str.slice(1, str.length - 1);
-    num = htmlChars[code];
+    encodeUnicode = function(str) {
+        /*
+        # valid ascii range
+        */
+
+        var _ref;
+        if ((32 <= (_ref = str.charCodeAt(0)) && _ref <= 126)) {
+            return str;
+        }
+        return encodeURIComponent(str);
+    };
     /*
-    # if we unescape a quote, make sure to re-escape it for JSON!
+    # First we eliminate any of the html escape sequences that may be in our string.
     */
 
-    if (num === 34) {
-      return "\\\"";
-    }
-    if (num) {
-      return String.fromCharCode(num);
-    }
-    return str;
-  };
-  encodeUnicode = function(str) {
+    escaped = str.replace(/&.*?;/g, htmlEscapeToChar);
     /*
-    # valid ascii range
+    # Next, escape <,>,& for xml
     */
 
-    var _ref;
-    if ((32 <= (_ref = str.charCodeAt(0)) && _ref <= 126)) {
-      return str;
+    _ref = ['<', '>', '&'];
+    for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        c = _ref[_i];
+        escaped = escaped.replace(new RegExp(c, 'g'), encodeURIComponent(c));
     }
-    return encodeURIComponent(str);
-  };
-  /*
-  # First we eliminate any of the html escape sequences that may be in our string.
-  */
+    /*
+    # encode any unicode characetrs
+    */
 
-  escaped = str.replace(/&.*?;/g, htmlEscapeToChar);
-  /*
-  # Next, escape <,>,& for xml
-  */
-
-  _ref = ['<', '>', '&'];
-  for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-    c = _ref[_i];
-    escaped = escaped.replace(new RegExp(c, 'g'), encodeURIComponent(c));
-  }
-  /*
-  # encode any unicode characetrs
-  */
-
-  escaped = escaped.replace(/./g, encodeUnicode);
-  return escaped;
+    escaped = escaped.replace(/./g, encodeUnicode);
+    return escaped;
 };
 
 /*
@@ -488,88 +488,88 @@ escapeJSON = function(str) {
 
 
 strWidthInEn = function(str) {
-  var numSkinny, numSpaces, numWide, _ref, _ref1, _ref2;
-  if (str == null) {
-    str = '';
-  }
-  str = '' + str;
-  /*
-  # capitals (excluding I) and m and w are the "wide"
-  */
+    var numSkinny, numSpaces, numWide, _ref, _ref1, _ref2;
+    if (str == null) {
+        str = '';
+    }
+    str = '' + str;
+    /*
+    # capitals (excluding I) and m and w are the "wide"
+    */
 
-  numWide = ((_ref = str.match(/[A-HJ-Zmw]/)) != null ? _ref.length : void 0) || 0;
-  numSkinny = ((_ref1 = str.match(/[Iijlt:]/)) != null ? _ref1.length : void 0) || 0;
-  numSpaces = ((_ref2 = str.match(/[ ]/)) != null ? _ref2.length : void 0) || 0;
-  /*
-  # assume wide letters are 1.2x a normal letter
-  # and skinny letters are .3x a normal letter
-  */
+    numWide = ((_ref = str.match(/[A-HJ-Zmw]/)) != null ? _ref.length : void 0) || 0;
+    numSkinny = ((_ref1 = str.match(/[Iijlt:]/)) != null ? _ref1.length : void 0) || 0;
+    numSpaces = ((_ref2 = str.match(/[ ]/)) != null ? _ref2.length : void 0) || 0;
+    /*
+    # assume wide letters are 1.2x a normal letter
+    # and skinny letters are .3x a normal letter
+    */
 
-  return str.length + .2 * numWide - .7 * numSkinny - .2 * numSpaces;
+    return str.length + .2 * numWide - .7 * numSkinny - .2 * numSpaces;
 };
 
 titleCaps = function(str) {
-  var exceptionalWords, firstWord, i, ret, shouldCapitalize, tokens, upper, word, _i, _len, _ref, _ref1;
-  if (!str) {
-    return '';
-  }
-  upper = function(word) {
-    return word.charAt(0).toUpperCase() + word.slice(1);
-  };
-  exceptionalWords = /^(a|an|and|as|at|but|by|en|for|if|in|of|on|or|the|to|v[.]?|via|vs[.]?|with|amp|gt|lt)$/;
-  str = str.toLowerCase();
-  tokens = ('' + str).split(/\b/);
-  ret = '';
-  firstWord = true;
-  for (i = _i = 0, _len = tokens.length; _i < _len; i = ++_i) {
-    word = tokens[i];
-    /*
-    # all words should be capitalized by default
-    */
-
-    shouldCapitalize = true;
-    /*
-    # if they are exceptional words, don't capitalize
-    */
-
-    if (word.match(exceptionalWords)) {
-      shouldCapitalize = false;
+    var exceptionalWords, firstWord, i, ret, shouldCapitalize, tokens, upper, word, _i, _len, _ref, _ref1;
+    if (!str) {
+        return '';
     }
-    /*
-    # but if we are the first word in the sentence, capitalize
-    */
+    upper = function(word) {
+        return word.charAt(0).toUpperCase() + word.slice(1);
+    };
+    exceptionalWords = /^(a|an|and|as|at|but|by|en|for|if|in|of|on|or|the|to|v[.]?|via|vs[.]?|with|amp|gt|lt)$/;
+    str = str.toLowerCase();
+    tokens = ('' + str).split(/\b/);
+    ret = '';
+    firstWord = true;
+    for (i = _i = 0, _len = tokens.length; _i < _len; i = ++_i) {
+        word = tokens[i];
+        /*
+        # all words should be capitalized by default
+        */
 
-    if (firstWord) {
-      shouldCapitalize = true;
-    }
-    /*
-    # if we are surrounded by &;, we are an html escape sequence, we should never be captialized
-    */
+        shouldCapitalize = true;
+        /*
+        # if they are exceptional words, don't capitalize
+        */
 
-    if (((_ref = tokens[i - 1]) != null ? _ref.slice(-1) : void 0) === '&' && ((_ref1 = tokens[i + 1]) != null ? _ref1.charAt(0) : void 0) === ';') {
-      shouldCapitalize = false;
-    }
-    /*
-    # As soon as we encounter a non-whitespace word, we have seen the first
-    # word in the sentence, so we don't need to worry about capitalizing it any longer
-    */
+        if (word.match(exceptionalWords)) {
+            shouldCapitalize = false;
+        }
+        /*
+        # but if we are the first word in the sentence, capitalize
+        */
 
-    if (firstWord && word.match(/\b/)) {
-      firstWord = false;
-    }
-    /*
-    # check to see if we are a roman numeral.  If we are, capitalize specially, or else check if we
-    # should capitalize the first letter
-    */
+        if (firstWord) {
+            shouldCapitalize = true;
+        }
+        /*
+        # if we are surrounded by &;, we are an html escape sequence, we should never be captialized
+        */
 
-    if (word.match(/^(i|v|x|l|c|d|m)+$/i)) {
-      word = word.toUpperCase();
-    } else if (shouldCapitalize) {
-      word = upper(word);
+        if (((_ref = tokens[i - 1]) != null ? _ref.slice(-1) : void 0) === '&' && ((_ref1 = tokens[i + 1]) != null ? _ref1.charAt(0) : void 0) === ';') {
+            shouldCapitalize = false;
+        }
+        /*
+        # As soon as we encounter a non-whitespace word, we have seen the first
+        # word in the sentence, so we don't need to worry about capitalizing it any longer
+        */
+
+        if (firstWord && word.match(/\b/)) {
+            firstWord = false;
+        }
+        /*
+        # check to see if we are a roman numeral.  If we are, capitalize specially, or else check if we
+        # should capitalize the first letter
+        */
+
+        if (word.match(/^(i|v|x|l|c|d|m)+$/i)) {
+            word = word.toUpperCase();
+        } else if (shouldCapitalize) {
+            word = upper(word);
+        }
+        ret += word;
     }
-    ret += word;
-  }
-  return ret;
+    return ret;
 };
 
 /*
@@ -597,55 +597,55 @@ titleCaps = function(str) {
 
 
 normalizeCourse = function(course) {
-  var normalize, uneeded, _i, _len, _ref;
-  normalize = function(e) {
-    /* recursively apply ourselves to each element if we are an array*/
+    var normalize, uneeded, _i, _len, _ref;
+    normalize = function(e) {
+        /* recursively apply ourselves to each element if we are an array*/
 
-    var uneeded, _i, _len, _ref;
-    if (e instanceof Array) {
-      return e.map(normalize).filter(function(e) { return e !== null; });
-    }
-    /* if we are an operator, combine the "courses" and "data" attributes*/
-
-    if (e.op) {
-      e.data = e.data.concat(e.courses || []).map(normalize);
-    }
-    /* delete some uneeded attributes*/
-
-    _ref = ["courses", "course", "class", "id", "parentPrereq", "parentLevel"];
-    for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-      uneeded = _ref[_i];
-      delete e[uneeded];
-    }
-    /* if the prereq doesn't have a number, it is a non-course prereq (e.g. grade 12 math).
-     * just move along in this case */
-    if ('number' in e && e.number === null) {
-      return null;
-    }
-    return e;
-  };
-  switch (course.format_version) {
-    case "1.0":
-      if (course.prereqs.length > 0) {
-        if (course.prereqs.length > 1) {
-            console.log(course.prereqs.length, course, course.prereqs)
+        var uneeded, _i, _len, _ref;
+        if (e instanceof Array) {
+            return e.map(normalize).filter(function(e) { return e !== null; });
         }
-        course.prereqs = normalize(course.prereqs[0]);
-      } else {
-        course.prereqs = null;
-      }
-      course.from_format_version = course.format_version;
-      /* delete some uneeded attributes*/
+        /* if we are an operator, combine the "courses" and "data" attributes*/
 
-      _ref = ["format_version", "class", "id"];
-      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-        uneeded = _ref[_i];
-        delete course[uneeded];
-      }
-      return course;
-    default:
-      return course;
-  }
+        if (e.op) {
+            e.data = e.data.concat(e.courses || []).map(normalize);
+        }
+        /* delete some uneeded attributes*/
+
+        _ref = ["courses", "course", "class", "id", "parentPrereq", "parentLevel"];
+        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+            uneeded = _ref[_i];
+            delete e[uneeded];
+        }
+        /* if the prereq doesn't have a number, it is a non-course prereq (e.g. grade 12 math).
+         * just move along in this case */
+        if ('number' in e && e.number === null) {
+            return null;
+        }
+        return e;
+    };
+    switch (course.format_version) {
+        case "1.0":
+            if (course.prereqs.length > 0) {
+                if (course.prereqs.length > 1) {
+                        console.log(course.prereqs.length, course, course.prereqs)
+                }
+                course.prereqs = normalize(course.prereqs[0]);
+            } else {
+                course.prereqs = null;
+            }
+            course.from_format_version = course.format_version;
+            /* delete some uneeded attributes*/
+
+            _ref = ["format_version", "class", "id"];
+            for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+                uneeded = _ref[_i];
+                delete course[uneeded];
+            }
+            return course;
+        default:
+            return course;
+    }
 };
 
 /*
@@ -661,46 +661,46 @@ normalizeCourse = function(course) {
 
 
 parseCourseListString = function(val) {
-  var courses, i, subject, subjects, unknownCourses, v, _i, _len, _ref;
-  subjects = {};
-  courses = [];
-  unknownCourses = [];
-  val = val.toUpperCase();
-  val = val.replace(/([A-Z])(\d)/g, "$1 $2");
-  val = val.split(/[^a-zA-Z0-9-]+/);
-  subject = null;
-  for (i = _i = 0, _len = val.length; _i < _len; i = ++_i) {
-    v = val[i];
-    if (v.length === 0) {
-      continue;
-    }
-    if (v.match(/^[a-zA-Z-]/)) {
-      subject = v;
-      /*
-      # subjects contain only subjects for which we load every course.  ie. only lone
-      # subjects. e.g. "math, biol" adds math and biol to the subject list,
-      # but "math 100" shouldn't add math to the subject list
-      */
+    var courses, i, subject, subjects, unknownCourses, v, _i, _len, _ref;
+    subjects = {};
+    courses = [];
+    unknownCourses = [];
+    val = val.toUpperCase();
+    val = val.replace(/([A-Z])(\d)/g, "$1 $2");
+    val = val.split(/[^a-zA-Z0-9-]+/);
+    subject = null;
+    for (i = _i = 0, _len = val.length; _i < _len; i = ++_i) {
+        v = val[i];
+        if (v.length === 0) {
+            continue;
+        }
+        if (v.match(/^[a-zA-Z-]/)) {
+            subject = v;
+            /*
+            # subjects contain only subjects for which we load every course.  ie. only lone
+            # subjects. e.g. "math, biol" adds math and biol to the subject list,
+            # but "math 100" shouldn't add math to the subject list
+            */
 
-      if (!((_ref = val[i + 1]) != null ? _ref.match(/^\d/) : void 0)) {
-        subjects[subject] = true;
-      }
-    } else {
-      if (subject == null) {
-        unknownCourses.push(v);
-        continue;
-      }
-      courses.push({
-        subject: subject,
-        number: v
-      });
+            if (!((_ref = val[i + 1]) != null ? _ref.match(/^\d/) : void 0)) {
+                subjects[subject] = true;
+            }
+        } else {
+            if (subject == null) {
+                unknownCourses.push(v);
+                continue;
+            }
+            courses.push({
+                subject: subject,
+                number: v
+            });
+        }
     }
-  }
-  return {
-    courses: courses,
-    subjects: subjects,
-    unknownCourses: unknownCourses
-  };
+    return {
+        courses: courses,
+        subjects: subjects,
+        unknownCourses: unknownCourses
+    };
 };
 
 /*
@@ -709,47 +709,47 @@ parseCourseListString = function(val) {
 
 
 reparent = function(elm, newParent, ops) {
-  var newOffset, oldOffset, tmp;
-  if (ops == null) {
-    ops = {};
-  }
-  if (!ops.animate) {
-    $(elm).appendTo(newParent);
-    return;
-  }
-  elm = $(elm);
-  newParent = $(newParent);
-  oldOffset = ops.origin || elm.offset();
-  elm.appendTo(newParent);
-  newOffset = ops.target || elm.offset();
-  tmp = elm.clone().appendTo('body');
-  tmp.css({
-    position: 'absolute',
-    left: oldOffset.left,
-    top: oldOffset.top,
-    'zIndex': 1000
-  });
-  elm.css({
-    visibility: 'hidden'
-  });
-  tmp.animate({
-    top: newOffset.top,
-    left: newOffset.left
-  }, {
-    duration: 750,
-    easing: 'easeOutCubic',
-    complete: function() {
-      elm.show();
-      elm.css({
-        visibility: 'visible'
-      });
-      tmp.remove();
-      if (ops.complete && !ops.complete.hasRun) {
-        ops.complete();
-        ops.complete.hasRun = true;
-      }
+    var newOffset, oldOffset, tmp;
+    if (ops == null) {
+        ops = {};
     }
-  });
+    if (!ops.animate) {
+        $(elm).appendTo(newParent);
+        return;
+    }
+    elm = $(elm);
+    newParent = $(newParent);
+    oldOffset = ops.origin || elm.offset();
+    elm.appendTo(newParent);
+    newOffset = ops.target || elm.offset();
+    tmp = elm.clone().appendTo('body');
+    tmp.css({
+        position: 'absolute',
+        left: oldOffset.left,
+        top: oldOffset.top,
+        'zIndex': 1000
+    });
+    elm.css({
+        visibility: 'hidden'
+    });
+    tmp.animate({
+        top: newOffset.top,
+        left: newOffset.left
+    }, {
+        duration: 750,
+        easing: 'easeOutCubic',
+        complete: function() {
+            elm.show();
+            elm.css({
+                visibility: 'visible'
+            });
+            tmp.remove();
+            if (ops.complete && !ops.complete.hasRun) {
+                ops.complete();
+                ops.complete.hasRun = true;
+            }
+        }
+    });
 };
 
 /*
@@ -758,518 +758,530 @@ reparent = function(elm, newParent, ops) {
 
 
 printInstructions = function() {
-  var newSteps, printWindow;
-  printWindow = window.open('', 'Instructions', 'menubar=yes,status=1,width=350,height=150');
-  printWindow.document.write("<html><head><title>Instructions</title><link rel='stylesheet' href='css/coursechooser.css'></head>");
-  printWindow.document.write("<body></body></html>");
-  printWindow.onafterprint = function() {
-    var close;
-    close = function() {
-      printWindow.close();
+    var newSteps, printWindow;
+    printWindow = window.open('', 'Instructions', 'menubar=yes,status=1,width=350,height=150');
+    printWindow.document.write("<html><head><title>Instructions</title><link rel='stylesheet' href='css/coursechooser.css'></head>");
+    printWindow.document.write("<body></body></html>");
+    printWindow.onafterprint = function() {
+        var close;
+        close = function() {
+            printWindow.close();
+        };
+        printWindow.setTimeout(close, 0);
     };
-    printWindow.setTimeout(close, 0);
-  };
-  newSteps = $('#welcome-steps').clone();
-  /*
-  # make sure the details are fully expanded
-  */
+    newSteps = $('#welcome-steps').clone();
+    /*
+    # make sure the details are fully expanded
+    */
 
-  newSteps.find('*').show();
-  newSteps.find('a.more').hide();
-  $(printWindow.document.body).html(newSteps);
-  /*
-  # TODO It appears the @media print styles do not show up at this point in Firefox...
-  */
+    newSteps.find('*').show();
+    newSteps.find('a.more').hide();
+    $(printWindow.document.body).html(newSteps);
+    /*
+    # TODO It appears the @media print styles do not show up at this point in Firefox...
+    */
 
-  printWindow.print();
+    printWindow.print();
 };
 
 localStorageWrapper = function(action, data) {
-  if (action == null) {
-    action = 'get';
-  }
-  $.jStorage.reInit();
-  if (action === 'get') {
-    return $.jStorage.get('coursechooser');
-  }
-  $.jStorage.set('coursechooser', data);
+    if (action == null) {
+        action = 'get';
+    }
+    $.jStorage.reInit();
+    if (action === 'get') {
+        return $.jStorage.get('coursechooser');
+    }
+    $.jStorage.set('coursechooser', data);
 };
 
 $(document).ready(function() {
-  var ZOOM_FACTOR, arg, departmentList, locHash, preloadSubjects, saveGraph, subject, timeoutFunc, _i, _j, _len, _len1, _ref, _ref1;
-  $('.course-status').buttonset().disableSelection();
-  $('button').button();
-  departmentList = $('#department-list').combobox().combobox('value', '');
-  departmentList.combobox('activate', function() {
-    return $('#show-courses').click();
-  });
-  loadSubjectList($('#department-list'));
-  $('#tabs,.tabs').tabs();
-  /*
-  # location.hash could have the form '#hash?other,stuff' so filter it out!
-  */
+    var ZOOM_FACTOR, arg, departmentList, locHash, preloadSubjects, saveGraph, subject, timeoutFunc, _i, _j, _len, _len1, _ref, _ref1;
+    $('.course-status').buttonset().disableSelection();
+    $('button').button();
+    departmentList = $('#department-list').combobox().combobox('value', '');
+    departmentList.combobox('activate', function() {
+        return $('#show-courses').click();
+    });
+    loadSubjectList($('#department-list'));
+    $('#tabs,.tabs').tabs();
+    /*
+    # location.hash could have the form '#hash?other,stuff' so filter it out!
+    */
 
-  locHash = parseUrlHash(window.location.hash);
-  /* we should start with the welcome hash so the back button works*/
+    locHash = parseUrlHash(window.location.hash);
+    /* we should start with the welcome hash so the back button works*/
 
-  window.location.hash = window.location.hash || '#welcome';
-  prepareWelcomePage();
-  prepareNavMenu();
-  window.courseManager = new CourseManager;
-  window.courses = window.courseManager.courses;
-  /*
-  # based on the url hash arguments, decide to pre-show some subjects
-  */
+    window.location.hash = window.location.hash || '#welcome';
+    prepareWelcomePage();
+    prepareNavMenu();
+    window.courseManager = new CourseManager;
+    window.courses = window.courseManager.courses;
+    /*
+    # based on the url hash arguments, decide to pre-show some subjects
+    */
 
-  preloadSubjects = [];
-  _ref = locHash.args;
-  for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-    arg = _ref[_i];
-    if (arg[0] === 'load') {
-      preloadSubjects = preloadSubjects.concat(((_ref1 = arg[1]) != null ? _ref1.split(/,/) : void 0) || []);
+    preloadSubjects = [];
+    _ref = locHash.args;
+    for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        arg = _ref[_i];
+        if (arg[0] === 'load') {
+            preloadSubjects = preloadSubjects.concat(((_ref1 = arg[1]) != null ? _ref1.split(/,/) : void 0) || []);
+        }
     }
-  }
-  for (_j = 0, _len1 = preloadSubjects.length; _j < _len1; _j++) {
-    subject = preloadSubjects[_j];
-    window.courseManager.showCoursesOfSubject(subject);
-  }
-  $('#show-courses').click(function() {
-    var c, courses, createDisplayCallback, createErrorCallback, e, subjects, unknownCourses, v, _k, _l, _len2, _len3, _ref2;
-    subjects = {};
-    courses = [];
-    unknownCourses = [];
-    try {
-      _ref2 = parseCourseListString($('#department-list').combobox('value')), courses = _ref2.courses, subjects = _ref2.subjects, unknownCourses = _ref2.unknownCourses;
-    } catch (_error) {
-      e = _error;
-      subjects[$('#department-list option:selected()').val()] = true;
+    for (_j = 0, _len1 = preloadSubjects.length; _j < _len1; _j++) {
+        subject = preloadSubjects[_j];
+        window.courseManager.showCoursesOfSubject(subject);
     }
-    for (v in subjects) {
-      createErrorCallback = function(sub) {
-        return function() {
-          errorMsgHash["Could not load subject '" + sub + "'"] = true;
-          $('#department-list').combobox('showError', ((function() {
-            var _results;
-            _results = [];
-            for (e in errorMsgHash) {
-              _results.push(e);
-            }
-            // clear the errorMsgHash after each time it's displayed
-            window.setTimeout(function(){ errorMsgHash = {}; }, errorMsgHashClearTimeout);
-            return _results;
-          })()).join('<br/>'));
-        };
-      };
-      try {
-        window.courseManager.showCoursesOfSubject(v, {
-          error: createErrorCallback(v),
-          animate: 'slow',
-        });
-      } catch (_error) {
-        e = _error;
-        console.log(e);
-      }
-    }
-    for (_k = 0, _len2 = courses.length; _k < _len2; _k++) {
-      c = courses[_k];
-      createErrorCallback = function(sub) {
-        return function() {
-          errorMsgHash["Could not load course '" + sub.subject + " " + sub.number + "'"] = true;
-          $('#department-list').combobox('showError', ((function() {
-            var _results;
-            _results = [];
-            for (e in errorMsgHash) {
-              _results.push(e);
-            }
-            // clear the errorMsgHash after each time it's displayed
-            window.setTimeout(function(){ errorMsgHash = {}; }, errorMsgHashClearTimeout);
-            return _results;
-          })()).join('<br/>'));
-        };
-      };
-      createDisplayCallback = function(c) {
-        return function() {
-          try {
-            window.courseManager.ensureDisplayedInYearChart(c, {
-              error: createErrorCallback(c),
-              animate: 'slow',
-            });
-          } catch (_error) {
+    $('#show-courses').click(function() {
+        var c, courses, createDisplayCallback, createErrorCallback, e, subjects, unknownCourses, v, _k, _l, _len2, _len3, _ref2;
+        subjects = {};
+        courses = [];
+        unknownCourses = [];
+        try {
+            _ref2 = parseCourseListString($('#department-list').combobox('value')), courses = _ref2.courses, subjects = _ref2.subjects, unknownCourses = _ref2.unknownCourses;
+        } catch (_error) {
             e = _error;
-            console.log(e);
-          }
-        };
-      };
-      try {
-        window.courseManager.loadSubjectData(c.subject, createDisplayCallback(c), {
-          error: createErrorCallback(c),
-          animate: 'slow'
+            subjects[$('#department-list option:selected()').val()] = true;
+        }
+        for (v in subjects) {
+            createErrorCallback = function(sub) {
+                return function() {
+                    errorMsgHash["Could not load subject '" + sub + "'"] = true;
+                    $('#department-list').combobox('showError', ((function() {
+                        var _results;
+                        _results = [];
+                        for (e in errorMsgHash) {
+                            _results.push(e);
+                        }
+                        // clear the errorMsgHash after each time it's displayed
+                        window.setTimeout(function(){ errorMsgHash = {}; }, errorMsgHashClearTimeout);
+                        return _results;
+                    })()).join('<br/>'));
+                };
+            };
+            try {
+                window.courseManager.showCoursesOfSubject(v, {
+                    error: createErrorCallback(v),
+                    animate: 'slow',
+                });
+            } catch (_error) {
+                e = _error;
+                console.log(e);
+            }
+        }
+        for (_k = 0, _len2 = courses.length; _k < _len2; _k++) {
+            c = courses[_k];
+            createErrorCallback = function(sub) {
+                return function() {
+                    errorMsgHash["Could not load course '" + sub.subject + " " + sub.number + "'"] = true;
+                    $('#department-list').combobox('showError', ((function() {
+                        var _results;
+                        _results = [];
+                        for (e in errorMsgHash) {
+                            _results.push(e);
+                        }
+                        // clear the errorMsgHash after each time it's displayed
+                        window.setTimeout(function(){ errorMsgHash = {}; }, errorMsgHashClearTimeout);
+                        return _results;
+                    })()).join('<br/>'));
+                };
+            };
+            createDisplayCallback = function(c) {
+                return function() {
+                    try {
+                        window.courseManager.ensureDisplayedInYearChart(c, {
+                            error: createErrorCallback(c),
+                            animate: 'slow',
+                        });
+                    } catch (_error) {
+                        e = _error;
+                        console.log(e);
+                    }
+                };
+            };
+            try {
+                window.courseManager.loadSubjectData(c.subject, createDisplayCallback(c), {
+                    error: createErrorCallback(c),
+                    animate: 'slow'
+                });
+            } catch (_error) {
+                e = _error;
+                console.log(e);
+            }
+        }
+        for (_l = 0, _len3 = unknownCourses.length; _l < _len3; _l++) {
+            c = unknownCourses[_l];
+            errorMsgHash["Could not determine subject code for course '" + c + "'"] = true;
+            $('#department-list').combobox('showError', ((function() {
+                var _results;
+                _results = [];
+                for (e in errorMsgHash) {
+                    _results.push(e);
+                }
+                // clear the errorMsgHash after each time it's displayed
+                window.setTimeout(function(){ errorMsgHash = {}; }, errorMsgHashClearTimeout);
+                return _results;
+            })()).join('<br/>'));
+        }
+    });
+    /*
+    # whenever we are doing ajax, let's spin the throbber since
+    # it primarly happens whenever we are loading courses in this view
+    */
+
+    $('#show-courses .throbber').ajaxStart(function() {
+        $(this).show();
+    }).ajaxComplete(function() {
+        $(this).hide();
+    });
+    $('#hide-courses').click(function() {
+        var c, courses, e, subjects, unknownCourses, v, _k, _len2, _ref2;
+        subjects = {};
+        courses = [];
+        unknownCourses = [];
+        try {
+            _ref2 = parseCourseListString($('#department-list').combobox('value')), courses = _ref2.courses, subjects = _ref2.subjects, unknownCourses = _ref2.unknownCourses;
+        } catch (_error) {
+            e = _error;
+            subjects[$('#department-list option:selected()').val()] = true;
+        }
+        for (v in subjects) {
+            window.courseManager.hideCoursesOfSubject(v, {
+                animate: 'slow'
+            });
+        }
+        for (_k = 0, _len2 = courses.length; _k < _len2; _k++) {
+            c = courses[_k];
+            window.courseManager.hideCourse(c, {
+                animate: 'slow'
+            });
+        }
+    });
+    /*
+    # make the years droppable
+    */
+
+    $('.year').droppable({
+        hoverClass: 'highlight',
+        tolerance: 'pointer',
+        drop: function(event, ui) {
+            var courses;
+            courses = this.getElementsByClassName('courses')[0];
+            courses.appendChild(ui.draggable[0]);
+            window.courseManager.courseMoved(ui.draggable[0].course);
+            window.courseManager.selectCourse(ui.draggable[0].course);
+        }
+    });
+    /*
+    # setup the electives area
+    */
+
+    $('#create-new-electives').click(function() {
+        var elective, electiveButton;
+        elective = new ElectivesButtonEditor({
+            title: 'Electives'
+        }, window.courseManager);
+        electiveButton = new ElectivesButton(elective);
+        $('#electives-list').append(elective.getButton());
+        $('.year1 .courses').append(electiveButton.getButton());
+        window.courseManager.addCourse(electiveButton);
+        window.courseManager.sortableCourses[electiveButton] = electiveButton;
+        window.courseManager.addCourse(elective);
+        window.courseManager.makeCourseButtonDraggable(electiveButton);
+        window.courseManager.makeElectivesButtonDroppable(electiveButton);
+        window.courseManager.makeElectivesButtonClickable(electiveButton);
+        window.courseManager.makeElectivesButtonClickable(elective);
+    });
+    /*
+    # setup the coops area
+    */
+
+    $('#create-new-coop').click(function() {
+        window.courseManager.addCoop();
+    });
+    /*
+    # set up the load and save buttons
+    */
+
+    $('#save').click(function() {
+        var baseName, clonedSvg, data, downloadManager, elm, mimeType, name, _k, _l, _len2, _len3, _ref2, _ref3;
+        window.courseManager.updateGraphState();
+        baseName = (window.courseManager.graphState.title || "course-map").replace(/\W/g, '_');
+        /*
+        # if we are currently looking at a preview, save a visual version, otherwise save
+        # the json
+        */
+
+        name = baseName + ".json";
+        data = window.courseManager.graphState.toJSON();
+        mimeType = 'application/json';
+        if ($('a[page=#preview]').hasClass('active')) {
+            name = baseName + '.svg';
+            /*
+            # clone our svg.  We don't want these inlined styles to be persistent after we've saved
+            */
+
+            clonedSvg = window.courseManager.svgManager.svgGraph.svg.cloneNode(true);
+            /*
+            # we don't wany any highlight's or selection to show up when our
+            # styles are inlined.  Unfortunately, we cannot use jQuery's removeClass
+            # on SVG nodes.
+            */
+
+            _ref2 = $(clonedSvg).find('.highlight');
+            for (_k = 0, _len2 = _ref2.length; _k < _len2; _k++) {
+                elm = _ref2[_k];
+                SVGGraphManager.utils.removeClass(elm, 'highlight');
+            }
+            _ref3 = $(clonedSvg).find('.selected');
+            for (_l = 0, _len3 = _ref3.length; _l < _len3; _l++) {
+                elm = _ref3[_l];
+                SVGGraphManager.utils.removeClass(elm, 'selected');
+            }
+            window.courseManager.svgManager.svgGraph.inlineDocumentStyles(clonedSvg);
+            window.courseManager.svgManager.svgGraph.addCDATA({
+                svg: clonedSvg,
+                elmName: 'coursemapper',
+                data: escapeJSON(window.courseManager.graphState.toJSON())
+            });
+            data = $('<div></div>').append(clonedSvg).html();
+            mimeType = 'image/svg+xml';
+        }
+        downloadManager = new DownloadManager(name, data, mimeType);
+        downloadManager.download();
+    });
+    $('#load').click(function() {
+        /*
+        # fallback 'cause we cannot trigger a click on a file input...
+        */
+
+        var dialog;
+        dialog = $('<div>\n<h3>Browse for the file you wish to upload</h3>\n<input type="file" id="files" name="files[]" accept="application/json" />\n</div>');
+        $(document.body).append(dialog);
+        dialog.dialog({
+            height: 300,
+            width: 500,
+            modal: true
         });
-      } catch (_error) {
-        e = _error;
-        console.log(e);
-      }
-    }
-    for (_l = 0, _len3 = unknownCourses.length; _l < _len3; _l++) {
-      c = unknownCourses[_l];
-      errorMsgHash["Could not determine subject code for course '" + c + "'"] = true;
-      $('#department-list').combobox('showError', ((function() {
-        var _results;
-        _results = [];
-        for (e in errorMsgHash) {
-          _results.push(e);
+        dialog.find('input').change(function(event) {
+            var files;
+            files = event.target.files;
+            FileHandler.handleFiles(files);
+            dialog.remove();
+        });
+    });
+    $('#new').click(function() {
+        var clearAll, dialog;
+        clearAll = function() {
+            window.courseManager.clearAll();
+            $('#program-info input').val('');
+            showPage('#welcome');
+        };
+        dialog = $('<div title="Start a new Program?">\n<p><span class="ui-icon ui-icon-alert" style="float: left; margin: 0 7px 20px 0;"></span>\nWarning: all unsaved data will be lost and an\nempty program will be presented.</p>\n</div>');
+        $(document.body).append(dialog);
+        dialog.dialog({
+            height: 200,
+            modal: true,
+            resizable: false,
+            buttons: {
+                'Continue': function() {
+                    dialog.remove();
+                    clearAll();
+                },
+                'Cancel': function() {
+                    dialog.remove();
+                }
+            }
+        });
+    });
+    ZOOM_FACTOR = 1.25;
+    $('#zoom-preview-in').click(function() {
+        var height, svg, width;
+        svg = $('#map-container svg')[0];
+        width = parseFloat(svg.getAttribute('width'));
+        height = parseFloat(svg.getAttribute('height'));
+        svg.setAttribute('width', width * ZOOM_FACTOR);
+        svg.setAttribute('height', height * ZOOM_FACTOR);
+    });
+    $('#zoom-preview-out').click(function() {
+        var height, svg, width;
+        svg = $('#map-container svg')[0];
+        width = parseFloat(svg.getAttribute('width'));
+        height = parseFloat(svg.getAttribute('height'));
+        svg.setAttribute('width', width / ZOOM_FACTOR);
+        svg.setAttribute('height', height / ZOOM_FACTOR);
+    });
+    $('#toggleEdge').click(function() {
+        var edge, elm1, elm2, svgManager, _ref2,
+            _this = this;
+        svgManager = window.courseManager.svgManager;
+        if (!(svgManager && svgManager.selected[0] && svgManager.selected[1])) {
+            return;
+        } else {
+            // use regex negative lookahead to find the last occurance of a dash
+            var replaceLastDashRegEx = /-(?!.*-)/;
+            // only replace the last dash since some valid subjects (eg. 'ED-D') have
+            // have dashes in them.
+            elm1 = svgManager.selected[0].getAttribute('id').replace(replaceLastDashRegEx, ' ');
+            elm2 = svgManager.selected[1].getAttribute('id').replace(replaceLastDashRegEx, ' ');
+            edge = window.courseManager.graphState.edges[[elm1, elm2]];
+            edge = edge || window.courseManager.graphState.edges[[elm2, elm1]];
+            if (edge) {
+                /*
+                # if we have an exising edge and its invisible, turn it visible
+                # and visa versa.  If we turn a user-created edge invisible, also
+                # delete it.
+                */
+
+                if ((_ref2 = edge.properties.style) != null ? _ref2.match(/invis/) : void 0) {
+                    edge.properties.style = '';
+                } else {
+                    edge.properties.style = 'invis';
+                    if (!edge.properties.autoGenerated) {
+                        window.courseManager.graphState.removeEdge(edge.edge);
+                    }
+                }
+            } else {
+                window.courseManager.graphState.addEdge([elm1, elm2]);
+            }
+            updatePreview({
+                preserveSelection: true,
+                start: function() {
+                    $(_this).find('span').append('<img class="throbber" src="image/ajax-loader.gif"/>');
+                },
+                finish: function() {
+                    $(_this).find('.throbber').remove();
+                }
+            });
         }
-        // clear the errorMsgHash after each time it's displayed
-        window.setTimeout(function(){ errorMsgHash = {}; }, errorMsgHashClearTimeout);
-        return _results;
-      })()).join('<br/>'));
-    }
-  });
-  /*
-  # whenever we are doing ajax, let's spin the throbber since
-  # it primarly happens whenever we are loading courses in this view
-  */
-
-  $('#show-courses .throbber').ajaxStart(function() {
-    $(this).show();
-  }).ajaxComplete(function() {
-    $(this).hide();
-  });
-  $('#hide-courses').click(function() {
-    var c, courses, e, subjects, unknownCourses, v, _k, _len2, _ref2;
-    subjects = {};
-    courses = [];
-    unknownCourses = [];
-    try {
-      _ref2 = parseCourseListString($('#department-list').combobox('value')), courses = _ref2.courses, subjects = _ref2.subjects, unknownCourses = _ref2.unknownCourses;
-    } catch (_error) {
-      e = _error;
-      subjects[$('#department-list option:selected()').val()] = true;
-    }
-    for (v in subjects) {
-      window.courseManager.hideCoursesOfSubject(v, {
-        animate: 'slow'
-      });
-    }
-    for (_k = 0, _len2 = courses.length; _k < _len2; _k++) {
-      c = courses[_k];
-      window.courseManager.hideCourse(c, {
-        animate: 'slow'
-      });
-    }
-  });
-  /*
-  # make the years droppable
-  */
-
-  $('.year').droppable({
-    hoverClass: 'highlight',
-    tolerance: 'pointer',
-    drop: function(event, ui) {
-      var courses;
-      courses = this.getElementsByClassName('courses')[0];
-      courses.appendChild(ui.draggable[0]);
-      window.courseManager.courseMoved(ui.draggable[0].course);
-      window.courseManager.selectCourse(ui.draggable[0].course);
-    }
-  });
-  /*
-  # setup the electives area
-  */
-
-  $('#create-new-electives').click(function() {
-    var elective, electiveButton;
-    elective = new ElectivesButtonEditor({
-      title: 'Electives'
-    }, window.courseManager);
-    electiveButton = new ElectivesButton(elective);
-    $('#electives-list').append(elective.getButton());
-    $('.year1 .courses').append(electiveButton.getButton());
-    window.courseManager.addCourse(electiveButton);
-    window.courseManager.sortableCourses[electiveButton] = electiveButton;
-    window.courseManager.addCourse(elective);
-    window.courseManager.makeCourseButtonDraggable(electiveButton);
-    window.courseManager.makeElectivesButtonDroppable(electiveButton);
-    window.courseManager.makeElectivesButtonClickable(electiveButton);
-    window.courseManager.makeElectivesButtonClickable(elective);
-  });
-  /*
-  # setup the coops area
-  */
-
-  $('#create-new-coop').click(function() {
-    window.courseManager.addCoop();
-  });
-  /*
-  # set up the load and save buttons
-  */
-
-  $('#save').click(function() {
-    var baseName, clonedSvg, data, downloadManager, elm, mimeType, name, _k, _l, _len2, _len3, _ref2, _ref3;
-    window.courseManager.updateGraphState();
-    baseName = (window.courseManager.graphState.title || "course-map").replace(/\W/g, '_');
+    });
+    $('#toggleCoreq').click(function() {
+        var edge, elm1, elm2, svgManager,
+            _this = this;
+        svgManager = window.courseManager.svgManager;
+        if (!(svgManager && svgManager.selected[0] && svgManager.selected[1])) {
+            return;
+        } else {
+            // use regex negative lookahead to find the last occurance of a dash
+            var replaceLastDashRegEx = /-(?!.*-)/;
+            // only replace the last dash since some valid subjects (eg. 'ED-D') have
+            // have dashes in them.
+            elm1 = svgManager.selected[0].getAttribute('id').replace(replaceLastDashRegEx, ' ');
+            elm2 = svgManager.selected[1].getAttribute('id').replace(replaceLastDashRegEx, ' ');
+            edge = window.courseManager.graphState.edges[[elm1, elm2]];
+            edge = edge || window.courseManager.graphState.edges[[elm2, elm1]];
+            if (!edge) {
+                return;
+            }
+            edge.properties.coreq = !edge.properties.coreq;
+            updatePreview({
+                preserveSelection: true,
+                start: function() {
+                    $(_this).find('span').append('<img class="throbber" src="image/ajax-loader.gif"/>');
+                },
+                finish: function() {
+                    $(_this).find('.throbber').remove();
+                }
+            });
+        }
+    });
     /*
-    # if we are currently looking at a preview, save a visual version, otherwise save
-    # the json
+    # TODO Doesnt work!
     */
 
-    name = baseName + ".json";
-    data = window.courseManager.graphState.toJSON();
-    mimeType = 'application/json';
-    if ($('a[page=#preview]').hasClass('active')) {
-      name = baseName + '.svg';
-      /*
-      # clone our svg.  We don't want these inlined styles to be persistent after we've saved
-      */
+    $('#reverseEdge').click(function() {
+        var edge, elm1, elm2, svgManager, _ref2,
+            _this = this;
+        svgManager = window.courseManager.svgManager;
+        if (!(svgManager && svgManager.selected[0] && svgManager.selected[1])) {
+            return;
+        } else {
+            // use regex negative lookahead to find the last occurance of a dash
+            var replaceLastDashRegEx = /-(?!.*-)/;
+            // only replace the last dash since some valid subjects (eg. 'ED-D') have
+            // have dashes in them.
+            elm1 = svgManager.selected[0].getAttribute('id').replace(replaceLastDashRegEx, ' ');
+            elm2 = svgManager.selected[1].getAttribute('id').replace(replaceLastDashRegEx, ' ');
+            edge = window.courseManager.graphState.edges[[elm1, elm2]];
+            edge = edge || window.courseManager.graphState.edges[[elm2, elm1]];
+            if (edge) {
+                /*
+                # if we have an exising edge and its invisible, turn it visible
+                # and visa versa.  If we turn a user-created edge invisible, also
+                # delee it.
+                */
 
-      clonedSvg = window.courseManager.svgManager.svgGraph.svg.cloneNode(true);
-      /*
-      # we don't wany any highlight's or selection to show up when our
-      # styles are inlined.  Unfortunately, we cannot use jQuery's removeClass
-      # on SVG nodes.
-      */
-
-      _ref2 = $(clonedSvg).find('.highlight');
-      for (_k = 0, _len2 = _ref2.length; _k < _len2; _k++) {
-        elm = _ref2[_k];
-        SVGGraphManager.utils.removeClass(elm, 'highlight');
-      }
-      _ref3 = $(clonedSvg).find('.selected');
-      for (_l = 0, _len3 = _ref3.length; _l < _len3; _l++) {
-        elm = _ref3[_l];
-        SVGGraphManager.utils.removeClass(elm, 'selected');
-      }
-      window.courseManager.svgManager.svgGraph.inlineDocumentStyles(clonedSvg);
-      window.courseManager.svgManager.svgGraph.addCDATA({
-        svg: clonedSvg,
-        elmName: 'coursemapper',
-        data: escapeJSON(window.courseManager.graphState.toJSON())
-      });
-      data = $('<div></div>').append(clonedSvg).html();
-      mimeType = 'image/svg+xml';
-    }
-    downloadManager = new DownloadManager(name, data, mimeType);
-    downloadManager.download();
-  });
-  $('#load').click(function() {
+                if ((_ref2 = edge.properties.style) != null ? _ref2.match(/invis/) : void 0) {
+                    edge.properties.style = '';
+                } else {
+                    edge.properties.style = 'invis';
+                    if (!edge.properties.autoGenerated) {
+                        window.courseManager.graphState.removeEdge(edge.edge);
+                    }
+                }
+                window.courseManager.graphState.addEdge([elm2, elm1]);
+            }
+            updatePreview({
+                preserveSelection: true,
+                start: function() {
+                    $(_this).find('span').append('<img class="throbber" src="image/ajax-loader.gif"/>');
+                },
+                finish: function() {
+                    $(_this).find('.throbber').remove();
+                }
+            });
+        }
+    });
     /*
-    # fallback 'cause we cannot trigger a click on a file input...
+    # set up autosaves and autoloads
     */
 
-    var dialog;
-    dialog = $('<div>\n<h3>Browse for the file you wish to upload</h3>\n<input type="file" id="files" name="files[]" accept="application/json" />\n</div>');
-    $(document.body).append(dialog);
-    dialog.dialog({
-      height: 300,
-      width: 500,
-      modal: true
-    });
-    dialog.find('input').change(function(event) {
-      var files;
-      files = event.target.files;
-      FileHandler.handleFiles(files);
-      dialog.remove();
-    });
-  });
-  $('#new').click(function() {
-    var clearAll, dialog;
-    clearAll = function() {
-      window.courseManager.clearAll();
-      $('#program-info input').val('');
-      showPage('#welcome');
+    saveGraph = function() {
+        var data;
+        window.courseManager.updateGraphState();
+        data = window.courseManager.graphState.toJSON();
+        localStorageWrapper('set', data);
     };
-    dialog = $('<div title="Start a new Program?">\n<p><span class="ui-icon ui-icon-alert" style="float: left; margin: 0 7px 20px 0;"></span>\nWarning: all unsaved data will be lost and an\nempty program will be presented.</p>\n</div>');
-    $(document.body).append(dialog);
-    dialog.dialog({
-      height: 200,
-      modal: true,
-      resizable: false,
-      buttons: {
-        'Continue': function() {
-          dialog.remove();
-          clearAll();
-        },
-        'Cancel': function() {
-          dialog.remove();
-        }
-      }
+    $(window).bind('beforeunload', function() {
+        saveGraph();
     });
-  });
-  ZOOM_FACTOR = 1.25;
-  $('#zoom-preview-in').click(function() {
-    var height, svg, width;
-    svg = $('#map-container svg')[0];
-    width = parseFloat(svg.getAttribute('width'));
-    height = parseFloat(svg.getAttribute('height'));
-    svg.setAttribute('width', width * ZOOM_FACTOR);
-    svg.setAttribute('height', height * ZOOM_FACTOR);
-  });
-  $('#zoom-preview-out').click(function() {
-    var height, svg, width;
-    svg = $('#map-container svg')[0];
-    width = parseFloat(svg.getAttribute('width'));
-    height = parseFloat(svg.getAttribute('height'));
-    svg.setAttribute('width', width / ZOOM_FACTOR);
-    svg.setAttribute('height', height / ZOOM_FACTOR);
-  });
-  $('#toggleEdge').click(function() {
-    var edge, elm1, elm2, svgManager, _ref2,
-      _this = this;
-    svgManager = window.courseManager.svgManager;
-    if (!(svgManager && svgManager.selected[0] && svgManager.selected[1])) {
-      return;
-    } else {
-      elm1 = svgManager.selected[0].getAttribute('id').replace(/-/g, ' ');
-      elm2 = svgManager.selected[1].getAttribute('id').replace(/-/g, ' ');
-      edge = window.courseManager.graphState.edges[[elm1, elm2]];
-      edge = edge || window.courseManager.graphState.edges[[elm2, elm1]];
-      if (edge) {
-        /*
-        # if we have an exising edge and its invisible, turn it visible
-        # and visa versa.  If we turn a user-created edge invisible, also
-        # delete it.
-        */
+    /*
+    # autosave every 5 minutes
+    */
 
-        if ((_ref2 = edge.properties.style) != null ? _ref2.match(/invis/) : void 0) {
-          edge.properties.style = '';
-        } else {
-          edge.properties.style = 'invis';
-          if (!edge.properties.autoGenerated) {
-            window.courseManager.graphState.removeEdge(edge.edge);
-          }
+    window.setInterval(saveGraph, 1000 * 5 * 60);
+    timeoutFunc = function() {
+        var data, e, graph, programState;
+        data = localStorageWrapper('get');
+        if (data) {
+            try {
+                graph = window.courseManager.loadGraph(data);
+                /*
+                # figure out if there is anything to this program or if it's blank
+                # (the default state for a new program) so we can adjust the welcome page
+                # accordingly.
+                */
+
+                programState = 'newProgram';
+                if (graph.title || Object.keys(graph.nodes || {}).length > 0) {
+                    programState = 'existingProgram';
+                }
+                updateWelcomePage(programState);
+            } catch (_error) {
+                e = _error;
+                console.log('could no load local storage data');
+            }
         }
-      } else {
-        window.courseManager.graphState.addEdge([elm1, elm2]);
-      }
-      updatePreview({
-        preserveSelection: true,
-        start: function() {
-          $(_this).find('span').append('<img class="throbber" src="image/ajax-loader.gif"/>');
-        },
-        finish: function() {
-          $(_this).find('.throbber').remove();
-        }
-      });
+    };
+    window.setTimeout(timeoutFunc, 0);
+    /*
+    # we'd like to show up on the correct tab when we relaod with a hash
+    */
+
+    if (typeof window.onhashchange === "function") {
+        window.onhashchange();
     }
-  });
-  $('#toggleCoreq').click(function() {
-    var edge, elm1, elm2, svgManager,
-      _this = this;
-    svgManager = window.courseManager.svgManager;
-    if (!(svgManager && svgManager.selected[0] && svgManager.selected[1])) {
-      return;
-    } else {
-      elm1 = svgManager.selected[0].getAttribute('id').replace(/-/g, ' ');
-      elm2 = svgManager.selected[1].getAttribute('id').replace(/-/g, ' ');
-      edge = window.courseManager.graphState.edges[[elm1, elm2]];
-      edge = edge || window.courseManager.graphState.edges[[elm2, elm1]];
-      if (!edge) {
-        return;
-      }
-      edge.properties.coreq = !edge.properties.coreq;
-      updatePreview({
-        preserveSelection: true,
-        start: function() {
-          $(_this).find('span').append('<img class="throbber" src="image/ajax-loader.gif"/>');
-        },
-        finish: function() {
-          $(_this).find('.throbber').remove();
-        }
-      });
-    }
-  });
-  /*
-  # TODO Doesnt work!
-  */
-
-  $('#reverseEdge').click(function() {
-    var edge, elm1, elm2, svgManager, _ref2,
-      _this = this;
-    svgManager = window.courseManager.svgManager;
-    if (!(svgManager && svgManager.selected[0] && svgManager.selected[1])) {
-      return;
-    } else {
-      elm1 = svgManager.selected[0].getAttribute('id').replace(/-/g, ' ');
-      elm2 = svgManager.selected[1].getAttribute('id').replace(/-/g, ' ');
-      edge = window.courseManager.graphState.edges[[elm1, elm2]];
-      edge = edge || window.courseManager.graphState.edges[[elm2, elm1]];
-      if (edge) {
-        /*
-        # if we have an exising edge and its invisible, turn it visible
-        # and visa versa.  If we turn a user-created edge invisible, also
-        # delee it.
-        */
-
-        if ((_ref2 = edge.properties.style) != null ? _ref2.match(/invis/) : void 0) {
-          edge.properties.style = '';
-        } else {
-          edge.properties.style = 'invis';
-          if (!edge.properties.autoGenerated) {
-            window.courseManager.graphState.removeEdge(edge.edge);
-          }
-        }
-        window.courseManager.graphState.addEdge([elm2, elm1]);
-      }
-      updatePreview({
-        preserveSelection: true,
-        start: function() {
-          $(_this).find('span').append('<img class="throbber" src="image/ajax-loader.gif"/>');
-        },
-        finish: function() {
-          $(_this).find('.throbber').remove();
-        }
-      });
-    }
-  });
-  /*
-  # set up autosaves and autoloads
-  */
-
-  saveGraph = function() {
-    var data;
-    window.courseManager.updateGraphState();
-    data = window.courseManager.graphState.toJSON();
-    localStorageWrapper('set', data);
-  };
-  $(window).bind('beforeunload', function() {
-    saveGraph();
-  });
-  /*
-  # autosave every 5 minutes
-  */
-
-  window.setInterval(saveGraph, 1000 * 5 * 60);
-  timeoutFunc = function() {
-    var data, e, graph, programState;
-    data = localStorageWrapper('get');
-    if (data) {
-      try {
-        graph = window.courseManager.loadGraph(data);
-        /*
-        # figure out if there is anything to this program or if it's blank
-        # (the default state for a new program) so we can adjust the welcome page
-        # accordingly.
-        */
-
-        programState = 'newProgram';
-        if (graph.title || Object.keys(graph.nodes || {}).length > 0) {
-          programState = 'existingProgram';
-        }
-        updateWelcomePage(programState);
-      } catch (_error) {
-        e = _error;
-        console.log('could no load local storage data');
-      }
-    }
-  };
-  window.setTimeout(timeoutFunc, 0);
-  /*
-  # we'd like to show up on the correct tab when we relaod with a hash
-  */
-
-  if (typeof window.onhashchange === "function") {
-    window.onhashchange();
-  }
 });
 
 /*
@@ -1279,63 +1291,63 @@ $(document).ready(function() {
 
 
 loadSubjectList = function(selectElm) {
-  var ajaxArgs, dataLoaded;
-  dataLoaded = function(data, textState, jsXHR) {
-    var d, _i, _len, _results;
-    selectElm.empty();
-    _results = [];
-    for (_i = 0, _len = data.length; _i < _len; _i++) {
-      d = data[_i];
-      _results.push(selectElm.append("<option value='" + d.code + "'>" + d.code + "</option>"));
-    }
-    return _results;
-  };
-  ajaxArgs = {
-    url: SUBJECT_LIST_URL,
-    dataType: 'json',
-    success: dataLoaded,
-    error: function() {
-      return console.log("Error: could not load subject list from '" + SUBJECT_LIST_URL + "'");
-    }
-  };
-  $.ajax(ajaxArgs);
+    var ajaxArgs, dataLoaded;
+    dataLoaded = function(data, textState, jsXHR) {
+        var d, _i, _len, _results;
+        selectElm.empty();
+        _results = [];
+        for (_i = 0, _len = data.length; _i < _len; _i++) {
+            d = data[_i];
+            _results.push(selectElm.append("<option value='" + d.code + "'>" + d.code + "</option>"));
+        }
+        return _results;
+    };
+    ajaxArgs = {
+        url: SUBJECT_LIST_URL,
+        dataType: 'json',
+        success: dataLoaded,
+        error: function() {
+            return console.log("Error: could not load subject list from '" + SUBJECT_LIST_URL + "'");
+        }
+    };
+    $.ajax(ajaxArgs);
 };
 
 prepareWelcomePage = function() {
-  var $elm, $link, elm, makeLinkShow, _i, _len, _ref;
-  makeLinkShow = function(link, elm) {
-    var hide, show;
-    show = function() {
-      elm.show();
-      link.html("Hide Details");
+    var $elm, $link, elm, makeLinkShow, _i, _len, _ref;
+    makeLinkShow = function(link, elm) {
+        var hide, show;
+        show = function() {
+            elm.show();
+            link.html("Hide Details");
+        };
+        hide = function() {
+            elm.hide();
+            link.html("Show Details");
+        };
+        link.toggle(show, hide);
     };
-    hide = function() {
-      elm.hide();
-      link.html("Show Details");
-    };
-    link.toggle(show, hide);
-  };
-  _ref = $("#welcome li div.more");
-  for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-    elm = _ref[_i];
-    $elm = $(elm);
-    $elm.hide();
-    $link = $('<a class="more" href="javascript: void 0;">Show Details</a>').appendTo($elm.parent().find('p')[0]);
-    makeLinkShow($link, $elm);
-  }
-  $('#goto-course-chooser').click(function() {
-    showPage('#course-chooser', {
-      animate: true,
-      complete: (function() {
-        return $('#show-courses').trigger('click');
-      })
+    _ref = $("#welcome li div.more");
+    for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        elm = _ref[_i];
+        $elm = $(elm);
+        $elm.hide();
+        $link = $('<a class="more" href="javascript: void 0;">Show Details</a>').appendTo($elm.parent().find('p')[0]);
+        makeLinkShow($link, $elm);
+    }
+    $('#goto-course-chooser').click(function() {
+        showPage('#course-chooser', {
+            animate: true,
+            complete: (function() {
+                return $('#show-courses').trigger('click');
+            })
+        });
     });
-  });
-  $('#welcome-new-program').click(function() {
-    $('#new').click();
-  });
-  $('#print-instructions').click(printInstructions);
-  updateWelcomePage();
+    $('#welcome-new-program').click(function() {
+        $('#new').click();
+    });
+    $('#print-instructions').click(printInstructions);
+    updateWelcomePage();
 };
 
 /*
@@ -1351,269 +1363,269 @@ prepareWelcomePage = function() {
 
 
 updateWelcomePage = function(forceState) {
-  var nextText, programState, _ref;
-  if (forceState == null) {
-    forceState = '';
-  }
-  programState = null;
-  if (forceState === 'newProgram') {
-    programState = 'newProgram';
-  } else if (forceState === 'existingProgram') {
-    programState = 'existingProgram';
-  } else if (((_ref = window.courseManager) != null ? _ref.sortableCourses : void 0) && Object.keys(window.courseManager.sortableCourses).length === 0) {
-    /*
-    # if there are any sortable courses, assume we are working off an existing
-    # program, otherwise assume a new and empty program
-    */
+    var nextText, programState, _ref;
+    if (forceState == null) {
+        forceState = '';
+    }
+    programState = null;
+    if (forceState === 'newProgram') {
+        programState = 'newProgram';
+    } else if (forceState === 'existingProgram') {
+        programState = 'existingProgram';
+    } else if (((_ref = window.courseManager) != null ? _ref.sortableCourses : void 0) && Object.keys(window.courseManager.sortableCourses).length === 0) {
+        /*
+        # if there are any sortable courses, assume we are working off an existing
+        # program, otherwise assume a new and empty program
+        */
 
-    programState = 'newProgram';
-  } else {
-    programState = 'existingProgram';
-  }
-  switch (programState) {
-    case 'newProgram':
-      $('#welcome-new').hide();
-      nextText = $('#welcome-next button').attr('text1');
-      $('#welcome-next .ui-button-text').html(nextText);
-      $('#welcome-next').show();
-      break;
-    case 'existingProgram':
-      $('#welcome-new').show();
-      nextText = $('#welcome-next button').attr('text2');
-      $('#welcome-next .ui-button-text').html(nextText);
-  }
+        programState = 'newProgram';
+    } else {
+        programState = 'existingProgram';
+    }
+    switch (programState) {
+        case 'newProgram':
+            $('#welcome-new').hide();
+            nextText = $('#welcome-next button').attr('text1');
+            $('#welcome-next .ui-button-text').html(nextText);
+            $('#welcome-next').show();
+            break;
+        case 'existingProgram':
+            $('#welcome-new').show();
+            nextText = $('#welcome-next button').attr('text2');
+            $('#welcome-next .ui-button-text').html(nextText);
+    }
 };
 
 prepareNavMenu = function() {
-  var elm, makeLinkShow, target, _i, _len, _ref;
-  makeLinkShow = function(link, target) {
-    link.click(function() {
-      showPage(target, {
-        animate: false
-      });
-    });
-  };
-  _ref = $('#menu-nav a');
-  for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-    elm = _ref[_i];
-    elm = $(elm);
-    target = elm.attr('href');
-    makeLinkShow(elm, target);
-  }
-  /*
-  # make sure the back button works--that is when the index.html#foo changes,
-  # make the appropriate page display
-  */
+    var elm, makeLinkShow, target, _i, _len, _ref;
+    makeLinkShow = function(link, target) {
+        link.click(function() {
+            showPage(target, {
+                animate: false
+            });
+        });
+    };
+    _ref = $('#menu-nav a');
+    for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        elm = _ref[_i];
+        elm = $(elm);
+        target = elm.attr('href');
+        makeLinkShow(elm, target);
+    }
+    /*
+    # make sure the back button works--that is when the index.html#foo changes,
+    # make the appropriate page display
+    */
 
-  window.onhashchange = function() {
-    var hash;
-    hash = parseUrlHash(window.location.hash).hash;
-    $("a[page=" + hash + "]").click();
-  };
+    window.onhashchange = function() {
+        var hash;
+        hash = parseUrlHash(window.location.hash).hash;
+        $("a[page=" + hash + "]").click();
+    };
 };
 
 showPage = function(page, ops) {
-  var container, currentPageContainers, doesntNeedAnimation, elm, id, needsAnimation, newPageContainers, offsets, target, _i, _j, _k, _l, _len, _len1, _len2, _len3, _len4, _len5, _m, _n, _ref, _ref1;
-  if (ops == null) {
-    ops = {};
-  }
-  if (typeof page !== 'string') {
-    throw new Error("showPage expects page to be a string, not " + page);
-  }
-  /*
-  # set the nav menu to be properly highlighted
-  */
-
-  _ref = $('#menu-nav a');
-  for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-    elm = _ref[_i];
-    elm = $(elm);
-    if (elm.attr('page') === page) {
-      elm.addClass('active');
-    } else {
-      elm.removeClass('active');
+    var container, currentPageContainers, doesntNeedAnimation, elm, id, needsAnimation, newPageContainers, offsets, target, _i, _j, _k, _l, _len, _len1, _len2, _len3, _len4, _len5, _m, _n, _ref, _ref1;
+    if (ops == null) {
+        ops = {};
     }
-  }
-  target = $(page);
-  switch (page) {
-    case '#welcome':
-      updateWelcomePage();
-      break;
-    case '#preview':
-      onPreviewPageShow();
-  }
-  /*
-  # if we're not animating, we don't need to do
-  # anything fancy, so just ensure our container elements
-  # are all filled
-  */
+    if (typeof page !== 'string') {
+        throw new Error("showPage expects page to be a string, not " + page);
+    }
+    /*
+    # set the nav menu to be properly highlighted
+    */
 
-  if (!ops.animate) {
+    _ref = $('#menu-nav a');
+    for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        elm = _ref[_i];
+        elm = $(elm);
+        if (elm.attr('page') === page) {
+            elm.addClass('active');
+        } else {
+            elm.removeClass('active');
+        }
+    }
+    target = $(page);
+    switch (page) {
+        case '#welcome':
+            updateWelcomePage();
+            break;
+        case '#preview':
+            onPreviewPageShow();
+    }
+    /*
+    # if we're not animating, we don't need to do
+    # anything fancy, so just ensure our container elements
+    # are all filled
+    */
+
+    if (!ops.animate) {
+        $('.page').hide();
+        _ref1 = target.find('.container');
+        for (_j = 0, _len1 = _ref1.length; _j < _len1; _j++) {
+            elm = _ref1[_j];
+            id = elm.getAttribute('contains');
+            reparent($(id), elm, ops);
+        }
+        target.show();
+        return;
+    }
+    /*
+    # if we're animating, we need to find the position of each element
+    # that's moving to the new page befor we hide anything
+    */
+
+    currentPageContainers = (function() {
+        var _k, _len2, _ref2, _results;
+        _ref2 = $($('.page:visible')).find('.container');
+        _results = [];
+        for (_k = 0, _len2 = _ref2.length; _k < _len2; _k++) {
+            elm = _ref2[_k];
+            _results.push(elm.getAttribute('contains'));
+        }
+        return _results;
+    })();
+    newPageContainers = (function() {
+        var _k, _len2, _ref2, _results;
+        _ref2 = target.find('.container');
+        _results = [];
+        for (_k = 0, _len2 = _ref2.length; _k < _len2; _k++) {
+            elm = _ref2[_k];
+            _results.push(elm.getAttribute('contains'));
+        }
+        return _results;
+    })();
+    needsAnimation = [];
+    doesntNeedAnimation = [];
+    for (_k = 0, _len2 = newPageContainers.length; _k < _len2; _k++) {
+        elm = newPageContainers[_k];
+        if (currentPageContainers.indexOf(elm) >= 0) {
+            needsAnimation.push(elm);
+        } else {
+            doesntNeedAnimation.push(elm);
+        }
+    }
+    offsets = {};
+    for (_l = 0, _len3 = needsAnimation.length; _l < _len3; _l++) {
+        elm = needsAnimation[_l];
+        offsets[elm] = $(elm).offset();
+    }
+    for (_m = 0, _len4 = doesntNeedAnimation.length; _m < _len4; _m++) {
+        elm = doesntNeedAnimation[_m];
+        container = target.find(".container[contains=" + elm + "]");
+        reparent(elm, container, ops);
+    }
     $('.page').hide();
-    _ref1 = target.find('.container');
-    for (_j = 0, _len1 = _ref1.length; _j < _len1; _j++) {
-      elm = _ref1[_j];
-      id = elm.getAttribute('contains');
-      reparent($(id), elm, ops);
-    }
     target.show();
-    return;
-  }
-  /*
-  # if we're animating, we need to find the position of each element
-  # that's moving to the new page befor we hide anything
-  */
-
-  currentPageContainers = (function() {
-    var _k, _len2, _ref2, _results;
-    _ref2 = $($('.page:visible')).find('.container');
-    _results = [];
-    for (_k = 0, _len2 = _ref2.length; _k < _len2; _k++) {
-      elm = _ref2[_k];
-      _results.push(elm.getAttribute('contains'));
+    for (_n = 0, _len5 = needsAnimation.length; _n < _len5; _n++) {
+        elm = needsAnimation[_n];
+        container = target.find(".container[contains=" + elm + "]");
+        reparent(elm, container, {
+            animate: true,
+            origin: offsets[elm],
+            complete: ops.complete
+        });
     }
-    return _results;
-  })();
-  newPageContainers = (function() {
-    var _k, _len2, _ref2, _results;
-    _ref2 = target.find('.container');
-    _results = [];
-    for (_k = 0, _len2 = _ref2.length; _k < _len2; _k++) {
-      elm = _ref2[_k];
-      _results.push(elm.getAttribute('contains'));
-    }
-    return _results;
-  })();
-  needsAnimation = [];
-  doesntNeedAnimation = [];
-  for (_k = 0, _len2 = newPageContainers.length; _k < _len2; _k++) {
-    elm = newPageContainers[_k];
-    if (currentPageContainers.indexOf(elm) >= 0) {
-      needsAnimation.push(elm);
-    } else {
-      doesntNeedAnimation.push(elm);
-    }
-  }
-  offsets = {};
-  for (_l = 0, _len3 = needsAnimation.length; _l < _len3; _l++) {
-    elm = needsAnimation[_l];
-    offsets[elm] = $(elm).offset();
-  }
-  for (_m = 0, _len4 = doesntNeedAnimation.length; _m < _len4; _m++) {
-    elm = doesntNeedAnimation[_m];
-    container = target.find(".container[contains=" + elm + "]");
-    reparent(elm, container, ops);
-  }
-  $('.page').hide();
-  target.show();
-  for (_n = 0, _len5 = needsAnimation.length; _n < _len5; _n++) {
-    elm = needsAnimation[_n];
-    container = target.find(".container[contains=" + elm + "]");
-    reparent(elm, container, {
-      animate: true,
-      origin: offsets[elm],
-      complete: ops.complete
-    });
-  }
-  /*
-  # special actions to be taken on particular pages
-  */
+    /*
+    # special actions to be taken on particular pages
+    */
 
 };
 
 updatePreview = function(ops) {
-  var render;
-  if (ops == null) {
-    ops = {
-      preserveSelection: false
-    };
-  }
-  /*
-  # we may want to show a progress indicator
-  */
-
-  if (typeof ops.start === "function") {
-    ops.start();
-  }
-  render = function() {
+    var render;
+    if (ops == null) {
+        ops = {
+            preserveSelection: false
+        };
+    }
     /*
-    # any time we are rendering, let's show the status indicator
+    # we may want to show a progress indicator
     */
 
-    var dotCode;
-    $('#preview-status .message-text').text("Updating Graph");
-    $('#preview-status').show();
-    dotCode = window.courseManager.createDotGraph();
-    window.Viz.onmessage = function(event) {
-      var aspect, ast, data, elm, height, i, id, oldSelection, oldSvgManager, preview, svgManager, width, xdotCode, _i, _j, _len, _len1, _ref;
-      data = event.data;
-      if (data.type !== 'graph') {
-        throw new Error('Need the webworker to return graph type!');
-      }
-      xdotCode = data.message;
-      /*
-      # there are some warnings in the xdot code, but they are printed
-      # at the beginning, so filter them away
-      */
+    if (typeof ops.start === "function") {
+        ops.start();
+    }
+    render = function() {
+        /*
+        # any time we are rendering, let's show the status indicator
+        */
 
-      xdotCode = xdotCode.slice(xdotCode.indexOf('digraph {'));
-      ast = DotParser.parse(xdotCode);
-      svgManager = new SVGGraphManager(new SVGDot(ast), window.courseManager.graphState);
-      oldSvgManager = window.courseManager.svgManager;
-      oldSelection = [];
-      if (oldSvgManager && ops.preserveSelection) {
-        _ref = oldSvgManager.selected || [];
-        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-          elm = _ref[_i];
-          if (elm) {
-            oldSelection.push(elm.getAttribute('id'));
-          }
-        }
-      }
-      window.courseManager.initializeSVGManager(svgManager);
-      /*
-      # restore all of the previous selection.  This list will be empty
-      # if preserveSelection == false
-      */
+        var dotCode;
+        $('#preview-status .message-text').text("Updating Graph");
+        $('#preview-status').show();
+        dotCode = window.courseManager.createDotGraph();
+        window.Viz.onmessage = function(event) {
+            var aspect, ast, data, elm, height, i, id, oldSelection, oldSvgManager, preview, svgManager, width, xdotCode, _i, _j, _len, _len1, _ref;
+            data = event.data;
+            if (data.type !== 'graph') {
+                throw new Error('Need the webworker to return graph type!');
+            }
+            xdotCode = data.message;
+            /*
+            # there are some warnings in the xdot code, but they are printed
+            # at the beginning, so filter them away
+            */
 
-      for (i = _j = 0, _len1 = oldSelection.length; _j < _len1; i = ++_j) {
-        id = oldSelection[i];
-        svgManager.select($(svgManager.svg).find("#" + id)[0]);
-      }
-      preview = svgManager.svg;
-      aspect = parseFloat(preview.getAttribute('aspect'));
-      if (aspect) {
-        width = $('#map-container').width();
-        height = $('#map-container').height();
-        preview.setAttribute('width', Math.round(width));
-        preview.setAttribute('height', Math.round(width / aspect));
-      }
-      $('#map-container').html(preview);
-      if (typeof ops.finish === "function") {
-        ops.finish();
-      }
-      $('#preview-status').fadeOut('fast');
+            xdotCode = xdotCode.slice(xdotCode.indexOf('digraph {'));
+            ast = DotParser.parse(xdotCode);
+            svgManager = new SVGGraphManager(new SVGDot(ast), window.courseManager.graphState);
+            oldSvgManager = window.courseManager.svgManager;
+            oldSelection = [];
+            if (oldSvgManager && ops.preserveSelection) {
+                _ref = oldSvgManager.selected || [];
+                for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+                    elm = _ref[_i];
+                    if (elm) {
+                        oldSelection.push(elm.getAttribute('id'));
+                    }
+                }
+            }
+            window.courseManager.initializeSVGManager(svgManager);
+            /*
+            # restore all of the previous selection.  This list will be empty
+            # if preserveSelection == false
+            */
+
+            for (i = _j = 0, _len1 = oldSelection.length; _j < _len1; i = ++_j) {
+                id = oldSelection[i];
+                svgManager.select($(svgManager.svg).find("#" + id)[0]);
+            }
+            preview = svgManager.svg;
+            aspect = parseFloat(preview.getAttribute('aspect'));
+            if (aspect) {
+                width = $('#map-container').width();
+                height = $('#map-container').height();
+                preview.setAttribute('width', Math.round(width));
+                preview.setAttribute('height', Math.round(width / aspect));
+            }
+            $('#map-container').html(preview);
+            if (typeof ops.finish === "function") {
+                ops.finish();
+            }
+            $('#preview-status').fadeOut('fast');
+        };
+        window.Viz.postMessage(dotCode);
     };
-    window.Viz.postMessage(dotCode);
-  };
-  window.setTimeout(render, 0);
+    window.setTimeout(render, 0);
 };
 
 onPreviewPageShow = function() {
-  if (window.Viz == null) {
-    window.Viz = new Worker('js/viz-worker.js');
-    window.Viz.onmessage = function(event) {
-      var data;
-      data = event.data;
-      if (data.type === 'status' && data.message === 'viz-loaded') {
-        $('#preview-status').hide();
-        $('#map-holder').show();
-        updatePreview();
-      }
-    };
-  } else {
-    window.setTimeout(updatePreview, 0);
-  }
+    if (window.Viz == null) {
+        window.Viz = new Worker('js/viz-worker.js');
+        window.Viz.onmessage = function(event) {
+            var data;
+            data = event.data;
+            if (data.type === 'status' && data.message === 'viz-loaded') {
+                $('#preview-status').hide();
+                $('#map-holder').show();
+                updatePreview();
+            }
+        };
+    } else {
+        window.setTimeout(updatePreview, 0);
+    }
 };
 
 /*
@@ -1624,239 +1636,239 @@ onPreviewPageShow = function() {
 
 
 SVGGraphManager = (function() {
-  /*
-  # jquery's functions don't work on svg elements, so we'll use our own
-  */
-
-  var addClass, removeClass, sanitizeId;
-
-  addClass = function(elm, cls) {
-    var oldCls;
-    oldCls = elm.getAttribute('class');
-    if (oldCls.split(/\s+/).indexOf(cls) >= 0) {
-      return;
-    }
-    elm.setAttribute('class', oldCls + ' ' + cls);
-  };
-
-  removeClass = function(elm, cls) {
-    var c, newCls, oldCls, _i, _len, _ref;
-    oldCls = elm.getAttribute('class');
-    newCls = [];
-    _ref = oldCls.split(/\s+/);
-    for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-      c = _ref[_i];
-      if (c !== cls) {
-        newCls.push(c);
-      }
-    }
-    elm.setAttribute('class', newCls.join(' '));
-  };
-
-  sanitizeId = function(str) {
-    return ('' + str).replace(/\W+/g, '-');
-  };
-
-  SVGGraphManager.utils = {
-    addClass: addClass,
-    removeClass: removeClass
-  };
-
-  function SVGGraphManager(svgGraph, graphState) {
-    var _this = this;
-    this.svgGraph = svgGraph;
-    this.graphState = graphState;
-    this.svgGraph.render();
-    this.svg = this.svgGraph.svg;
-    this.$svg = $(this.svgGraph.svg);
-    this.addReferenceToCourseToNodes();
-    this.$svg.find('.node').click(function(event) {
-      var course, elm;
-      elm = event.currentTarget;
-      if (elm.isElectivesNode) {
-        course = _this.graphState.clusters[elm.courseHash];
-        _this.electivesNodeClicked(course.cluster);
-      } else {
-        course = _this.graphState.nodes[elm.courseHash];
-        _this.courseClicked(course.course);
-      }
-    });
-    this.selected = [null, null];
-    return;
-  }
-
-  /*
-  # adds a .courseHash expando property to all svg nodes corresponding to a course
-  */
-
-
-  SVGGraphManager.prototype.addReferenceToCourseToNodes = function() {
-    var elm, hash;
-    for (hash in this.graphState.nodes) {
-      elm = this.$svg.find("#" + (sanitizeId(hash)))[0];
-      if (elm) {
-        elm.courseHash = hash;
-      }
-    }
-    for (hash in this.graphState.clusters) {
-      elm = this.$svg.find("#" + (sanitizeId(hash)))[0];
-      if (elm) {
-        elm.courseHash = hash;
-        elm.isElectivesNode = true;
-      }
-    }
-  };
-
-  SVGGraphManager.prototype.selectEdgeBetween = function(elm1, elm2) {
-    var edge, id1, id2, _i, _j, _len, _len1, _ref, _ref1;
-    id1 = elm1.getAttribute('id');
-    id2 = elm2.getAttribute('id');
-    _ref = this.$svg.find("[target=" + id1 + "][origin=" + id2 + "]");
-    for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-      edge = _ref[_i];
-      addClass(edge, 'highlight');
-    }
-    _ref1 = this.$svg.find("[target=" + id2 + "][origin=" + id1 + "]");
-    for (_j = 0, _len1 = _ref1.length; _j < _len1; _j++) {
-      edge = _ref1[_j];
-      addClass(edge, 'highlight');
-    }
-  };
-
-  SVGGraphManager.prototype.select = function(elm) {
     /*
-    # special behavior when clicking an electivesNode
+    # jquery's functions don't work on svg elements, so we'll use our own
     */
 
-    var _ref, _ref1;
-    if (elm.isElectivesNode) {
-      this.selected[0] = elm;
-      addClass(elm, 'selected');
-      if (typeof this.selectionChanged === "function") {
-        this.selectionChanged();
-      }
-      return;
-    }
-    /*
-    # if we have any electivesNodes selected and we click something else, we want
-    # to deselect them instead of adding them to the queue.
-    */
+    var addClass, removeClass, sanitizeId;
 
-    if (((_ref = this.selected[0]) != null ? _ref.isElectivesNode : void 0) || ((_ref1 = this.selected[1]) != null ? _ref1.isElectivesNode : void 0)) {
-      this.deselectAll();
-    }
-    /*
-    # if the queue is full, cyclically rotate
-    */
-
-    if (this.selected[0] && this.selected[1]) {
-      this.deselct(this.selected[0]);
-      this.selected[0] = this.selected[1];
-      this.selected[1] = elm;
-    } else if (this.selected[0]) {
-      this.selected[1] = elm;
-    } else {
-      this.selected[0] = elm;
-    }
-    addClass(elm, 'selected');
-    if (this.selected[0] && this.selected[1]) {
-      this.selectEdgeBetween(this.selected[0], this.selected[1]);
-    }
-    if (typeof this.selectionChanged === "function") {
-      this.selectionChanged();
-    }
-  };
-
-  SVGGraphManager.prototype.deselct = function(elm) {
-    var i;
-    i = this.selected.indexOf(elm);
-    if (i >= 0) {
-      this.selected[i] = null;
-    }
-    removeClass(elm, 'selected');
-    if (typeof this.selectionChanged === "function") {
-      this.selectionChanged();
-    }
-  };
-
-  SVGGraphManager.prototype.deselectAll = function() {
-    var elm, _i, _j, _len, _len1, _ref, _ref1;
-    _ref = this.$svg.find('.selected');
-    for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-      elm = _ref[_i];
-      removeClass(elm, 'selected');
-    }
-    _ref1 = this.$svg.find('.highlight');
-    for (_j = 0, _len1 = _ref1.length; _j < _len1; _j++) {
-      elm = _ref1[_j];
-      removeClass(elm, 'highlight');
-    }
-    this.selected[0] = null;
-    this.selected[1] = null;
-    if (typeof this.selectionChanged === "function") {
-      this.selectionChanged();
-    }
-  };
-
-  SVGGraphManager.prototype.courseClicked = function(course) {
-    var clickedNode, edge, _i, _len, _ref;
-    clickedNode = $("#" + (sanitizeId(BasicCourse.hashCourse(course))))[0];
-    _ref = this.$svg.find('.edge.highlight');
-    for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-      edge = _ref[_i];
-      removeClass(edge, 'highlight');
-    }
-    if (this.selected.indexOf(clickedNode) >= 0) {
-      this.deselct(clickedNode);
-      return;
-    }
-    /*
-    # if deselected and now the list is [null, item], permute it to [item, null]
-    */
-
-    if (this.selected[1] && !this.selected[0]) {
-      this.selected[0] = this.selected[1];
-      this.selected[1] = null;
-    }
-    this.select(clickedNode);
-  };
-
-  SVGGraphManager.prototype.electivesNodeClicked = function(course) {
-    var clickedNode;
-    clickedNode = $("#" + (sanitizeId(BasicCourse.hashCourse(course))))[0];
-    this.deselectAll();
-    this.select(clickedNode, true);
-  };
-
-  SVGGraphManager.prototype.highlightPrereqPath = function(course) {
-    var elm, highlight, _i, _len, _ref,
-      _this = this;
-    _ref = this.$svg.find('.highlight');
-    for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-      elm = _ref[_i];
-      removeClass(elm, 'highlight');
-    }
-    /*
-    # highight the node and all its anscestors
-    */
-
-    highlight = function(node) {
-      var arrow, id, _j, _len1, _ref1, _results;
-      addClass($(node)[0], "highlight");
-      id = $(node).attr('id');
-      _ref1 = _this.$svg.find("[target=" + id + "]");
-      _results = [];
-      for (_j = 0, _len1 = _ref1.length; _j < _len1; _j++) {
-        arrow = _ref1[_j];
-        addClass(arrow, "highlight");
-        _results.push(highlight($("#" + (arrow.attr('origin')))));
-      }
-      return _results;
+    addClass = function(elm, cls) {
+        var oldCls;
+        oldCls = elm.getAttribute('class');
+        if (oldCls.split(/\s+/).indexOf(cls) >= 0) {
+            return;
+        }
+        elm.setAttribute('class', oldCls + ' ' + cls);
     };
-    highlight("#" + course.subject + "-" + course.number);
-  };
 
-  return SVGGraphManager;
+    removeClass = function(elm, cls) {
+        var c, newCls, oldCls, _i, _len, _ref;
+        oldCls = elm.getAttribute('class');
+        newCls = [];
+        _ref = oldCls.split(/\s+/);
+        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+            c = _ref[_i];
+            if (c !== cls) {
+                newCls.push(c);
+            }
+        }
+        elm.setAttribute('class', newCls.join(' '));
+    };
+
+    sanitizeId = function(str) {
+        return ('' + str).replace(/\W+/g, '-');
+    };
+
+    SVGGraphManager.utils = {
+        addClass: addClass,
+        removeClass: removeClass
+    };
+
+    function SVGGraphManager(svgGraph, graphState) {
+        var _this = this;
+        this.svgGraph = svgGraph;
+        this.graphState = graphState;
+        this.svgGraph.render();
+        this.svg = this.svgGraph.svg;
+        this.$svg = $(this.svgGraph.svg);
+        this.addReferenceToCourseToNodes();
+        this.$svg.find('.node').click(function(event) {
+            var course, elm;
+            elm = event.currentTarget;
+            if (elm.isElectivesNode) {
+                course = _this.graphState.clusters[elm.courseHash];
+                _this.electivesNodeClicked(course.cluster);
+            } else {
+                course = _this.graphState.nodes[elm.courseHash];
+                _this.courseClicked(course.course);
+            }
+        });
+        this.selected = [null, null];
+        return;
+    }
+
+    /*
+    # adds a .courseHash expando property to all svg nodes corresponding to a course
+    */
+
+
+    SVGGraphManager.prototype.addReferenceToCourseToNodes = function() {
+        var elm, hash;
+        for (hash in this.graphState.nodes) {
+            elm = this.$svg.find("#" + (sanitizeId(hash)))[0];
+            if (elm) {
+                elm.courseHash = hash;
+            }
+        }
+        for (hash in this.graphState.clusters) {
+            elm = this.$svg.find("#" + (sanitizeId(hash)))[0];
+            if (elm) {
+                elm.courseHash = hash;
+                elm.isElectivesNode = true;
+            }
+        }
+    };
+
+    SVGGraphManager.prototype.selectEdgeBetween = function(elm1, elm2) {
+        var edge, id1, id2, _i, _j, _len, _len1, _ref, _ref1;
+        id1 = elm1.getAttribute('id');
+        id2 = elm2.getAttribute('id');
+        _ref = this.$svg.find("[target=" + id1 + "][origin=" + id2 + "]");
+        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+            edge = _ref[_i];
+            addClass(edge, 'highlight');
+        }
+        _ref1 = this.$svg.find("[target=" + id2 + "][origin=" + id1 + "]");
+        for (_j = 0, _len1 = _ref1.length; _j < _len1; _j++) {
+            edge = _ref1[_j];
+            addClass(edge, 'highlight');
+        }
+    };
+
+    SVGGraphManager.prototype.select = function(elm) {
+        /*
+        # special behavior when clicking an electivesNode
+        */
+
+        var _ref, _ref1;
+        if (elm.isElectivesNode) {
+            this.selected[0] = elm;
+            addClass(elm, 'selected');
+            if (typeof this.selectionChanged === "function") {
+                this.selectionChanged();
+            }
+            return;
+        }
+        /*
+        # if we have any electivesNodes selected and we click something else, we want
+        # to deselect them instead of adding them to the queue.
+        */
+
+        if (((_ref = this.selected[0]) != null ? _ref.isElectivesNode : void 0) || ((_ref1 = this.selected[1]) != null ? _ref1.isElectivesNode : void 0)) {
+            this.deselectAll();
+        }
+        /*
+        # if the queue is full, cyclically rotate
+        */
+
+        if (this.selected[0] && this.selected[1]) {
+            this.deselct(this.selected[0]);
+            this.selected[0] = this.selected[1];
+            this.selected[1] = elm;
+        } else if (this.selected[0]) {
+            this.selected[1] = elm;
+        } else {
+            this.selected[0] = elm;
+        }
+        addClass(elm, 'selected');
+        if (this.selected[0] && this.selected[1]) {
+            this.selectEdgeBetween(this.selected[0], this.selected[1]);
+        }
+        if (typeof this.selectionChanged === "function") {
+            this.selectionChanged();
+        }
+    };
+
+    SVGGraphManager.prototype.deselct = function(elm) {
+        var i;
+        i = this.selected.indexOf(elm);
+        if (i >= 0) {
+            this.selected[i] = null;
+        }
+        removeClass(elm, 'selected');
+        if (typeof this.selectionChanged === "function") {
+            this.selectionChanged();
+        }
+    };
+
+    SVGGraphManager.prototype.deselectAll = function() {
+        var elm, _i, _j, _len, _len1, _ref, _ref1;
+        _ref = this.$svg.find('.selected');
+        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+            elm = _ref[_i];
+            removeClass(elm, 'selected');
+        }
+        _ref1 = this.$svg.find('.highlight');
+        for (_j = 0, _len1 = _ref1.length; _j < _len1; _j++) {
+            elm = _ref1[_j];
+            removeClass(elm, 'highlight');
+        }
+        this.selected[0] = null;
+        this.selected[1] = null;
+        if (typeof this.selectionChanged === "function") {
+            this.selectionChanged();
+        }
+    };
+
+    SVGGraphManager.prototype.courseClicked = function(course) {
+        var clickedNode, edge, _i, _len, _ref;
+        clickedNode = $("#" + (sanitizeId(BasicCourse.hashCourse(course))))[0];
+        _ref = this.$svg.find('.edge.highlight');
+        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+            edge = _ref[_i];
+            removeClass(edge, 'highlight');
+        }
+        if (this.selected.indexOf(clickedNode) >= 0) {
+            this.deselct(clickedNode);
+            return;
+        }
+        /*
+        # if deselected and now the list is [null, item], permute it to [item, null]
+        */
+
+        if (this.selected[1] && !this.selected[0]) {
+            this.selected[0] = this.selected[1];
+            this.selected[1] = null;
+        }
+        this.select(clickedNode);
+    };
+
+    SVGGraphManager.prototype.electivesNodeClicked = function(course) {
+        var clickedNode;
+        clickedNode = $("#" + (sanitizeId(BasicCourse.hashCourse(course))))[0];
+        this.deselectAll();
+        this.select(clickedNode, true);
+    };
+
+    SVGGraphManager.prototype.highlightPrereqPath = function(course) {
+        var elm, highlight, _i, _len, _ref,
+            _this = this;
+        _ref = this.$svg.find('.highlight');
+        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+            elm = _ref[_i];
+            removeClass(elm, 'highlight');
+        }
+        /*
+        # highight the node and all its anscestors
+        */
+
+        highlight = function(node) {
+            var arrow, id, _j, _len1, _ref1, _results;
+            addClass($(node)[0], "highlight");
+            id = $(node).attr('id');
+            _ref1 = _this.$svg.find("[target=" + id + "]");
+            _results = [];
+            for (_j = 0, _len1 = _ref1.length; _j < _len1; _j++) {
+                arrow = _ref1[_j];
+                addClass(arrow, "highlight");
+                _results.push(highlight($("#" + (arrow.attr('origin')))));
+            }
+            return _results;
+        };
+        highlight("#" + course.subject + "-" + course.number);
+    };
+
+    return SVGGraphManager;
 
 })();
 
@@ -1867,1536 +1879,1536 @@ SVGGraphManager = (function() {
 
 
 CourseManager = (function() {
-  CourseManager.prototype.DISPLAYABLE_STATES = ['required', 'elective', 'core'];
+    CourseManager.prototype.DISPLAYABLE_STATES = ['required', 'elective', 'core'];
 
-  function CourseManager() {
-    this.courseDataLoaded = __bind(this.courseDataLoaded, this);
-    this.courses = {};
-    this.courseData = {};
+    function CourseManager() {
+        this.courseDataLoaded = __bind(this.courseDataLoaded, this);
+        this.courses = {};
+        this.courseData = {};
+        /*
+        # all the courses that are displayed in the year chart (and so are sortable)
+        */
+
+        this.sortableCourses = {};
+        this.sortableCoursesStateButtons = {};
+        this.loadedSubjects = {};
+        this.loadingStatus = {};
+        this.onSubjectLoadedCallbacks = {};
+        this.coops = {};
+        this.graphState = new Graph;
+        /*
+        # we'd only like to show course availability for the most recent 2 years (6 most recent terms)
+        */
+
+        this.mostRecentTerm = '';
+    }
+
     /*
-    # all the courses that are displayed in the year chart (and so are sortable)
+    # Based make sure @graphState reflects everything
+    # that is in the year chart.
     */
 
-    this.sortableCourses = {};
-    this.sortableCoursesStateButtons = {};
-    this.loadedSubjects = {};
-    this.loadingStatus = {};
-    this.onSubjectLoadedCallbacks = {};
-    this.coops = {};
-    this.graphState = new Graph;
+
+    CourseManager.prototype.updateGraphState = function() {
+        var cluster, clusterHash, clusters, coop, course, courses, elm, filterDisplayable, hash, year, _i, _j, _k, _l, _len, _len1, _len2, _m, _ref, _ref1, _ref2, _ref3,
+            _this = this;
+        this.graphState.title = $('#program-info input').val();
+        this.graphState.mostRecentTerm = this.mostRecentTerm;
+        /*
+        # returns whether or not a single course should be inlcuded in the graph
+        # and if given a list, will filter the list so only courses that should be displayed remain
+        */
+
+        filterDisplayable = function(list) {
+            var c, state, _i, _len, _ref, _ref1;
+            if (!list) {
+                return list;
+            }
+            /*
+            # are we an array?
+            */
+
+            if (list.length == null) {
+                _ref = _this.DISPLAYABLE_STATES;
+                for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+                    state = _ref[_i];
+                    if ((_ref1 = list.state) != null ? _ref1[state] : void 0) {
+                        return true;
+                    }
+                }
+                return false;
+            }
+            return (function() {
+                var _j, _len1, _results;
+                _results = [];
+                for (_j = 0, _len1 = list.length; _j < _len1; _j++) {
+                    c = list[_j];
+                    if (filterDisplayable(c)) {
+                        _results.push(c);
+                    }
+                }
+                return _results;
+            })();
+        };
+        /*
+        # get a list of all the courses that should show up and what year
+        # they should be showing up
+        */
+
+        courses = {};
+        for (year = _i = 1; _i <= 4; year = ++_i) {
+            _ref = $(".year" + year + " .course");
+            for (_j = 0, _len = _ref.length; _j < _len; _j++) {
+                elm = _ref[_j];
+                hash = BasicCourse.hashCourse({
+                    subject: elm.getAttribute('subject'),
+                    number: elm.getAttribute('number')
+                });
+                course = this.sortableCourses[hash];
+                if (filterDisplayable(course)) {
+                    courses[hash] = {
+                        course: course,
+                        year: year
+                    };
+                }
+            }
+        }
+        /*
+        # gather all the clusters of electives that should show up
+        */
+
+        clusters = {};
+        for (year = _k = 1; _k <= 4; year = ++_k) {
+            _ref1 = $(".year" + year + " .electives-block");
+            for (_l = 0, _len1 = _ref1.length; _l < _len1; _l++) {
+                cluster = _ref1[_l];
+                clusterHash = BasicCourse.hashCourse({
+                    subject: cluster.getAttribute('subject'),
+                    number: cluster.getAttribute('number')
+                });
+                clusters[clusterHash] = {
+                    cluster: this.sortableCourses[clusterHash],
+                    year: year,
+                    courses: []
+                };
+                _ref2 = $(cluster).find('.course');
+                for (_m = 0, _len2 = _ref2.length; _m < _len2; _m++) {
+                    elm = _ref2[_m];
+                    hash = BasicCourse.hashCourse({
+                        subject: elm.getAttribute('subject'),
+                        number: elm.getAttribute('number')
+                    });
+                    course = this.sortableCourses[hash];
+                    if (filterDisplayable(course)) {
+                        clusters[clusterHash].courses.push(course);
+                    }
+                }
+            }
+        }
+        this.graphState.nodes = courses;
+        this.graphState.clusters = clusters;
+        this.graphState.pruneOrphanedEdges();
+        this.graphState.generateEdges();
+        /*
+        # add the coops
+        */
+
+        this.graphState.coops = [];
+        _ref3 = this.coops;
+        for (hash in _ref3) {
+            coop = _ref3[hash];
+            this.graphState.coops.push(dupObject(coop.data));
+        }
+        return this.graphState;
+    };
+
     /*
-    # we'd only like to show course availability for the most recent 2 years (6 most recent terms)
+    # clears all loaded courses and removes their DOM nodes.
+    # this function should make CourseManager reset to a pristine
+    # state
     */
 
-    this.mostRecentTerm = '';
-  }
 
-  /*
-  # Based make sure @graphState reflects everything
-  # that is in the year chart.
-  */
+    CourseManager.prototype.clearAll = function() {
+        var coop, course, courses, hash, _i, _len, _ref, _ref1;
+        _ref = this.courses;
+        for (hash in _ref) {
+            courses = _ref[hash];
+            for (_i = 0, _len = courses.length; _i < _len; _i++) {
+                course = courses[_i];
+                if (typeof course.removeButton === "function") {
+                    course.removeButton();
+                }
+            }
+            this.courses[hash] = null;
+        }
+        this.courses = {};
+        this.courseData = {};
+        /*
+        # all the courses that are displayed in the year chart (and so are sortable)
+        */
 
+        this.sortableCourses = {};
+        this.sortableCoursesStateButtons = {};
+        this.loadedSubjects = {};
+        this.loadingStatus = {};
+        this.onSubjectLoadedCallbacks = {};
+        _ref1 = this.coops;
+        for (hash in _ref1) {
+            coop = _ref1[hash];
+            this.removeCoop(coop);
+        }
+        this.coops = {};
+        this.graphState.clearAll();
+    };
 
-  CourseManager.prototype.updateGraphState = function() {
-    var cluster, clusterHash, clusters, coop, course, courses, elm, filterDisplayable, hash, year, _i, _j, _k, _l, _len, _len1, _len2, _m, _ref, _ref1, _ref2, _ref3,
-      _this = this;
-    this.graphState.title = $('#program-info input').val();
-    this.graphState.mostRecentTerm = this.mostRecentTerm;
     /*
-    # returns whether or not a single course should be inlcuded in the graph
-    # and if given a list, will filter the list so only courses that should be displayed remain
+    # takes in JSON representation of a graph and
+    # loads all relavent courses, etc.
     */
 
-    filterDisplayable = function(list) {
-      var c, state, _i, _len, _ref, _ref1;
-      if (!list) {
-        return list;
-      }
-      /*
-      # are we an array?
-      */
 
-      if (list.length == null) {
-        _ref = _this.DISPLAYABLE_STATES;
+    CourseManager.prototype.loadGraph = function(str) {
+        var cluster, coop, course, courseLoadCallback, createCourseLoadCallback, elective, electiveButton, hash, node, _, _i, _j, _len, _len1, _ref, _ref1, _ref2, _ref3,
+            _this = this;
+        this.clearAll();
+        /*
+        # we'll update graph state and from that repopulate the dom, etc. appropriately
+        */
+
+        this.graphState.fromJSON(str);
+        $('#program-info input').val(this.graphState.title);
+        courseLoadCallback = {};
+        /*
+        #creates a function that reparents course to electivesBlock
+        */
+
+        createCourseLoadCallback = function(electivesBlock) {
+            var ret;
+            ret = function(course) {
+                electivesBlock.addCourse(course);
+                _this.updateElectivesButton(electivesBlock);
+            };
+            return ret;
+        };
+        /*
+        # load the elective blocks first so they can be populated
+        # when ensureDisplayedInYearChart is called
+        */
+
+        _ref = this.graphState.clusters;
+        for (_ in _ref) {
+            cluster = _ref[_];
+            elective = new ElectivesButtonEditor(cluster.cluster, this);
+            electiveButton = new ElectivesButton(elective);
+            $('#electives-list').append(elective.getButton());
+            $(".year" + cluster.year + " .courses").append(electiveButton.getButton());
+            this.addCourse(electiveButton);
+            this.sortableCourses[electiveButton] = electiveButton;
+            this.addCourse(elective);
+            this.makeCourseButtonDraggable(electiveButton);
+            this.makeElectivesButtonDroppable(electiveButton);
+            this.makeElectivesButtonClickable(electiveButton);
+            this.makeElectivesButtonClickable(elective);
+            _ref1 = cluster.courses;
+            for (_i = 0, _len = _ref1.length; _i < _len; _i++) {
+                course = _ref1[_i];
+                hash = BasicCourse.hashCourse(course);
+                courseLoadCallback[hash] = createCourseLoadCallback(electiveButton);
+            }
+        }
+        _ref2 = this.graphState.nodes;
+        createErrorCallback = function(sub) {
+            return function() {
+                errorMsgHash["Could not load subject '" + sub + "'"] = true;
+                $('#department-list').combobox('showError', ((function() {
+                    var _results;
+                    _results = [];
+                    for (e in errorMsgHash) {
+                        _results.push(e);
+                    }
+                    // clear the errorMsgHash after each time it's displayed
+                    window.setTimeout(function(){ errorMsgHash = {}; }, errorMsgHashClearTimeout);
+                    return _results;
+                })()).join('<br/>'));
+            };
+        };
+        for (_ in _ref2) {
+            node = _ref2[_];
+            course = node.course;
+            hash = BasicCourse.hashCourse(course);
+            try {
+                    this.ensureDisplayedInYearChart(course, {
+                        state: course.state,
+                        year: node.year,
+                        load: courseLoadCallback[hash],
+                        error: createErrorCallback(hash)
+                    });
+            } catch (_error) {
+                 console.log(_error);
+            }
+        }
+        _ref3 = this.graphState.coops;
+        for (_j = 0, _len1 = _ref3.length; _j < _len1; _j++) {
+            coop = _ref3[_j];
+            this.addCoop(coop);
+        }
+        /*
+        # display the graph preview when the preview page is active
+        */
+
+        if ($('a[page=#preview]').hasClass('active')) {
+            /*
+            #XXX We need to delay
+            */
+
+            window.setTimeout(updatePreview, 1000);
+        }
+        return this.graphState;
+    };
+
+    CourseManager.prototype.initializeSVGManager = function(svgManager) {
+        var idToCourse,
+            _this = this;
+        idToCourse = function(id) {
+            var number, subject, _ref;
+            _ref = id.split('-'), subject = _ref[0], number = _ref[1];
+            return {
+                subject: subject,
+                number: number
+            };
+        };
+        this.svgManager = svgManager;
+        this.svgManager.selectionChanged = function() {
+            /*
+            # special behavior for when we click an electives block.
+            # We want to be able to edit its extra properties.
+            */
+
+            var course, course1, course2, edge, elm, reverseEdge, tmp, toggleCoreq, toggleEdge, _ref, _ref1;
+            if ((_ref = svgManager.selected[0]) != null ? _ref.isElectivesNode : void 0) {
+                elm = svgManager.selected[0];
+                course = _this.sortableCourses[elm.courseHash];
+                course.data = course.data || {};
+                $('#preview-tabs').tabs('select', '#tab-electives-graphical');
+                $('#currently-selected-electivesNode').html(course.title);
+                _this.bindElectivesDescription(course);
+                return;
+            }
+            $('#preview-tabs').tabs('select', '#tab-edges');
+            if (!(svgManager.selected[0] && svgManager.selected[1])) {
+                elm = 0;
+                if (svgManager.selected[0]) {
+                    elm = svgManager.selected[0].getAttribute('id');
+                }
+                if (svgManager.selected[1]) {
+                    elm = svgManager.selected[1].getAttribute('id');
+                }
+                if (elm) {
+                    course1 = window.courseManager.createCourseButton(idToCourse(elm));
+                }
+            } else {
+                course1 = idToCourse(svgManager.selected[0].getAttribute('id'));
+                course2 = idToCourse(svgManager.selected[1].getAttribute('id'));
+                course1 = window.courseManager.createCourseButton(course1);
+                course2 = window.courseManager.createCourseButton(course2);
+                edge = window.courseManager.graphState.edges[[course1, course2]];
+                /*
+                # if we have an edge facing the other way, assume the user wanted
+                # to select that edge in the correct order
+                */
+
+                if (!edge && window.courseManager.graphState.edges[[course2, course1]]) {
+                    edge = window.courseManager.graphState.edges[[course2, course1]];
+                    tmp = course1;
+                    course1 = course2;
+                    course2 = tmp;
+                }
+            }
+            /*
+            # set up the graphical part of selection
+            */
+
+            if (course1) {
+                $('#course1 .course-container').html(course1.$elm);
+                $('#course1 .course-standin').hide();
+            } else {
+                $('#course1 .course-container').html('');
+                $('#course1 .course-standin').show();
+            }
+            if (course2) {
+                $('#course2 .course-container').html(course2.$elm);
+                $('#course2 .course-standin').hide();
+            } else {
+                $('#course2 .course-container').html('');
+                $('#course2 .course-standin').show();
+            }
+            toggleEdge = $('#toggleEdge');
+            toggleCoreq = $('#toggleCoreq');
+            reverseEdge = $('#reverseEdge');
+            if (course1 && course2) {
+                toggleEdge.button('enable');
+            } else {
+                toggleEdge.button('disable');
+            }
+            /*
+            # non-existent edges or invisible edges should not be shown
+            */
+
+            if (!edge || ((_ref1 = edge.properties.style) != null ? _ref1.match(/invis/) : void 0)) {
+                $('#edge1').attr({
+                    "class": 'noArrow'
+                });
+                toggleEdge.find('span').text(toggleEdge.attr('op1'));
+                toggleCoreq.button('disable');
+                reverseEdge.button('disable');
+            } else {
+                toggleCoreq.button('enable');
+                toggleEdge.find('span').text(toggleEdge.attr('op2'));
+                if (edge.properties.coreq) {
+                    $('#edge1').attr({
+                        "class": 'coreqArrow'
+                    });
+                    toggleCoreq.find('span').text(toggleCoreq.attr('op2'));
+                    reverseEdge.button('disable');
+                } else {
+                    $('#edge1').attr({
+                        "class": 'prereqArrow'
+                    });
+                    toggleCoreq.find('span').text(toggleCoreq.attr('op1'));
+                    reverseEdge.button('enable');
+                }
+            }
+        };
+        this.svgManager.selectionChanged();
+    };
+
+    /*
+    # updates the state of all instances of a particular course
+    */
+
+
+    CourseManager.prototype.updateCourseState = function(course, state, ops) {
+        var c, hash, _i, _len, _ref,
+            _this = this;
+        if (ops == null) {
+            ops = {
+                updatePrereqs: true
+            };
+        }
+        hash = BasicCourse.hashCourse(course);
+        _ref = this.courses[hash] || [];
         for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-          state = _ref[_i];
-          if ((_ref1 = list.state) != null ? _ref1[state] : void 0) {
-            return true;
-          }
-        }
-        return false;
-      }
-      return (function() {
-        var _j, _len1, _results;
-        _results = [];
-        for (_j = 0, _len1 = list.length; _j < _len1; _j++) {
-          c = list[_j];
-          if (filterDisplayable(c)) {
-            _results.push(c);
-          }
-        }
-        return _results;
-      })();
-    };
-    /*
-    # get a list of all the courses that should show up and what year
-    # they should be showing up
-    */
-
-    courses = {};
-    for (year = _i = 1; _i <= 4; year = ++_i) {
-      _ref = $(".year" + year + " .course");
-      for (_j = 0, _len = _ref.length; _j < _len; _j++) {
-        elm = _ref[_j];
-        hash = BasicCourse.hashCourse({
-          subject: elm.getAttribute('subject'),
-          number: elm.getAttribute('number')
-        });
-        course = this.sortableCourses[hash];
-        if (filterDisplayable(course)) {
-          courses[hash] = {
-            course: course,
-            year: year
-          };
-        }
-      }
-    }
-    /*
-    # gather all the clusters of electives that should show up
-    */
-
-    clusters = {};
-    for (year = _k = 1; _k <= 4; year = ++_k) {
-      _ref1 = $(".year" + year + " .electives-block");
-      for (_l = 0, _len1 = _ref1.length; _l < _len1; _l++) {
-        cluster = _ref1[_l];
-        clusterHash = BasicCourse.hashCourse({
-          subject: cluster.getAttribute('subject'),
-          number: cluster.getAttribute('number')
-        });
-        clusters[clusterHash] = {
-          cluster: this.sortableCourses[clusterHash],
-          year: year,
-          courses: []
-        };
-        _ref2 = $(cluster).find('.course');
-        for (_m = 0, _len2 = _ref2.length; _m < _len2; _m++) {
-          elm = _ref2[_m];
-          hash = BasicCourse.hashCourse({
-            subject: elm.getAttribute('subject'),
-            number: elm.getAttribute('number')
-          });
-          course = this.sortableCourses[hash];
-          if (filterDisplayable(course)) {
-            clusters[clusterHash].courses.push(course);
-          }
-        }
-      }
-    }
-    this.graphState.nodes = courses;
-    this.graphState.clusters = clusters;
-    this.graphState.pruneOrphanedEdges();
-    this.graphState.generateEdges();
-    /*
-    # add the coops
-    */
-
-    this.graphState.coops = [];
-    _ref3 = this.coops;
-    for (hash in _ref3) {
-      coop = _ref3[hash];
-      this.graphState.coops.push(dupObject(coop.data));
-    }
-    return this.graphState;
-  };
-
-  /*
-  # clears all loaded courses and removes their DOM nodes.
-  # this function should make CourseManager reset to a pristine
-  # state
-  */
-
-
-  CourseManager.prototype.clearAll = function() {
-    var coop, course, courses, hash, _i, _len, _ref, _ref1;
-    _ref = this.courses;
-    for (hash in _ref) {
-      courses = _ref[hash];
-      for (_i = 0, _len = courses.length; _i < _len; _i++) {
-        course = courses[_i];
-        if (typeof course.removeButton === "function") {
-          course.removeButton();
-        }
-      }
-      this.courses[hash] = null;
-    }
-    this.courses = {};
-    this.courseData = {};
-    /*
-    # all the courses that are displayed in the year chart (and so are sortable)
-    */
-
-    this.sortableCourses = {};
-    this.sortableCoursesStateButtons = {};
-    this.loadedSubjects = {};
-    this.loadingStatus = {};
-    this.onSubjectLoadedCallbacks = {};
-    _ref1 = this.coops;
-    for (hash in _ref1) {
-      coop = _ref1[hash];
-      this.removeCoop(coop);
-    }
-    this.coops = {};
-    this.graphState.clearAll();
-  };
-
-  /*
-  # takes in JSON representation of a graph and
-  # loads all relavent courses, etc.
-  */
-
-
-  CourseManager.prototype.loadGraph = function(str) {
-    var cluster, coop, course, courseLoadCallback, createCourseLoadCallback, elective, electiveButton, hash, node, _, _i, _j, _len, _len1, _ref, _ref1, _ref2, _ref3,
-      _this = this;
-    this.clearAll();
-    /*
-    # we'll update graph state and from that repopulate the dom, etc. appropriately
-    */
-
-    this.graphState.fromJSON(str);
-    $('#program-info input').val(this.graphState.title);
-    courseLoadCallback = {};
-    /*
-    #creates a function that reparents course to electivesBlock
-    */
-
-    createCourseLoadCallback = function(electivesBlock) {
-      var ret;
-      ret = function(course) {
-        electivesBlock.addCourse(course);
-        _this.updateElectivesButton(electivesBlock);
-      };
-      return ret;
-    };
-    /*
-    # load the elective blocks first so they can be populated
-    # when ensureDisplayedInYearChart is called
-    */
-
-    _ref = this.graphState.clusters;
-    for (_ in _ref) {
-      cluster = _ref[_];
-      elective = new ElectivesButtonEditor(cluster.cluster, this);
-      electiveButton = new ElectivesButton(elective);
-      $('#electives-list').append(elective.getButton());
-      $(".year" + cluster.year + " .courses").append(electiveButton.getButton());
-      this.addCourse(electiveButton);
-      this.sortableCourses[electiveButton] = electiveButton;
-      this.addCourse(elective);
-      this.makeCourseButtonDraggable(electiveButton);
-      this.makeElectivesButtonDroppable(electiveButton);
-      this.makeElectivesButtonClickable(electiveButton);
-      this.makeElectivesButtonClickable(elective);
-      _ref1 = cluster.courses;
-      for (_i = 0, _len = _ref1.length; _i < _len; _i++) {
-        course = _ref1[_i];
-        hash = BasicCourse.hashCourse(course);
-        courseLoadCallback[hash] = createCourseLoadCallback(electiveButton);
-      }
-    }
-    _ref2 = this.graphState.nodes;
-    createErrorCallback = function(sub) {
-      return function() {
-        errorMsgHash["Could not load subject '" + sub + "'"] = true;
-        $('#department-list').combobox('showError', ((function() {
-          var _results;
-          _results = [];
-          for (e in errorMsgHash) {
-            _results.push(e);
-          }
-          // clear the errorMsgHash after each time it's displayed
-          window.setTimeout(function(){ errorMsgHash = {}; }, errorMsgHashClearTimeout);
-          return _results;
-        })()).join('<br/>'));
-      };
-    };
-    for (_ in _ref2) {
-      node = _ref2[_];
-      course = node.course;
-      hash = BasicCourse.hashCourse(course);
-      try {
-          this.ensureDisplayedInYearChart(course, {
-            state: course.state,
-            year: node.year,
-            load: courseLoadCallback[hash],
-            error: createErrorCallback(hash)
-          });
-      } catch (_error) {
-         console.log(_error);
-      }
-    }
-    _ref3 = this.graphState.coops;
-    for (_j = 0, _len1 = _ref3.length; _j < _len1; _j++) {
-      coop = _ref3[_j];
-      this.addCoop(coop);
-    }
-    /*
-    # display the graph preview when the preview page is active
-    */
-
-    if ($('a[page=#preview]').hasClass('active')) {
-      /*
-      #XXX We need to delay
-      */
-
-      window.setTimeout(updatePreview, 1000);
-    }
-    return this.graphState;
-  };
-
-  CourseManager.prototype.initializeSVGManager = function(svgManager) {
-    var idToCourse,
-      _this = this;
-    idToCourse = function(id) {
-      var number, subject, _ref;
-      _ref = id.split('-'), subject = _ref[0], number = _ref[1];
-      return {
-        subject: subject,
-        number: number
-      };
-    };
-    this.svgManager = svgManager;
-    this.svgManager.selectionChanged = function() {
-      /*
-      # special behavior for when we click an electives block.
-      # We want to be able to edit its extra properties.
-      */
-
-      var course, course1, course2, edge, elm, reverseEdge, tmp, toggleCoreq, toggleEdge, _ref, _ref1;
-      if ((_ref = svgManager.selected[0]) != null ? _ref.isElectivesNode : void 0) {
-        elm = svgManager.selected[0];
-        course = _this.sortableCourses[elm.courseHash];
-        course.data = course.data || {};
-        $('#preview-tabs').tabs('select', '#tab-electives-graphical');
-        $('#currently-selected-electivesNode').html(course.title);
-        _this.bindElectivesDescription(course);
-        return;
-      }
-      $('#preview-tabs').tabs('select', '#tab-edges');
-      if (!(svgManager.selected[0] && svgManager.selected[1])) {
-        elm = 0;
-        if (svgManager.selected[0]) {
-          elm = svgManager.selected[0].getAttribute('id');
-        }
-        if (svgManager.selected[1]) {
-          elm = svgManager.selected[1].getAttribute('id');
-        }
-        if (elm) {
-          course1 = window.courseManager.createCourseButton(idToCourse(elm));
-        }
-      } else {
-        course1 = idToCourse(svgManager.selected[0].getAttribute('id'));
-        course2 = idToCourse(svgManager.selected[1].getAttribute('id'));
-        course1 = window.courseManager.createCourseButton(course1);
-        course2 = window.courseManager.createCourseButton(course2);
-        edge = window.courseManager.graphState.edges[[course1, course2]];
-        /*
-        # if we have an edge facing the other way, assume the user wanted
-        # to select that edge in the correct order
-        */
-
-        if (!edge && window.courseManager.graphState.edges[[course2, course1]]) {
-          edge = window.courseManager.graphState.edges[[course2, course1]];
-          tmp = course1;
-          course1 = course2;
-          course2 = tmp;
-        }
-      }
-      /*
-      # set up the graphical part of selection
-      */
-
-      if (course1) {
-        $('#course1 .course-container').html(course1.$elm);
-        $('#course1 .course-standin').hide();
-      } else {
-        $('#course1 .course-container').html('');
-        $('#course1 .course-standin').show();
-      }
-      if (course2) {
-        $('#course2 .course-container').html(course2.$elm);
-        $('#course2 .course-standin').hide();
-      } else {
-        $('#course2 .course-container').html('');
-        $('#course2 .course-standin').show();
-      }
-      toggleEdge = $('#toggleEdge');
-      toggleCoreq = $('#toggleCoreq');
-      reverseEdge = $('#reverseEdge');
-      if (course1 && course2) {
-        toggleEdge.button('enable');
-      } else {
-        toggleEdge.button('disable');
-      }
-      /*
-      # non-existent edges or invisible edges should not be shown
-      */
-
-      if (!edge || ((_ref1 = edge.properties.style) != null ? _ref1.match(/invis/) : void 0)) {
-        $('#edge1').attr({
-          "class": 'noArrow'
-        });
-        toggleEdge.find('span').text(toggleEdge.attr('op1'));
-        toggleCoreq.button('disable');
-        reverseEdge.button('disable');
-      } else {
-        toggleCoreq.button('enable');
-        toggleEdge.find('span').text(toggleEdge.attr('op2'));
-        if (edge.properties.coreq) {
-          $('#edge1').attr({
-            "class": 'coreqArrow'
-          });
-          toggleCoreq.find('span').text(toggleCoreq.attr('op2'));
-          reverseEdge.button('disable');
-        } else {
-          $('#edge1').attr({
-            "class": 'prereqArrow'
-          });
-          toggleCoreq.find('span').text(toggleCoreq.attr('op1'));
-          reverseEdge.button('enable');
-        }
-      }
-    };
-    this.svgManager.selectionChanged();
-  };
-
-  /*
-  # updates the state of all instances of a particular course
-  */
-
-
-  CourseManager.prototype.updateCourseState = function(course, state, ops) {
-    var c, hash, _i, _len, _ref,
-      _this = this;
-    if (ops == null) {
-      ops = {
-        updatePrereqs: true
-      };
-    }
-    hash = BasicCourse.hashCourse(course);
-    _ref = this.courses[hash] || [];
-    for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-      c = _ref[_i];
-      if (!c.selectable) {
-        state = dupObject(state);
-        delete state.selected;
-      }
-      c.setState(state);
-    }
-    if (ops.updatePrereqs) {
-      /*
-      # update the prereqs list asyncronously with a little delay so it isn't
-      # so surprising to the user
-      */
-
-      window.setTimeout((function() {
-        return _this.showUnmetPrereqs();
-      }), 500);
-    }
-  };
-
-  CourseManager.prototype.addCourse = function(course) {
-    var hash;
-    hash = '' + course;
-    if (!this.courses[hash]) {
-      this.courses[hash] = [];
-    }
-    this.courses[hash].push(course);
-    return course;
-  };
-
-  CourseManager.prototype.removeCourse = function(course) {
-    var hash, index;
-    hash = '' + course;
-    if (!this.courses[hash]) {
-      return false;
-    }
-    index = this.courses[hash].indexOf(course);
-    if (index >= 0) {
-      this.courses[hash].splice(index, 1);
-    }
-  };
-
-  CourseManager.prototype.removeElective = function(course) {
-    var c, _, _i, _len, _ref, _ref1;
-    if (this.sortableCourses[course]) {
-      /*
-      # reparent all of the electives children
-      */
-
-      _ref = this.sortableCourses[course].courses;
-      for (_ in _ref) {
-        c = _ref[_];
-        this.sortableCourses[course].$elm.parent().append(c.$elm);
-        this.updateCourseState(c, {
-          required: false,
-          elective: false
-        });
-        this.sortableCourses[course].removeCourse(c, {
-          detach: false
-        });
-      }
-      delete this.sortableCourses[course];
-    }
-    _ref1 = this.courses[course];
-    for (_i = 0, _len = _ref1.length; _i < _len; _i++) {
-      c = _ref1[_i];
-      c.removeButton();
-    }
-    delete this.courses[course];
-  };
-
-  CourseManager.prototype.removeAllCourseInstances = function(course) {
-    var c, hash, _i, _len, _ref;
-    hash = BasicCourse.hashCourse(course);
-    _ref = this.courses[hash];
-    for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-      c = _ref[_i];
-      /*
-      # if we are an elective, we have a special delete procedure
-      */
-
-      if (c instanceof Electives) {
-        this.removeElective(course);
-        break;
-      }
-      c.removeButton();
-    }
-    delete this.courses[hash];
-    delete this.sortableCourses[hash];
-  };
-
-  CourseManager.prototype.cleanupUnattachedButtons = function(course, buttonType) {
-    var clean,
-      _this = this;
-    if (buttonType == null) {
-      buttonType = CourseButton;
-    }
-    clean = function() {
-      var c, courses, hash, k, v, _i, _len, _ref;
-      if (_this.needsCleaning = false) {
-        return;
-      }
-      _this.needsCleaning = false;
-      courses = [];
-      if (!course) {
-        _ref = _this.courses;
-        for (k in _ref) {
-          v = _ref[k];
-          courses = courses.concat(v);
-        }
-      } else {
-        hash = BasicCourse.hashCourse(course);
-        courses = _this.courses[hash] || [];
-      }
-      for (_i = 0, _len = courses.length; _i < _len; _i++) {
-        c = courses[_i];
-        if (c instanceof buttonType && !attachedToDom(c.elm)) {
-          c.removeButton();
-          _this.removeCourse(c);
-        }
-      }
-    };
-    this.needsCleaning = true;
-    /*
-    # this operation takes a bit of time, so do it asyncronously
-    */
-
-    window.setTimeout(clean, 1000);
-  };
-
-  CourseManager.prototype.addCoop = function(data) {
-    var coop;
-    if (data == null) {
-      data = {};
-    }
-    coop = new CoopButtonEditor(data, this);
-    $('#coop-list').append(coop.getButton());
-    this.coops[coop.hash] = coop;
-    return coop;
-  };
-
-  CourseManager.prototype.removeCoop = function(coop) {
-    coop.removeButton();
-    delete this.coops[coop.hash];
-  };
-
-  /*
-  # makes all electivesButtons have the same state as button (including
-  # making the list of elective courses the same)
-  #
-  # returns a list of hashes of all courses that button has as children
-  */
-
-
-  CourseManager.prototype.updateElectivesButton = function(button) {
-    var course, data, diff, electiveButton, hash, k, newCourse, _i, _len, _ref, _ref1, _ref2;
-    data = button.getValues();
-    /*
-    # we will sync the courses manually, we don't want to have a shallow copy of the courses object!
-    */
-
-    delete data.courses;
-    _ref = this.courses[button] || [];
-    for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-      electiveButton = _ref[_i];
-      /*
-      # make sure each ElectivesButton has a list of the courses that button does
-      # and only those courses
-      */
-
-      diff = symmetricDiffObjects(button.courses, electiveButton.courses);
-      _ref1 = diff['missing'];
-      for (hash in _ref1) {
-        course = _ref1[hash];
-        newCourse = this.createCourseButton(course, {
-          clickable: true,
-          restrictions: 'elective'
-        });
-        electiveButton.addCourse(newCourse);
-      }
-      _ref2 = diff['excess'];
-      for (hash in _ref2) {
-        course = _ref2[hash];
-        electiveButton.removeCourse(course);
-      }
-      electiveButton.update(data);
-    }
-    return (function() {
-      var _results;
-      _results = [];
-      for (k in button.courses) {
-        _results.push(k);
-      }
-      return _results;
-    })();
-  };
-
-  /*
-  # out of sortableCourses, ensures only course has the selected state
-  */
-
-
-  CourseManager.prototype.selectCourse = function(course) {
-    var c, hash, selectedCourse, stateButtons, _ref,
-      _this = this;
-    if (!course) {
-      return;
-    }
-    /*
-    # identify the selected course and set its state
-    */
-
-    selectedCourse = null;
-    _ref = this.sortableCourses;
-    for (hash in _ref) {
-      c = _ref[hash];
-      if (c.state.selected) {
-        c.setState({
-          selected: false
-        });
-      }
-      if (c.subject === (course != null ? course.subject : void 0) && c.number === (course != null ? course.number : void 0)) {
-        c.setState({
-          selected: true
-        });
-        selectedCourse = c;
-      }
-      this.updateCourseState(c, c.state, {
-        updatePrereqs: false
-      });
-    }
-    if (!selectedCourse) {
-      return;
-    }
-    if (selectedCourse instanceof BasicCourse) {
-      /*
-      # set up the course info area for the selected course
-      */
-
-      stateButtons = this.sortableCoursesStateButtons[selectedCourse];
-      if (!stateButtons) {
-        stateButtons = this.createCourseStateButton(selectedCourse);
-      }
-      stateButtons.setRestrictions(selectedCourse.restrictions);
-      $('.course-info .course-name .course-number').html(selectedCourse.hash);
-      $('.course-info .course-name .course-title').html(titleCaps(('' + selectedCourse.data.title).toLowerCase()));
-      /*
-      # if we don't detach first, jquery removes all bound events and ui widgets, etc.
-      */
-
-      $('.course-info .course-state').children().detach();
-      $('.course-info .course-state').html(stateButtons.elm);
-      $('.course-info .prereq-area').html(PrereqUtils.prereqsToDivs(stateButtons.prereqs, this));
-      $('.course-info .terms-area').html(CourseUtils.historyToDivs(selectedCourse.getTermsOffered(this.mostRecentTerm, 2)));
-      /*
-      #TODO this shouldn't be done with a timeout.  it should be done in a robust way!!
-      */
-
-      window.setTimeout((function() {
-        return $('#dot').val(_this.createDotGraph());
-      }), 0);
-      return this.cleanupUnattachedButtons();
-    }
-  };
-
-  /*
-  # returns a CourseButton for the desired course.  If the course
-  # hasn't been loaded yet, it will be loaded and the CourseButton's data will
-  # be updated accordingly
-  */
-
-
-  CourseManager.prototype.createCourseButton = function(course, ops) {
-    var updateCourse,
-      _this = this;
-    if (ops == null) {
-      ops = {};
-    }
-    /*
-    # if we've already been loaded, our job is easy
-    */
-
-    if (this.courseData[course]) {
-      course = new CourseButton(this.courseData[course], true);
-    } else {
-      /*
-      # if the course hasn't been loaded, we return a functioning course
-      # button whose data will be updated upon load
-      */
-
-      course = new CourseButton(course);
-      updateCourse = function() {
-        if (!_this.courseData[course]) {
-          if (course.elm) {
-            course.$elm.addClass('defunct');
-          }
-          return;
-        }
-        course.update(_this.courseData[course]);
-        course.setTooltip(titleCaps(course.data.title));
-        course.wasSynced = true;
-      };
-      this.loadSubjectData(course.subject, updateCourse);
-    }
-    if (ops.clickable) {
-      this.makeCourseButtonClickable(course, ops);
-    }
-    if (ops.draggable) {
-      this.makeCourseButtonDraggable(course, ops);
-    }
-    if (ops.restrictions) {
-      course.restrictions = ops.restrictions;
-    }
-    this.addCourse(course);
-    this.initButtonState(course);
-    return course;
-  };
-
-  /*
-  # makes it so that when you click the button,
-  # it cycles through the states and ensures all instances
-  # are appropriately synced
-  */
-
-
-  CourseManager.prototype.makeCourseButtonClickable = function(button, ops) {
-    var _this = this;
-    if (ops == null) {
-      ops = {};
-    }
-    /*
-    # if we're selectable we should be keyboard navigatable too
-    */
-
-    if (ops.selectable) {
-      button.selectable = true;
-      button.$elm.attr({
-        tabindex: 1
-      });
-      button.$elm.focus(function() {
-        /*
-        # make sure extra focus events don't trigger extra clicks
-        # (for example, the element is focused, and somebody selects
-        # the webpage titlebar, causing a new focus event to fire)
-        */
-
-        if (!this.course.state.selected) {
-          this.course.$elm.trigger('click');
-        }
-      });
-      button.$elm.keydown(function(event) {
-        var i, myIndex, node, self, siblings, sibs, _i, _len;
-        self = event.currentTarget;
-        siblings = event.currentTarget.parentNode.childNodes;
-        myIndex = null;
-        for (i = _i = 0, _len = siblings.length; _i < _len; i = ++_i) {
-          node = siblings[i];
-          if (node === self) {
-            myIndex = i;
-          }
-        }
-        sibs = {};
-        if (myIndex + 1 < siblings.length) {
-          sibs.right = siblings[myIndex + 1];
-        }
-        if (myIndex - 1 >= 0) {
-          sibs.left = siblings[myIndex - 1];
-        }
-        switch (event.keyCode) {
-          case 37:
-            /* left*/
-
-            if (sibs.left) {
-              return $(sibs.left).focus();
+            c = _ref[_i];
+            if (!c.selectable) {
+                state = dupObject(state);
+                delete state.selected;
             }
-            break;
-          case 38:
-            /* up*/
+            c.setState(state);
+        }
+        if (ops.updatePrereqs) {
+            /*
+            # update the prereqs list asyncronously with a little delay so it isn't
+            # so surprising to the user
+            */
 
-            return '';
-          case 39:
-            /* right*/
+            window.setTimeout((function() {
+                return _this.showUnmetPrereqs();
+            }), 500);
+        }
+    };
 
-            if (sibs.right) {
-              return $(sibs.right).focus();
+    CourseManager.prototype.addCourse = function(course) {
+        var hash;
+        hash = '' + course;
+        if (!this.courses[hash]) {
+            this.courses[hash] = [];
+        }
+        this.courses[hash].push(course);
+        return course;
+    };
+
+    CourseManager.prototype.removeCourse = function(course) {
+        var hash, index;
+        hash = '' + course;
+        if (!this.courses[hash]) {
+            return false;
+        }
+        index = this.courses[hash].indexOf(course);
+        if (index >= 0) {
+            this.courses[hash].splice(index, 1);
+        }
+    };
+
+    CourseManager.prototype.removeElective = function(course) {
+        var c, _, _i, _len, _ref, _ref1;
+        if (this.sortableCourses[course]) {
+            /*
+            # reparent all of the electives children
+            */
+
+            _ref = this.sortableCourses[course].courses;
+            for (_ in _ref) {
+                c = _ref[_];
+                this.sortableCourses[course].$elm.parent().append(c.$elm);
+                this.updateCourseState(c, {
+                    required: false,
+                    elective: false
+                });
+                this.sortableCourses[course].removeCourse(c, {
+                    detach: false
+                });
             }
-            break;
-          case 40:
-            /* down*/
-
-            return '';
-          case 32:
-          case 13:
-            /* space or return*/
-
-            return $(self).click();
+            delete this.sortableCourses[course];
         }
-      });
-    }
-    $(button.getButton()).click(function(evt) {
-      /*
-      # defunct classes also cannot be clicked
-      */
-
-      var e, newState;
-      if ($(evt.currentTarget).hasClass('defunct')) {
-        return;
-      }
-      evt.stopPropagation();
-      if (ops.selectable && !button.state.selected) {
-        /*
-        # if we click on a button and it results in the selection changing,
-        # we don't want to toggle the state at all.  We just want to update
-        # the display area
-        */
-
-        _this.selectCourse(button);
-        /*
-        # trigger a focus even on ourselves so we can continue
-        # using keyboard navigation from this element
-        */
-
-        $(evt.currentTarget).focus();
-        return;
-      }
-      /*
-      # check to see if we've just been dragged by seeing if we have a noclick class
-      */
-
-      if ($(evt.currentTarget).hasClass('noclick')) {
-        $(evt.currentTarget).removeClass('noclick');
-        return;
-      }
-      newState = CourseManager.toggleState(button.state, button.restrictions);
-      /*
-      # we need to make sure that the course appears in the yearchart if this option
-      # is set
-      */
-
-      if (ops.insertOnClick) {
-        try {
-          _this.ensureDisplayedInYearChart(button);
-        } catch (_error) {
-          e = _error;
-          console.log(e);
+        _ref1 = this.courses[course];
+        for (_i = 0, _len = _ref1.length; _i < _len; _i++) {
+            c = _ref1[_i];
+            c.removeButton();
         }
-      }
-      _this.updateCourseState(button, newState);
-    });
-  };
+        delete this.courses[course];
+    };
 
-  CourseManager.prototype.makeCourseButtonDraggable = function(button, ops) {
-    if (ops == null) {
-      ops = {};
-    }
-    $(button.getButton()).draggable({
-      containment: '#main',
-      scroll: true,
-      helper: 'clone',
-      revert: 'invalid',
-      distance: '25',
-      opacity: 0.7,
-      zIndex: 1000
-    });
-  };
+    CourseManager.prototype.removeAllCourseInstances = function(course) {
+        var c, hash, _i, _len, _ref;
+        hash = BasicCourse.hashCourse(course);
+        _ref = this.courses[hash];
+        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+            c = _ref[_i];
+            /*
+            # if we are an elective, we have a special delete procedure
+            */
 
-  /*
-  # makes the drop area of an ElectivesButton a drop target. If
-  # clone is truthy instead of moving the course, a copy of the
-  # course will be created.
-  */
-
-
-  CourseManager.prototype.makeElectivesButtonDroppable = function(button, ops) {
-    var _this = this;
-    if (ops == null) {
-      ops = {
-        clone: false
-      };
-    }
-    button.getButton();
-    button.$coursesDiv.droppable({
-      /*
-      # TODO this seems to mess up the parent sometimes!
-      */
-
-      greedy: true,
-      hoverClass: 'highlight',
-      tolerance: 'pointer',
-      accept: function(ui) {
-        return ui[0].course instanceof BasicCourse;
-      },
-      drop: function(event, ui) {
-        if (!ui.draggable[0].course) {
-          return false;
+            if (c instanceof Electives) {
+                this.removeElective(course);
+                break;
+            }
+            c.removeButton();
         }
-        button.addCourse(ui.draggable[0].course);
-        /*
-        # calling the courseMoved method will ensure that
-        # all electivesButtons are synced up and updated with
-        # their new contents
-        */
+        delete this.courses[hash];
+        delete this.sortableCourses[hash];
+    };
 
-        _this.courseMoved(ui.draggable[0].course);
-        _this.selectCourse(ui.draggable[0].course);
-        /*
-        # when we drop a course on an electives block, assume
-        # we want it automatically to be marked as an elective
-        */
-
-        _this.updateCourseState(ui.draggable[0].course, {
-          required: false,
-          elective: true
-        });
-      }
-    });
-  };
-
-  CourseManager.prototype.makeElectivesButtonClickable = function(button, ops) {
-    var _this = this;
-    if (ops == null) {
-      ops = {};
-    }
-    button.$elm.click(function() {
-      return _this.selectCourse(button);
-    });
-  };
-
-  /*
-  # this method is called whenever a course changes levels or
-  # gets added or removed from an elective's block
-  */
-
-
-  CourseManager.prototype.courseMoved = function(course) {
-    var c, children, electivesChildren, hash, state, _ref;
-    electivesChildren = [];
-    /*
-    # see if any of our electivesButtons have changed
-    # and if so, update them
-    */
-
-    _ref = this.sortableCourses;
-    for (hash in _ref) {
-      c = _ref[hash];
-      if (c instanceof ElectivesButton) {
-        children = this.updateElectivesButton(c);
-        electivesChildren = electivesChildren.concat(children);
-      }
-    }
-    /*
-    # we now have a list of all child courses of electives.  update course's
-    # state accordingly
-    */
-
-    electivesChildren = (function() {
-      var _i, _len, _results;
-      _results = [];
-      for (_i = 0, _len = electivesChildren.length; _i < _len; _i++) {
-        c = electivesChildren[_i];
-        _results.push(BasicCourse.hashCourse(c));
-      }
-      return _results;
-    })();
-    state = dupObject(course.state);
-    if (electivesChildren.indexOf(BasicCourse.hashCourse(course)) >= 0) {
-      course.restrictions = 'elective';
-      if (state.required) {
-        state.required = false;
-        state.elective = true;
-        this.updateCourseState(course, state);
-      }
-    } else {
-      course.restrictions = 'nonelective';
-      if (state.elective) {
-        state.required = true;
-        state.elective = false;
-        this.updateCourseState(course, state);
-      }
-    }
-  };
-
-  /*
-  # returns a CourseStateButton for the desired course.  If the course
-  # hasn't been loaded yet, it will be loaded and the CourseButton's data will
-  # be updated accordingly
-  */
-
-
-  CourseManager.prototype.createCourseStateButton = function(course) {
-    /*
-    # if we've already been loaded, our job is easy
-    */
-
-    var updateCourse,
-      _this = this;
-    if (this.courseData[course]) {
-      course = new CourseStateButton(this.courseData[course], true);
-    } else {
-      /*
-      # if the course hasn't been loaded, we return a functioning course
-      # button whose data will be updated upon load
-      */
-
-      course = new CourseStateButton(course);
-      updateCourse = function() {
-        if (!_this.courseData[course]) {
-          throw new Error("Course " + course + " was loaded in dep. " + course.subject + ", but wasn't available");
+    CourseManager.prototype.cleanupUnattachedButtons = function(course, buttonType) {
+        var clean,
+            _this = this;
+        if (buttonType == null) {
+            buttonType = CourseButton;
         }
-        course.update(_this.courseData[course]);
-        course.wasSynced = true;
-      };
-      this.loadSubjectData(course.subject, updateCourse);
-    }
-    this.sortableCoursesStateButtons[course] = course;
-    this.makeCourseStateButtonClickable(course);
-    this.addCourse(course);
-    this.initButtonState(course);
-    return course;
-  };
-
-  /*
-  # makes it so that when you click the button,
-  # the appropriate state is broadcast
-  */
-
-
-  CourseManager.prototype.makeCourseStateButtonClickable = function(button) {
-    var _this = this;
-    button.$elm.find('input').bind('change', function(evt) {
-      var state, val;
-      val = $(evt.currentTarget).parent().find('input:checked').val();
-      if ((val == null) || val === 'none') {
-        state = {
-          required: false,
-          elective: false
+        clean = function() {
+            var c, courses, hash, k, v, _i, _len, _ref;
+            if (_this.needsCleaning = false) {
+                return;
+            }
+            _this.needsCleaning = false;
+            courses = [];
+            if (!course) {
+                _ref = _this.courses;
+                for (k in _ref) {
+                    v = _ref[k];
+                    courses = courses.concat(v);
+                }
+            } else {
+                hash = BasicCourse.hashCourse(course);
+                courses = _this.courses[hash] || [];
+            }
+            for (_i = 0, _len = courses.length; _i < _len; _i++) {
+                c = courses[_i];
+                if (c instanceof buttonType && !attachedToDom(c.elm)) {
+                    c.removeButton();
+                    _this.removeCourse(c);
+                }
+            }
         };
-      }
-      if (val === 'required') {
-        state = {
-          required: true,
-          elective: false
-        };
-      }
-      if (val === 'elective') {
-        state = {
-          required: false,
-          elective: true
-        };
-      }
-      _this.updateCourseState(button, state);
-    });
-  };
-
-  /*
-  # computes an updated state that cycles from none -> required -> elective -> none
-  # Does not specify selected or prereq
-  */
-
-
-  CourseManager.toggleState = function(state, restrictions) {
-    var ret;
-    ret = {
-      required: false,
-      elective: false
-    };
-    switch (restrictions) {
-      case 'elective':
+        this.needsCleaning = true;
         /*
-        # toggle between elective and none
+        # this operation takes a bit of time, so do it asyncronously
         */
 
-        if (!state.elective) {
-          ret.elective = true;
-        }
-        break;
-      case 'nonelective':
-        /*
-        # toggle between required and none
-        */
-
-        if (!state.required) {
-          ret.required = true;
-        }
-        break;
-      default:
-        /*
-        # toggle required -> elective -> none
-        */
-
-        if (state.required) {
-          ret.elective = true;
-        }
-        if (state.elective) {
-          ret.elective = false;
-        }
-        if (!(state.required || state.elective)) {
-          ret.required = true;
-        }
-    }
-    return ret;
-  };
-
-  /*
-  # sets the button state to match the state of
-  # the other course buttons currently being managed.
-  # If the course isn't currently being managed, nothing is done
-  */
-
-
-  CourseManager.prototype.initButtonState = function(button) {
-    var c, state;
-    if (!this.courses[button] || this.courses[button].length === 0) {
-      return;
-    }
-    c = this.courses[button][0];
-    state = {
-      required: c.state.required,
-      elective: c.state.elective
+        window.setTimeout(clean, 1000);
     };
-    button.setState(state, {
-      forceUpdate: true
-    });
-  };
 
-  CourseManager.prototype.getSelectedCourses = function() {
-    var hash, list, ret, _ref, _ref1, _ref2;
-    ret = [];
-    _ref = this.courses;
-    for (hash in _ref) {
-      list = _ref[hash];
-      if (((_ref1 = list[0]) != null ? _ref1.state.required : void 0) || ((_ref2 = list[0]) != null ? _ref2.state.elective : void 0)) {
-        ret.push(list[0]);
-      }
-    }
-    return ret;
-  };
-
-  /*
-  # performs an ajax call to load a subject.
-  # If loadSubjectData is called multiple times before the ajax call
-  # has finished, the callbacks are queued and executed after the ajax call
-  # finishes. (the ajax call is only made once, so call this function as often as you like)
-  */
-
-
-  CourseManager.prototype.loadSubjectData = function(subject, callback, ops) {
-    var ajaxArgs, doAllCallbacks, error,
-      _this = this;
-    if (ops == null) {
-      ops = {};
-    }
-    this.onSubjectLoadedCallbacks[subject] = this.onSubjectLoadedCallbacks[subject] || [];
-    this.onSubjectLoadedCallbacks[subject].push(callback);
-    doAllCallbacks = function() {
-      var func;
-      while (func = _this.onSubjectLoadedCallbacks[subject].shift()) {
-        func();
-      }
-      _this.loadingStatus[subject] = 'loaded';
+    CourseManager.prototype.addCoop = function(data) {
+        var coop;
+        if (data == null) {
+            data = {};
+        }
+        coop = new CoopButtonEditor(data, this);
+        $('#coop-list').append(coop.getButton());
+        this.coops[coop.hash] = coop;
+        return coop;
     };
-    if (this.loadedSubjects[subject] && !ops.force) {
-      doAllCallbacks();
-      return;
-    }
-    if (this.loadingStatus[subject] === 'loading' && !ops.force) {
-      return;
-    }
-    if (this.loadingStatus[subject] === 'failed' && !ops.force) {
-      return;
-    }
-    this.loadingStatus[subject] = 'loading';
-    error = function(e) {
-      console.log('ajax error');
-      throw e;
+
+    CourseManager.prototype.removeCoop = function(coop) {
+        coop.removeButton();
+        delete this.coops[coop.hash];
     };
-    ajaxArgs = {
-      url: COURSE_DATA_URL + subject,
-      dataType: 'json',
-      success: this.courseDataLoaded,
-      error: [
-        (function() {
-          return _this.loadingStatus[subject] = 'failed';
-        }), ops.error || error
-      ],
-      complete: doAllCallbacks
-    };
+
     /*
-    # make the ajax call, but afterwards check on successful calls
-    # always mark that subject as being loaded.  This prevents
-    # subjects that contain no data from being stuck in an infinite
-    # loading loop.
+    # makes all electivesButtons have the same state as button (including
+    # making the list of elective courses the same)
+    #
+    # returns a list of hashes of all courses that button has as children
     */
 
-    $.ajax(ajaxArgs).always(function(data, status, jsXHR) {
-      if (status === 'success') {
-        _this.loadedSubjects[subject] = true;
+
+    CourseManager.prototype.updateElectivesButton = function(button) {
+        var course, data, diff, electiveButton, hash, k, newCourse, _i, _len, _ref, _ref1, _ref2;
+        data = button.getValues();
         /*
-        # special case check the situation where data was loaded
-        # but is an empty array. Throw an error in this case.
+        # we will sync the courses manually, we don't want to have a shallow copy of the courses object!
         */
 
-        if ((data != null ? data.length : void 0) === 0) {
-          if (typeof ops.error === "function") {
-            ops.error();
-          }
+        delete data.courses;
+        _ref = this.courses[button] || [];
+        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+            electiveButton = _ref[_i];
+            /*
+            # make sure each ElectivesButton has a list of the courses that button does
+            # and only those courses
+            */
+
+            diff = symmetricDiffObjects(button.courses, electiveButton.courses);
+            _ref1 = diff['missing'];
+            for (hash in _ref1) {
+                course = _ref1[hash];
+                newCourse = this.createCourseButton(course, {
+                    clickable: true,
+                    restrictions: 'elective'
+                });
+                electiveButton.addCourse(newCourse);
+            }
+            _ref2 = diff['excess'];
+            for (hash in _ref2) {
+                course = _ref2[hash];
+                electiveButton.removeCourse(course);
+            }
+            electiveButton.update(data);
         }
-      }
-    });
-  };
+        return (function() {
+            var _results;
+            _results = [];
+            for (k in button.courses) {
+                _results.push(k);
+            }
+            return _results;
+        })();
+    };
 
-  CourseManager.prototype.courseDataLoaded = function(data, textState, jsXHR) {
-    var c, hash, term, _i, _len;
-    for (_i = 0, _len = data.length; _i < _len; _i++) {
-      c = data[_i];
-      hash = BasicCourse.hashCourse(c);
-      this.courseData[hash] = normalizeCourse(c);
-      /*
-      # when the data was scraped it may contain html escape characters like '&amp;'
-      # remove all of these so they won't show up anywhere accidentally.
-      */
+    /*
+    # out of sortableCourses, ensures only course has the selected state
+    */
 
-      this.courseData[hash].title = htmlUnencode(this.courseData[hash].title);
-      this.courseData[hash].description = htmlUnencode(this.courseData[hash].description);
-      this.loadedSubjects[c.subject] = true;
-      if (c.terms_offered) {
-        for (term in c.terms_offered) {
-          if (term > this.mostRecentTerm) {
-            this.mostRecentTerm = term;
-          }
+
+    CourseManager.prototype.selectCourse = function(course) {
+        var c, hash, selectedCourse, stateButtons, _ref,
+            _this = this;
+        if (!course) {
+            return;
         }
-      }
-    }
-  };
+        /*
+        # identify the selected course and set its state
+        */
 
-  /*
-  # shows courses from a particular department.  If buttons
-  # already exist for the department, those buttons are made visible.
-  # If not, the buttons are created
-  */
+        selectedCourse = null;
+        _ref = this.sortableCourses;
+        for (hash in _ref) {
+            c = _ref[hash];
+            if (c.state.selected) {
+                c.setState({
+                    selected: false
+                });
+            }
+            if (c.subject === (course != null ? course.subject : void 0) && c.number === (course != null ? course.number : void 0)) {
+                c.setState({
+                    selected: true
+                });
+                selectedCourse = c;
+            }
+            this.updateCourseState(c, c.state, {
+                updatePrereqs: false
+            });
+        }
+        if (!selectedCourse) {
+            return;
+        }
+        if (selectedCourse instanceof BasicCourse) {
+            /*
+            # set up the course info area for the selected course
+            */
+
+            stateButtons = this.sortableCoursesStateButtons[selectedCourse];
+            if (!stateButtons) {
+                stateButtons = this.createCourseStateButton(selectedCourse);
+            }
+            stateButtons.setRestrictions(selectedCourse.restrictions);
+            $('.course-info .course-name .course-number').html(selectedCourse.hash);
+            $('.course-info .course-name .course-title').html(titleCaps(('' + selectedCourse.data.title).toLowerCase()));
+            /*
+            # if we don't detach first, jquery removes all bound events and ui widgets, etc.
+            */
+
+            $('.course-info .course-state').children().detach();
+            $('.course-info .course-state').html(stateButtons.elm);
+            $('.course-info .prereq-area').html(PrereqUtils.prereqsToDivs(stateButtons.prereqs, this));
+            $('.course-info .terms-area').html(CourseUtils.historyToDivs(selectedCourse.getTermsOffered(this.mostRecentTerm, 2)));
+            /*
+            #TODO this shouldn't be done with a timeout.  it should be done in a robust way!!
+            */
+
+            window.setTimeout((function() {
+                return $('#dot').val(_this.createDotGraph());
+            }), 0);
+            return this.cleanupUnattachedButtons();
+        }
+    };
+
+    /*
+    # returns a CourseButton for the desired course.  If the course
+    # hasn't been loaded yet, it will be loaded and the CourseButton's data will
+    # be updated accordingly
+    */
 
 
-  CourseManager.prototype.showCoursesOfSubject = function(subject, ops) {
-    var showCourses,
-      _this = this;
-    if (ops == null) {
-      ops = {};
-    }
-    showCourses = function() {
-      var course, hash, _ref, _results;
-      _ref = _this.sortableCourses;
-      _results = [];
-      for (hash in _ref) {
-        course = _ref[hash];
-        if (course.subject === subject) {
-          _results.push(course.$elm.show(ops.animate));
+    CourseManager.prototype.createCourseButton = function(course, ops) {
+        var updateCourse,
+            _this = this;
+        if (ops == null) {
+            ops = {};
+        }
+        /*
+        # if we've already been loaded, our job is easy
+        */
+
+        if (this.courseData[course]) {
+            course = new CourseButton(this.courseData[course], true);
         } else {
-          _results.push(void 0);
+            /*
+            # if the course hasn't been loaded, we return a functioning course
+            # button whose data will be updated upon load
+            */
+
+            course = new CourseButton(course);
+            updateCourse = function() {
+                if (!_this.courseData[course]) {
+                    if (course.elm) {
+                        course.$elm.addClass('defunct');
+                    }
+                    return;
+                }
+                course.update(_this.courseData[course]);
+                course.setTooltip(titleCaps(course.data.title));
+                course.wasSynced = true;
+            };
+            this.loadSubjectData(course.subject, updateCourse);
         }
-      }
-      return _results;
+        if (ops.clickable) {
+            this.makeCourseButtonClickable(course, ops);
+        }
+        if (ops.draggable) {
+            this.makeCourseButtonDraggable(course, ops);
+        }
+        if (ops.restrictions) {
+            course.restrictions = ops.restrictions;
+        }
+        this.addCourse(course);
+        this.initButtonState(course);
+        return course;
     };
-    if (this.loadedSubjects[subject]) {
-      this.populateYearChartWithSubject(subject, ops);
-      showCourses();
-    } else {
-      ops = dupObject(ops);
-      ops.recursionDepth = (ops.recursionDepth || 0) + 1;
-      if (ops.recursionDepth < 10) {
-        this.loadSubjectData(subject, (function() {
-          return _this.showCoursesOfSubject(subject, ops);
-        }), ops);
-      } else {
-        if (ops.error) {
-          ops.error();
+
+    /*
+    # makes it so that when you click the button,
+    # it cycles through the states and ensures all instances
+    # are appropriately synced
+    */
+
+
+    CourseManager.prototype.makeCourseButtonClickable = function(button, ops) {
+        var _this = this;
+        if (ops == null) {
+            ops = {};
         }
-        console.log(Error("Reached maximum recusion depth when loading " + subject));
-      }
-    }
-  };
+        /*
+        # if we're selectable we should be keyboard navigatable too
+        */
 
-  /*
-  # hide all courses from a particular department
-  # that aren't marked as required or as an elective
-  */
+        if (ops.selectable) {
+            button.selectable = true;
+            button.$elm.attr({
+                tabindex: 1
+            });
+            button.$elm.focus(function() {
+                /*
+                # make sure extra focus events don't trigger extra clicks
+                # (for example, the element is focused, and somebody selects
+                # the webpage titlebar, causing a new focus event to fire)
+                */
 
+                if (!this.course.state.selected) {
+                    this.course.$elm.trigger('click');
+                }
+            });
+            button.$elm.keydown(function(event) {
+                var i, myIndex, node, self, siblings, sibs, _i, _len;
+                self = event.currentTarget;
+                siblings = event.currentTarget.parentNode.childNodes;
+                myIndex = null;
+                for (i = _i = 0, _len = siblings.length; _i < _len; i = ++_i) {
+                    node = siblings[i];
+                    if (node === self) {
+                        myIndex = i;
+                    }
+                }
+                sibs = {};
+                if (myIndex + 1 < siblings.length) {
+                    sibs.right = siblings[myIndex + 1];
+                }
+                if (myIndex - 1 >= 0) {
+                    sibs.left = siblings[myIndex - 1];
+                }
+                switch (event.keyCode) {
+                    case 37:
+                        /* left*/
 
-  CourseManager.prototype.hideCoursesOfSubject = function(subject, ops) {
-    var course, hash, _ref;
-    if (ops == null) {
-      ops = {};
-    }
-    _ref = this.sortableCourses;
-    for (hash in _ref) {
-      course = _ref[hash];
-      if (course.subject === subject && course.state.required === false && course.state.elective === false) {
-        if (course.elm) {
-          course.$elm.hide(ops.animate);
+                        if (sibs.left) {
+                            return $(sibs.left).focus();
+                        }
+                        break;
+                    case 38:
+                        /* up*/
+
+                        return '';
+                    case 39:
+                        /* right*/
+
+                        if (sibs.right) {
+                            return $(sibs.right).focus();
+                        }
+                        break;
+                    case 40:
+                        /* down*/
+
+                        return '';
+                    case 32:
+                    case 13:
+                        /* space or return*/
+
+                        return $(self).click();
+                }
+            });
         }
-      }
-    }
-  };
+        $(button.getButton()).click(function(evt) {
+            /*
+            # defunct classes also cannot be clicked
+            */
 
-  CourseManager.prototype.hideCourse = function(course, ops) {
-    var hash, _ref;
-    if (ops == null) {
-      ops = {};
-    }
-    hash = BasicCourse.hashCourse(course);
-    if (this.sortableCourses[hash]) {
-      course = this.sortableCourses[hash];
-      if (course.state.required === false && course.state.elective === false) {
-        if ((_ref = course.$elm) != null) {
-          _ref.hide(ops.animate);
+            var e, newState;
+            if ($(evt.currentTarget).hasClass('defunct')) {
+                return;
+            }
+            evt.stopPropagation();
+            if (ops.selectable && !button.state.selected) {
+                /*
+                # if we click on a button and it results in the selection changing,
+                # we don't want to toggle the state at all.  We just want to update
+                # the display area
+                */
+
+                _this.selectCourse(button);
+                /*
+                # trigger a focus even on ourselves so we can continue
+                # using keyboard navigation from this element
+                */
+
+                $(evt.currentTarget).focus();
+                return;
+            }
+            /*
+            # check to see if we've just been dragged by seeing if we have a noclick class
+            */
+
+            if ($(evt.currentTarget).hasClass('noclick')) {
+                $(evt.currentTarget).removeClass('noclick');
+                return;
+            }
+            newState = CourseManager.toggleState(button.state, button.restrictions);
+            /*
+            # we need to make sure that the course appears in the yearchart if this option
+            # is set
+            */
+
+            if (ops.insertOnClick) {
+                try {
+                    _this.ensureDisplayedInYearChart(button);
+                } catch (_error) {
+                    e = _error;
+                    console.log(e);
+                }
+            }
+            _this.updateCourseState(button, newState);
+        });
+    };
+
+    CourseManager.prototype.makeCourseButtonDraggable = function(button, ops) {
+        if (ops == null) {
+            ops = {};
         }
-      }
-    }
-  };
+        $(button.getButton()).draggable({
+            containment: '#main',
+            scroll: true,
+            helper: 'clone',
+            revert: 'invalid',
+            distance: '25',
+            opacity: 0.7,
+            zIndex: 1000
+        });
+    };
 
-  CourseManager.prototype.populateYearChartWithSubject = function(subject, ops) {
-    var container, course, data, hash, leadingNumber, list, year, years, _i, _j, _len, _len1, _ref, _ref1;
-    years = {};
-    _ref = this.courseData;
-    for (hash in _ref) {
-      data = _ref[hash];
-      /*
-      # find everything of matching subject for which a button hasn't already been created
-      */
+    /*
+    # makes the drop area of an ElectivesButton a drop target. If
+    # clone is truthy instead of moving the course, a copy of the
+    # course will be created.
+    */
 
-      if (data.subject === subject && !this.sortableCourses[hash]) {
-        leadingNumber = data.number.charAt(0);
-        years[leadingNumber] = years[leadingNumber] || [];
-        years[leadingNumber].push(data);
-      }
-    }
-    _ref1 = ['1', '2', '3', '4'];
-    for (_i = 0, _len = _ref1.length; _i < _len; _i++) {
-      year = _ref1[_i];
-      list = years[year] || [];
-      list.sort();
-      container = $(".year" + year + " .courses");
-      for (_j = 0, _len1 = list.length; _j < _len1; _j++) {
-        data = list[_j];
-        course = this.createCourseButton(data, {
-          clickable: true,
-          selectable: true,
-          draggable: true,
-          restrictions: 'nonelective'
+
+    CourseManager.prototype.makeElectivesButtonDroppable = function(button, ops) {
+        var _this = this;
+        if (ops == null) {
+            ops = {
+                clone: false
+            };
+        }
+        button.getButton();
+        button.$coursesDiv.droppable({
+            /*
+            # TODO this seems to mess up the parent sometimes!
+            */
+
+            greedy: true,
+            hoverClass: 'highlight',
+            tolerance: 'pointer',
+            accept: function(ui) {
+                return ui[0].course instanceof BasicCourse;
+            },
+            drop: function(event, ui) {
+                if (!ui.draggable[0].course) {
+                    return false;
+                }
+                button.addCourse(ui.draggable[0].course);
+                /*
+                # calling the courseMoved method will ensure that
+                # all electivesButtons are synced up and updated with
+                # their new contents
+                */
+
+                _this.courseMoved(ui.draggable[0].course);
+                _this.selectCourse(ui.draggable[0].course);
+                /*
+                # when we drop a course on an electives block, assume
+                # we want it automatically to be marked as an elective
+                */
+
+                _this.updateCourseState(ui.draggable[0].course, {
+                    required: false,
+                    elective: true
+                });
+            }
+        });
+    };
+
+    CourseManager.prototype.makeElectivesButtonClickable = function(button, ops) {
+        var _this = this;
+        if (ops == null) {
+            ops = {};
+        }
+        button.$elm.click(function() {
+            return _this.selectCourse(button);
+        });
+    };
+
+    /*
+    # this method is called whenever a course changes levels or
+    # gets added or removed from an elective's block
+    */
+
+
+    CourseManager.prototype.courseMoved = function(course) {
+        var c, children, electivesChildren, hash, state, _ref;
+        electivesChildren = [];
+        /*
+        # see if any of our electivesButtons have changed
+        # and if so, update them
+        */
+
+        _ref = this.sortableCourses;
+        for (hash in _ref) {
+            c = _ref[hash];
+            if (c instanceof ElectivesButton) {
+                children = this.updateElectivesButton(c);
+                electivesChildren = electivesChildren.concat(children);
+            }
+        }
+        /*
+        # we now have a list of all child courses of electives.  update course's
+        # state accordingly
+        */
+
+        electivesChildren = (function() {
+            var _i, _len, _results;
+            _results = [];
+            for (_i = 0, _len = electivesChildren.length; _i < _len; _i++) {
+                c = electivesChildren[_i];
+                _results.push(BasicCourse.hashCourse(c));
+            }
+            return _results;
+        })();
+        state = dupObject(course.state);
+        if (electivesChildren.indexOf(BasicCourse.hashCourse(course)) >= 0) {
+            course.restrictions = 'elective';
+            if (state.required) {
+                state.required = false;
+                state.elective = true;
+                this.updateCourseState(course, state);
+            }
+        } else {
+            course.restrictions = 'nonelective';
+            if (state.elective) {
+                state.required = true;
+                state.elective = false;
+                this.updateCourseState(course, state);
+            }
+        }
+    };
+
+    /*
+    # returns a CourseStateButton for the desired course.  If the course
+    # hasn't been loaded yet, it will be loaded and the CourseButton's data will
+    # be updated accordingly
+    */
+
+
+    CourseManager.prototype.createCourseStateButton = function(course) {
+        /*
+        # if we've already been loaded, our job is easy
+        */
+
+        var updateCourse,
+            _this = this;
+        if (this.courseData[course]) {
+            course = new CourseStateButton(this.courseData[course], true);
+        } else {
+            /*
+            # if the course hasn't been loaded, we return a functioning course
+            # button whose data will be updated upon load
+            */
+
+            course = new CourseStateButton(course);
+            updateCourse = function() {
+                if (!_this.courseData[course]) {
+                    throw new Error("Course " + course + " was loaded in dep. " + course.subject + ", but wasn't available");
+                }
+                course.update(_this.courseData[course]);
+                course.wasSynced = true;
+            };
+            this.loadSubjectData(course.subject, updateCourse);
+        }
+        this.sortableCoursesStateButtons[course] = course;
+        this.makeCourseStateButtonClickable(course);
+        this.addCourse(course);
+        this.initButtonState(course);
+        return course;
+    };
+
+    /*
+    # makes it so that when you click the button,
+    # the appropriate state is broadcast
+    */
+
+
+    CourseManager.prototype.makeCourseStateButtonClickable = function(button) {
+        var _this = this;
+        button.$elm.find('input').bind('change', function(evt) {
+            var state, val;
+            val = $(evt.currentTarget).parent().find('input:checked').val();
+            if ((val == null) || val === 'none') {
+                state = {
+                    required: false,
+                    elective: false
+                };
+            }
+            if (val === 'required') {
+                state = {
+                    required: true,
+                    elective: false
+                };
+            }
+            if (val === 'elective') {
+                state = {
+                    required: false,
+                    elective: true
+                };
+            }
+            _this.updateCourseState(button, state);
+        });
+    };
+
+    /*
+    # computes an updated state that cycles from none -> required -> elective -> none
+    # Does not specify selected or prereq
+    */
+
+
+    CourseManager.toggleState = function(state, restrictions) {
+        var ret;
+        ret = {
+            required: false,
+            elective: false
+        };
+        switch (restrictions) {
+            case 'elective':
+                /*
+                # toggle between elective and none
+                */
+
+                if (!state.elective) {
+                    ret.elective = true;
+                }
+                break;
+            case 'nonelective':
+                /*
+                # toggle between required and none
+                */
+
+                if (!state.required) {
+                    ret.required = true;
+                }
+                break;
+            default:
+                /*
+                # toggle required -> elective -> none
+                */
+
+                if (state.required) {
+                    ret.elective = true;
+                }
+                if (state.elective) {
+                    ret.elective = false;
+                }
+                if (!(state.required || state.elective)) {
+                    ret.required = true;
+                }
+        }
+        return ret;
+    };
+
+    /*
+    # sets the button state to match the state of
+    # the other course buttons currently being managed.
+    # If the course isn't currently being managed, nothing is done
+    */
+
+
+    CourseManager.prototype.initButtonState = function(button) {
+        var c, state;
+        if (!this.courses[button] || this.courses[button].length === 0) {
+            return;
+        }
+        c = this.courses[button][0];
+        state = {
+            required: c.state.required,
+            elective: c.state.elective
+        };
+        button.setState(state, {
+            forceUpdate: true
+        });
+    };
+
+    CourseManager.prototype.getSelectedCourses = function() {
+        var hash, list, ret, _ref, _ref1, _ref2;
+        ret = [];
+        _ref = this.courses;
+        for (hash in _ref) {
+            list = _ref[hash];
+            if (((_ref1 = list[0]) != null ? _ref1.state.required : void 0) || ((_ref2 = list[0]) != null ? _ref2.state.elective : void 0)) {
+                ret.push(list[0]);
+            }
+        }
+        return ret;
+    };
+
+    /*
+    # performs an ajax call to load a subject.
+    # If loadSubjectData is called multiple times before the ajax call
+    # has finished, the callbacks are queued and executed after the ajax call
+    # finishes. (the ajax call is only made once, so call this function as often as you like)
+    */
+
+
+    CourseManager.prototype.loadSubjectData = function(subject, callback, ops) {
+        var ajaxArgs, doAllCallbacks, error,
+            _this = this;
+        if (ops == null) {
+            ops = {};
+        }
+        this.onSubjectLoadedCallbacks[subject] = this.onSubjectLoadedCallbacks[subject] || [];
+        this.onSubjectLoadedCallbacks[subject].push(callback);
+        doAllCallbacks = function() {
+            var func;
+            while (func = _this.onSubjectLoadedCallbacks[subject].shift()) {
+                func();
+            }
+            _this.loadingStatus[subject] = 'loaded';
+        };
+        if (this.loadedSubjects[subject] && !ops.force) {
+            doAllCallbacks();
+            return;
+        }
+        if (this.loadingStatus[subject] === 'loading' && !ops.force) {
+            return;
+        }
+        if (this.loadingStatus[subject] === 'failed' && !ops.force) {
+            return;
+        }
+        this.loadingStatus[subject] = 'loading';
+        error = function(e) {
+            console.log('ajax error');
+            throw e;
+        };
+        ajaxArgs = {
+            url: COURSE_DATA_URL + subject,
+            dataType: 'json',
+            success: this.courseDataLoaded,
+            error: [
+                (function() {
+                    return _this.loadingStatus[subject] = 'failed';
+                }), ops.error || error
+            ],
+            complete: doAllCallbacks
+        };
+        /*
+        # make the ajax call, but afterwards check on successful calls
+        # always mark that subject as being loaded.  This prevents
+        # subjects that contain no data from being stuck in an infinite
+        # loading loop.
+        */
+
+        $.ajax(ajaxArgs).always(function(data, status, jsXHR) {
+            if (status === 'success') {
+                _this.loadedSubjects[subject] = true;
+                /*
+                # special case check the situation where data was loaded
+                # but is an empty array. Throw an error in this case.
+                */
+
+                if ((data != null ? data.length : void 0) === 0) {
+                    if (typeof ops.error === "function") {
+                        ops.error();
+                    }
+                }
+            }
+        });
+    };
+
+    CourseManager.prototype.courseDataLoaded = function(data, textState, jsXHR) {
+        var c, hash, term, _i, _len;
+        for (_i = 0, _len = data.length; _i < _len; _i++) {
+            c = data[_i];
+            hash = BasicCourse.hashCourse(c);
+            this.courseData[hash] = normalizeCourse(c);
+            /*
+            # when the data was scraped it may contain html escape characters like '&amp;'
+            # remove all of these so they won't show up anywhere accidentally.
+            */
+
+            this.courseData[hash].title = htmlUnencode(this.courseData[hash].title);
+            this.courseData[hash].description = htmlUnencode(this.courseData[hash].description);
+            this.loadedSubjects[c.subject] = true;
+            if (c.terms_offered) {
+                for (term in c.terms_offered) {
+                    if (term > this.mostRecentTerm) {
+                        this.mostRecentTerm = term;
+                    }
+                }
+            }
+        }
+    };
+
+    /*
+    # shows courses from a particular department.  If buttons
+    # already exist for the department, those buttons are made visible.
+    # If not, the buttons are created
+    */
+
+
+    CourseManager.prototype.showCoursesOfSubject = function(subject, ops) {
+        var showCourses,
+            _this = this;
+        if (ops == null) {
+            ops = {};
+        }
+        showCourses = function() {
+            var course, hash, _ref, _results;
+            _ref = _this.sortableCourses;
+            _results = [];
+            for (hash in _ref) {
+                course = _ref[hash];
+                if (course.subject === subject) {
+                    _results.push(course.$elm.show(ops.animate));
+                } else {
+                    _results.push(void 0);
+                }
+            }
+            return _results;
+        };
+        if (this.loadedSubjects[subject]) {
+            this.populateYearChartWithSubject(subject, ops);
+            showCourses();
+        } else {
+            ops = dupObject(ops);
+            ops.recursionDepth = (ops.recursionDepth || 0) + 1;
+            if (ops.recursionDepth < 10) {
+                this.loadSubjectData(subject, (function() {
+                    return _this.showCoursesOfSubject(subject, ops);
+                }), ops);
+            } else {
+                if (ops.error) {
+                    ops.error();
+                }
+                console.log(Error("Reached maximum recusion depth when loading " + subject));
+            }
+        }
+    };
+
+    /*
+    # hide all courses from a particular department
+    # that aren't marked as required or as an elective
+    */
+
+
+    CourseManager.prototype.hideCoursesOfSubject = function(subject, ops) {
+        var course, hash, _ref;
+        if (ops == null) {
+            ops = {};
+        }
+        _ref = this.sortableCourses;
+        for (hash in _ref) {
+            course = _ref[hash];
+            if (course.subject === subject && course.state.required === false && course.state.elective === false) {
+                if (course.elm) {
+                    course.$elm.hide(ops.animate);
+                }
+            }
+        }
+    };
+
+    CourseManager.prototype.hideCourse = function(course, ops) {
+        var hash, _ref;
+        if (ops == null) {
+            ops = {};
+        }
+        hash = BasicCourse.hashCourse(course);
+        if (this.sortableCourses[hash]) {
+            course = this.sortableCourses[hash];
+            if (course.state.required === false && course.state.elective === false) {
+                if ((_ref = course.$elm) != null) {
+                    _ref.hide(ops.animate);
+                }
+            }
+        }
+    };
+
+    CourseManager.prototype.populateYearChartWithSubject = function(subject, ops) {
+        var container, course, data, hash, leadingNumber, list, year, years, _i, _j, _len, _len1, _ref, _ref1;
+        years = {};
+        _ref = this.courseData;
+        for (hash in _ref) {
+            data = _ref[hash];
+            /*
+            # find everything of matching subject for which a button hasn't already been created
+            */
+
+            if (data.subject === subject && !this.sortableCourses[hash]) {
+                leadingNumber = data.number.charAt(0);
+                years[leadingNumber] = years[leadingNumber] || [];
+                years[leadingNumber].push(data);
+            }
+        }
+        _ref1 = ['1', '2', '3', '4'];
+        for (_i = 0, _len = _ref1.length; _i < _len; _i++) {
+            year = _ref1[_i];
+            list = years[year] || [];
+            list.sort();
+            container = $(".year" + year + " .courses");
+            for (_j = 0, _len1 = list.length; _j < _len1; _j++) {
+                data = list[_j];
+                course = this.createCourseButton(data, {
+                    clickable: true,
+                    selectable: true,
+                    draggable: true,
+                    restrictions: 'nonelective'
+                });
+                this.sortableCourses[course] = course;
+                container.append(course.getButton());
+                if (ops.animate) {
+                    course.$elm.hide();
+                    course.$elm.show(ops.animate);
+                }
+            }
+        }
+    };
+
+    CourseManager.prototype.ensureDisplayedInYearChart = function(course, ops) {
+        var hash, leadingNumber, _ref, _ref1,
+            _this = this;
+        if (ops == null) {
+            ops = {};
+        }
+        hash = BasicCourse.hashCourse(course);
+        /*
+        # this is a course that cannot be added since it doesn't exist in a subject
+        */
+
+        if ((!this.courseData[hash] && this.loadedSubjects[course.subject]) || this.loadingStatus[course.subject] === 'failed') {
+            if (ops.error) {
+                ops.error();
+            }
+            console.log(new Error("" + hash + " cannot be loaded.  Does not appear to exist..."));
+            //throw new Error("" + hash + " cannot be loaded.  Does not appear to exist...");
+            return;
+        }
+        /*
+        # if we don't have the course's data, load it and try to display the course again
+        */
+
+        if (!this.courseData[hash]) {
+            this.loadSubjectData(course.subject, (function() {
+                return _this.ensureDisplayedInYearChart(course, ops);
+            }), ops);
+            return;
+        }
+        /*
+        # if we've already been displayed in the year chart, our job is easy
+        */
+
+        if (this.sortableCourses[hash]) {
+            if (ops.state) {
+                this.updateCourseState(course, ops.state);
+            }
+            if (ops.year != null) {
+                $(".year" + ops.year + " .courses").append(this.sortableCourses[hash].getButton());
+            }
+            if (ops.load) {
+                ops.load(this.sortableCourses[hash]);
+            }
+            this.sortableCourses[hash].$elm.show(ops.animate);
+            return;
+        }
+        /*
+        # A course should show up in the year specified.  If not,
+        # it should clamp to year 1 or year 4
+        */
+
+        leadingNumber = this.courseData[hash].number.charAt(0);
+        if (leadingNumber < '1') {
+            leadingNumber = '1';
+        }
+        if (leadingNumber > '4') {
+            leadingNumber = '4';
+        }
+        if (ops.year != null) {
+            leadingNumber = ops.year;
+        }
+        course = this.createCourseButton(this.courseData[hash], {
+            clickable: true,
+            selectable: true,
+            draggable: true,
+            restrictions: 'nonelective'
         });
         this.sortableCourses[course] = course;
-        container.append(course.getButton());
-        if (ops.animate) {
-          course.$elm.hide();
-          course.$elm.show(ops.animate);
+        $(".year" + leadingNumber + " .courses").append(course.getButton());
+        if (ops.state) {
+            this.updateCourseState(course, ops.state);
         }
-      }
-    }
-  };
-
-  CourseManager.prototype.ensureDisplayedInYearChart = function(course, ops) {
-    var hash, leadingNumber, _ref, _ref1,
-      _this = this;
-    if (ops == null) {
-      ops = {};
-    }
-    hash = BasicCourse.hashCourse(course);
-    /*
-    # this is a course that cannot be added since it doesn't exist in a subject
-    */
-
-    if ((!this.courseData[hash] && this.loadedSubjects[course.subject]) || this.loadingStatus[course.subject] === 'failed') {
-      if (ops.error) {
-        ops.error();
-      }
-      console.log(new Error("" + hash + " cannot be loaded.  Does not appear to exist..."));
-      //throw new Error("" + hash + " cannot be loaded.  Does not appear to exist...");
-      return;
-    }
-    /*
-    # if we don't have the course's data, load it and try to display the course again
-    */
-
-    if (!this.courseData[hash]) {
-      this.loadSubjectData(course.subject, (function() {
-        return _this.ensureDisplayedInYearChart(course, ops);
-      }), ops);
-      return;
-    }
-    /*
-    # if we've already been displayed in the year chart, our job is easy
-    */
-
-    if (this.sortableCourses[hash]) {
-      if (ops.state) {
-        this.updateCourseState(course, ops.state);
-      }
-      if (ops.year != null) {
-        $(".year" + ops.year + " .courses").append(this.sortableCourses[hash].getButton());
-      }
-      if (ops.load) {
-        ops.load(this.sortableCourses[hash]);
-      }
-      this.sortableCourses[hash].$elm.show(ops.animate);
-      return;
-    }
-    /*
-    # A course should show up in the year specified.  If not,
-    # it should clamp to year 1 or year 4
-    */
-
-    leadingNumber = this.courseData[hash].number.charAt(0);
-    if (leadingNumber < '1') {
-      leadingNumber = '1';
-    }
-    if (leadingNumber > '4') {
-      leadingNumber = '4';
-    }
-    if (ops.year != null) {
-      leadingNumber = ops.year;
-    }
-    course = this.createCourseButton(this.courseData[hash], {
-      clickable: true,
-      selectable: true,
-      draggable: true,
-      restrictions: 'nonelective'
-    });
-    this.sortableCourses[course] = course;
-    $(".year" + leadingNumber + " .courses").append(course.getButton());
-    if (ops.state) {
-      this.updateCourseState(course, ops.state);
-    }
-    if (ops.load) {
-      ops.load(course);
-    }
-    if (ops.animate) {
-      if ((_ref = course.$elm) != null) {
-        _ref.hide();
-      }
-      if ((_ref1 = course.$elm) != null) {
-        _ref1.show(ops.animate);
-      }
-    }
-  };
-
-  CourseManager.prototype.showUnmetPrereqs = function() {
-    /*
-    # we need a list of courses that are required or electives to find their prereqs
-    */
-
-    var activeCourses, course, div, hash, prereqs, _ref;
-    activeCourses = [];
-    _ref = this.sortableCourses;
-    for (hash in _ref) {
-      course = _ref[hash];
-      if (course.state.required || course.state.elective) {
-        activeCourses.push(course);
-      }
-    }
-    prereqs = PrereqUtils.computePrereqTree(activeCourses, activeCourses);
-    div = PrereqUtils.prereqsToDivs(prereqs, this);
-    $('#unmet-prereq-list').html(div);
-  };
-
-  /*
-  # returns a string formatted in graphviz's dot language
-  # consisting of all the selected courses of each year and
-  # with prereqs given by arrows
-  */
-
-
-  CourseManager.prototype.createDotGraph = function() {
-    this.updateGraphState();
-    return this.graphState.toDot();
-  };
-
-  /*
-  # binds text boxes to the extra data belonging
-  # to an electivesNode (e.g. description, link to more
-  # info, etc.)
-  */
-
-
-  CourseManager.prototype.bindElectivesDescription = function(course) {
-    var data, descriptionChange, urlChange;
-    data = course.data;
-    $('#electives-description').val(data.description || '');
-    $('#electives-url').val(data.url || '');
-    descriptionChange = function() {
-      var val;
-      val = $('#electives-description').val();
-      data.description = val;
+        if (ops.load) {
+            ops.load(course);
+        }
+        if (ops.animate) {
+            if ((_ref = course.$elm) != null) {
+                _ref.hide();
+            }
+            if ((_ref1 = course.$elm) != null) {
+                _ref1.show(ops.animate);
+            }
+        }
     };
-    urlChange = function() {
-      var val;
-      val = $('#electives-url').val();
-      data.url = val;
+
+    CourseManager.prototype.showUnmetPrereqs = function() {
+        /*
+        # we need a list of courses that are required or electives to find their prereqs
+        */
+
+        var activeCourses, course, div, hash, prereqs, _ref;
+        activeCourses = [];
+        _ref = this.sortableCourses;
+        for (hash in _ref) {
+            course = _ref[hash];
+            if (course.state.required || course.state.elective) {
+                activeCourses.push(course);
+            }
+        }
+        prereqs = PrereqUtils.computePrereqTree(activeCourses, activeCourses);
+        div = PrereqUtils.prereqsToDivs(prereqs, this);
+        $('#unmet-prereq-list').html(div);
     };
+
     /*
-    # let's bind the old way so our new binding
-    # always replaces our old
+    # returns a string formatted in graphviz's dot language
+    # consisting of all the selected courses of each year and
+    # with prereqs given by arrows
     */
 
-    $('#electives-description')[0].onkeyup = function() {
-      window.setTimeout(descriptionChange, 0);
-    };
-    $('#electives-url')[0].onkeyup = function() {
-      window.setTimeout(urlChange, 0);
-    };
-  };
 
-  return CourseManager;
+    CourseManager.prototype.createDotGraph = function() {
+        this.updateGraphState();
+        return this.graphState.toDot();
+    };
+
+    /*
+    # binds text boxes to the extra data belonging
+    # to an electivesNode (e.g. description, link to more
+    # info, etc.)
+    */
+
+
+    CourseManager.prototype.bindElectivesDescription = function(course) {
+        var data, descriptionChange, urlChange;
+        data = course.data;
+        $('#electives-description').val(data.description || '');
+        $('#electives-url').val(data.url || '');
+        descriptionChange = function() {
+            var val;
+            val = $('#electives-description').val();
+            data.description = val;
+        };
+        urlChange = function() {
+            var val;
+            val = $('#electives-url').val();
+            data.url = val;
+        };
+        /*
+        # let's bind the old way so our new binding
+        # always replaces our old
+        */
+
+        $('#electives-description')[0].onkeyup = function() {
+            window.setTimeout(descriptionChange, 0);
+        };
+        $('#electives-url')[0].onkeyup = function() {
+            window.setTimeout(urlChange, 0);
+        };
+    };
+
+    return CourseManager;
 
 })();
 
@@ -3406,320 +3418,320 @@ CourseManager = (function() {
 
 
 CourseUtils = {
-  historyToDivs: function(hist) {
-    var ret, term, _i, _len, _ref;
-    if (hist == null) {
-      hist = {};
-    }
-    ret = "";
-    /*
-    # add the divs in this order
-    */
+    historyToDivs: function(hist) {
+        var ret, term, _i, _len, _ref;
+        if (hist == null) {
+            hist = {};
+        }
+        ret = "";
+        /*
+        # add the divs in this order
+        */
 
-    _ref = ['fall', 'spring', 'summer'];
-    for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-      term = _ref[_i];
-      if (hist[term]) {
-        ret += "<div class='availability " + term + "'>" + (titleCaps(term)) + "</div>";
-      }
+        _ref = ['fall', 'spring', 'summer'];
+        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+            term = _ref[_i];
+            if (hist[term]) {
+                ret += "<div class='availability " + term + "'>" + (titleCaps(term)) + "</div>";
+            }
+        }
+        return ret || "<div class='notoffered'>Hasn't been offered in the last two years</div>";
     }
-    return ret || "<div class='notoffered'>Hasn't been offered in the last two years</div>";
-  }
 };
 
 PrereqUtils = {
-  prereqsToString: function(prereq) {
-    var p;
-    if (prereq == null) {
-      return "";
-    }
-    if (prereq.subject) {
-      return Course.hashCourse(prereq);
-    }
-    if (prereq.op) {
-      /*
-      # only give a pretty result if our data is formatted correctly
-      */
-
-      if (typeof prereq.op === 'string') {
-        return "(" + ((function() {
-          var _i, _len, _ref, _results;
-          _ref = prereq.data;
-          _results = [];
-          for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-            p = _ref[_i];
-            _results.push(PrereqUtils.prereqsToString(p));
-          }
-          return _results;
-        })()).join(" " + prereq.op + " ") + ")";
-      } else {
-        return "";
-      }
-    }
-  },
-  /*
-  # returns the prereq pruned so that any branches whose
-  # requirements are met are no longer there
-  # courses should be a list of course hashes
-  */
-
-  prunePrereqs: function(prereq, courses) {
-    var course, prunedBranch, ret, _i, _j, _len, _len1, _ref, _ref1, _ref2, _ref3;
-    if (prereq == null) {
-      throw new Error("Yikes.  We errored while pruning the prereqs (found " + prereq + " for courses " + courses + "!)");
-    }
-    ret = {
-      op: 'and',
-      data: []
-    };
-    if (prereq.subject) {
-      if (courses.indexOf(BasicCourse.hashCourse(prereq)) === -1) {
-        ret.data.push(prereq);
-      }
-    }
-    switch (prereq.op) {
-      case 'or':
-        ret.op = 'or';
-        _ref = prereq.data;
-        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-          course = _ref[_i];
-          /*
-          # our prereq data isn't completely clean.  Sometimes
-          # there are null values for strange course requirements.
-          # e.g. ECON225 has "Univ English Requirement (Y=1) 1"
-          # skip past any of these nulls
-          */
-
-          if (course == null) {
-            continue;
-          }
-          /*
-          # if we're in an 'or' list and we've found one of our items,
-          # we're done!  Return an empty list
-          */
-
-          prunedBranch = PrereqUtils.prunePrereqs(course, courses);
-          if (((_ref1 = prunedBranch.data) != null ? _ref1.length : void 0) === 0) {
-            return {
-              op: 'and',
-              data: []
-            };
-          }
-          /*
-          # if our branch isn't empty, we better keep it around
-          */
-
-          ret.data.push(prunedBranch);
+    prereqsToString: function(prereq) {
+        var p;
+        if (prereq == null) {
+            return "";
         }
-        break;
-      case 'and':
-        _ref2 = prereq.data;
-        for (_j = 0, _len1 = _ref2.length; _j < _len1; _j++) {
-          course = _ref2[_j];
-          if (course == null) {
-            continue;
-          }
-          /*
-          # if we're in an 'and' list, we need to keep any branches
-          # that have not been fully met
-          */
-
-          prunedBranch = PrereqUtils.prunePrereqs(course, courses);
-          if (((_ref3 = prunedBranch.data) != null ? _ref3.length : void 0) !== 0) {
+        if (prereq.subject) {
+            return Course.hashCourse(prereq);
+        }
+        if (prereq.op) {
             /*
-            # if our branch isn't empty, we better keep it around
+            # only give a pretty result if our data is formatted correctly
             */
 
-            ret.data.push(prunedBranch);
-          }
+            if (typeof prereq.op === 'string') {
+                return "(" + ((function() {
+                    var _i, _len, _ref, _results;
+                    _ref = prereq.data;
+                    _results = [];
+                    for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+                        p = _ref[_i];
+                        _results.push(PrereqUtils.prereqsToString(p));
+                    }
+                    return _results;
+                })()).join(" " + prereq.op + " ") + ")";
+            } else {
+                return "";
+            }
         }
-    }
-    return ret;
-  },
-  /*
-  # Takes prereq object and simplifies it by remove unnecessary 'parens'
-  # eg. (MATH100) and (MATH101) -> MATH100 and MATH101
-  */
-
-  simplifyPrereqs: function(prereq) {
-    var removeParen;
-    removeParen = function(prereq) {
-      var p;
-      if (prereq.data == null) {
-        return prereq;
-      }
-      if (prereq.data.length === 1) {
-        return removeParen(prereq.data[0]);
-      }
-      return {
-        op: prereq.op,
-        data: (function() {
-          var _i, _len, _ref, _results;
-          _ref = prereq.data;
-          _results = [];
-          for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-            p = _ref[_i];
-            _results.push(removeParen(p));
-          }
-          return _results;
-        })()
-      };
-    };
-    return removeParen(prereq);
-  },
-  /*
-  # returns a flat list of all prereqs.
-  */
-
-  flattenPrereqs: function(prereq) {
-    var c, ret, _i, _len, _ref;
-    if (prereq != null ? prereq.subject : void 0) {
-      return [prereq];
-    }
-    if (prereq != null ? prereq.op : void 0) {
-      ret = [];
-      _ref = prereq.data;
-      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-        c = _ref[_i];
-        ret = ret.concat(PrereqUtils.flattenPrereqs(c));
-      }
-      return ret;
-    }
-    return [];
-  },
-  /*
-  # creates a dom element with all the prereqs as buttons synced with manager (instace of CourseManager)
-  */
-
-  prereqsToDivs: function(prereq, manager) {
+    },
     /*
-    # create a string representing the dom structure
+    # returns the prereq pruned so that any branches whose
+    # requirements are met are no longer there
+    # courses should be a list of course hashes
     */
 
-    var course, courseElm, divs, elm, number, prereqsStr, prereqsToDivs, subject, _i, _len, _ref;
-    prereqsToDivs = function(prereq) {
-      var hash, p;
-      if (prereq == null) {
-        return "";
-      }
-      if (prereq.subject) {
-        hash = BasicCourse.hashCourse(prereq);
-        return "<course id='" + hash + "' subject='" + prereq.subject + "' number='" + prereq.number + "'>" + hash + "</course>";
-      }
-      if (prereq.op) {
+    prunePrereqs: function(prereq, courses) {
+        var course, prunedBranch, ret, _i, _j, _len, _len1, _ref, _ref1, _ref2, _ref3;
+        if (prereq == null) {
+            throw new Error("Yikes.  We errored while pruning the prereqs (found " + prereq + " for courses " + courses + "!)");
+        }
+        ret = {
+            op: 'and',
+            data: []
+        };
+        if (prereq.subject) {
+            if (courses.indexOf(BasicCourse.hashCourse(prereq)) === -1) {
+                ret.data.push(prereq);
+            }
+        }
+        switch (prereq.op) {
+            case 'or':
+                ret.op = 'or';
+                _ref = prereq.data;
+                for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+                    course = _ref[_i];
+                    /*
+                    # our prereq data isn't completely clean.  Sometimes
+                    # there are null values for strange course requirements.
+                    # e.g. ECON225 has "Univ English Requirement (Y=1) 1"
+                    # skip past any of these nulls
+                    */
+
+                    if (course == null) {
+                        continue;
+                    }
+                    /*
+                    # if we're in an 'or' list and we've found one of our items,
+                    # we're done!  Return an empty list
+                    */
+
+                    prunedBranch = PrereqUtils.prunePrereqs(course, courses);
+                    if (((_ref1 = prunedBranch.data) != null ? _ref1.length : void 0) === 0) {
+                        return {
+                            op: 'and',
+                            data: []
+                        };
+                    }
+                    /*
+                    # if our branch isn't empty, we better keep it around
+                    */
+
+                    ret.data.push(prunedBranch);
+                }
+                break;
+            case 'and':
+                _ref2 = prereq.data;
+                for (_j = 0, _len1 = _ref2.length; _j < _len1; _j++) {
+                    course = _ref2[_j];
+                    if (course == null) {
+                        continue;
+                    }
+                    /*
+                    # if we're in an 'and' list, we need to keep any branches
+                    # that have not been fully met
+                    */
+
+                    prunedBranch = PrereqUtils.prunePrereqs(course, courses);
+                    if (((_ref3 = prunedBranch.data) != null ? _ref3.length : void 0) !== 0) {
+                        /*
+                        # if our branch isn't empty, we better keep it around
+                        */
+
+                        ret.data.push(prunedBranch);
+                    }
+                }
+        }
+        return ret;
+    },
+    /*
+    # Takes prereq object and simplifies it by remove unnecessary 'parens'
+    # eg. (MATH100) and (MATH101) -> MATH100 and MATH101
+    */
+
+    simplifyPrereqs: function(prereq) {
+        var removeParen;
+        removeParen = function(prereq) {
+            var p;
+            if (prereq.data == null) {
+                return prereq;
+            }
+            if (prereq.data.length === 1) {
+                return removeParen(prereq.data[0]);
+            }
+            return {
+                op: prereq.op,
+                data: (function() {
+                    var _i, _len, _ref, _results;
+                    _ref = prereq.data;
+                    _results = [];
+                    for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+                        p = _ref[_i];
+                        _results.push(removeParen(p));
+                    }
+                    return _results;
+                })()
+            };
+        };
+        return removeParen(prereq);
+    },
+    /*
+    # returns a flat list of all prereqs.
+    */
+
+    flattenPrereqs: function(prereq) {
+        var c, ret, _i, _len, _ref;
+        if (prereq != null ? prereq.subject : void 0) {
+            return [prereq];
+        }
+        if (prereq != null ? prereq.op : void 0) {
+            ret = [];
+            _ref = prereq.data;
+            for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+                c = _ref[_i];
+                ret = ret.concat(PrereqUtils.flattenPrereqs(c));
+            }
+            return ret;
+        }
+        return [];
+    },
+    /*
+    # creates a dom element with all the prereqs as buttons synced with manager (instace of CourseManager)
+    */
+
+    prereqsToDivs: function(prereq, manager) {
         /*
-        # only give a pretty result if our data is formatted correctly
+        # create a string representing the dom structure
         */
 
-        if (typeof prereq.op === 'string') {
-          return ("<ul class='prereq-tree prereq-" + prereq.op + "'><li class='prereq-tree prereq-" + prereq.op + "'>") + ((function() {
-            var _i, _len, _ref, _results;
-            _ref = prereq.data;
+        var course, courseElm, divs, elm, number, prereqsStr, prereqsToDivs, subject, _i, _len, _ref;
+        prereqsToDivs = function(prereq) {
+            var hash, p;
+            if (prereq == null) {
+                return "";
+            }
+            if (prereq.subject) {
+                hash = BasicCourse.hashCourse(prereq);
+                return "<course id='" + hash + "' subject='" + prereq.subject + "' number='" + prereq.number + "'>" + hash + "</course>";
+            }
+            if (prereq.op) {
+                /*
+                # only give a pretty result if our data is formatted correctly
+                */
+
+                if (typeof prereq.op === 'string') {
+                    return ("<ul class='prereq-tree prereq-" + prereq.op + "'><li class='prereq-tree prereq-" + prereq.op + "'>") + ((function() {
+                        var _i, _len, _ref, _results;
+                        _ref = prereq.data;
+                        _results = [];
+                        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+                            p = _ref[_i];
+                            _results.push(prereqsToDivs(p));
+                        }
+                        return _results;
+                    })()).join("</li><li class='prereq-tree prereq-" + prereq.op + "'>") + "</ul>";
+                } else {
+                    return "";
+                }
+            }
+        };
+        /*
+        # first create the structure for all the prereqs.  We will then go and replace
+        # all the <course/> tags with CourseButton s if a manager (CourseManager) is present.
+        # We wrap everything in an extra div so that jQuery.find('course') will find the course
+        # tag even if prereqsToDivs returns "<course />" (also, this ensures every <course/> has
+        # a parent)
+        */
+
+        prereqsStr = prereqsToDivs(prereq);
+        if (!prereqsStr) {
+            return "<div class='noprereqs'>No prerequsites</div>";
+        }
+        divs = $("<div>" + prereqsStr + "</div>");
+        if (!manager) {
+            return divs;
+        }
+        _ref = divs.find('course');
+        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+            elm = _ref[_i];
+            subject = elm.getAttribute('subject');
+            number = elm.getAttribute('number');
+            course = manager.createCourseButton({
+                subject: subject,
+                number: number
+            }, {
+                clickable: true,
+                insertOnClick: true,
+                restrictions: 'nonelective'
+            });
+            courseElm = course.getButton();
+            elm.parentNode.replaceChild(courseElm, elm);
+        }
+        return divs;
+    },
+    /*
+    # given a list of courses and a list of selected courses, returns a tree of prereqs
+    # unmet by the selected courses
+    */
+
+    computePrereqTree: function(courses, selected) {
+        var course, hashify, pruned, ret, s, _i, _len, _ref;
+        if (selected == null) {
+            selected = [];
+        }
+        if (courses == null) {
+            throw new Error("computePrereqTree requires a list of course hashes");
+        }
+        /*
+        # selected should be a list of hashes, so if it's not, convert it!
+        */
+
+        hashify = function(s) {
+            if (typeof s === 'string') {
+                return s;
+            }
+            return BasicCourse.hashCourse(s);
+        };
+        selected = (function() {
+            var _i, _len, _results;
             _results = [];
-            for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-              p = _ref[_i];
-              _results.push(prereqsToDivs(p));
+            for (_i = 0, _len = selected.length; _i < _len; _i++) {
+                s = selected[_i];
+                _results.push(hashify(s));
             }
             return _results;
-          })()).join("</li><li class='prereq-tree prereq-" + prereq.op + "'>") + "</ul>";
-        } else {
-          return "";
+        })();
+        ret = {
+            op: 'and',
+            data: []
+        };
+        for (_i = 0, _len = courses.length; _i < _len; _i++) {
+            course = courses[_i];
+            if (typeof course === 'string') {
+                throw new Error("cannot computePrereqTree with courses given as strings");
+            }
+            if (!course.wasSynced) {
+                throw new Error("attempting to compute prereqs of " + course + " when data isn't synced");
+            }
+            if (course.prereqs != null) {
+                pruned = PrereqUtils.prunePrereqs(course.prereqs, selected);
+                if (((_ref = pruned.data) != null ? _ref.length : void 0) > 0) {
+                    /*
+                    # tag this branch of prereqs so that we know who requires it
+                    */
+
+                    pruned.requiredBy = course;
+                    ret.data.push(pruned);
+                }
+            }
         }
-      }
-    };
-    /*
-    # first create the structure for all the prereqs.  We will then go and replace
-    # all the <course/> tags with CourseButton s if a manager (CourseManager) is present.
-    # We wrap everything in an extra div so that jQuery.find('course') will find the course
-    # tag even if prereqsToDivs returns "<course />" (also, this ensures every <course/> has
-    # a parent)
-    */
-
-    prereqsStr = prereqsToDivs(prereq);
-    if (!prereqsStr) {
-      return "<div class='noprereqs'>No prerequsites</div>";
+        ret = PrereqUtils.simplifyPrereqs(ret);
+        return ret;
     }
-    divs = $("<div>" + prereqsStr + "</div>");
-    if (!manager) {
-      return divs;
-    }
-    _ref = divs.find('course');
-    for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-      elm = _ref[_i];
-      subject = elm.getAttribute('subject');
-      number = elm.getAttribute('number');
-      course = manager.createCourseButton({
-        subject: subject,
-        number: number
-      }, {
-        clickable: true,
-        insertOnClick: true,
-        restrictions: 'nonelective'
-      });
-      courseElm = course.getButton();
-      elm.parentNode.replaceChild(courseElm, elm);
-    }
-    return divs;
-  },
-  /*
-  # given a list of courses and a list of selected courses, returns a tree of prereqs
-  # unmet by the selected courses
-  */
-
-  computePrereqTree: function(courses, selected) {
-    var course, hashify, pruned, ret, s, _i, _len, _ref;
-    if (selected == null) {
-      selected = [];
-    }
-    if (courses == null) {
-      throw new Error("computePrereqTree requires a list of course hashes");
-    }
-    /*
-    # selected should be a list of hashes, so if it's not, convert it!
-    */
-
-    hashify = function(s) {
-      if (typeof s === 'string') {
-        return s;
-      }
-      return BasicCourse.hashCourse(s);
-    };
-    selected = (function() {
-      var _i, _len, _results;
-      _results = [];
-      for (_i = 0, _len = selected.length; _i < _len; _i++) {
-        s = selected[_i];
-        _results.push(hashify(s));
-      }
-      return _results;
-    })();
-    ret = {
-      op: 'and',
-      data: []
-    };
-    for (_i = 0, _len = courses.length; _i < _len; _i++) {
-      course = courses[_i];
-      if (typeof course === 'string') {
-        throw new Error("cannot computePrereqTree with courses given as strings");
-      }
-      if (!course.wasSynced) {
-        throw new Error("attempting to compute prereqs of " + course + " when data isn't synced");
-      }
-      if (course.prereqs != null) {
-        pruned = PrereqUtils.prunePrereqs(course.prereqs, selected);
-        if (((_ref = pruned.data) != null ? _ref.length : void 0) > 0) {
-          /*
-          # tag this branch of prereqs so that we know who requires it
-          */
-
-          pruned.requiredBy = course;
-          ret.data.push(pruned);
-        }
-      }
-    }
-    ret = PrereqUtils.simplifyPrereqs(ret);
-    return ret;
-  }
 };
 
 /*
@@ -3728,97 +3740,97 @@ PrereqUtils = {
 
 
 BasicCourse = (function() {
-  BasicCourse.hashCourse = function(course) {
-    if (typeof course === 'string') {
-      return course;
-    }
-    return "" + course.subject + " " + course.number;
-  };
-
-  function BasicCourse(data, synced) {
-    var _ref;
-    this.data = data;
-    if (synced == null) {
-      synced = false;
-    }
-    this.hash = BasicCourse.hashCourse(this.data);
-    _ref = this.data, this.subject = _ref.subject, this.number = _ref.number, this.prereqs = _ref.prereqs;
-    this.state = {
-      required: false,
-      elective: false,
-      selected: false,
-      prereq: false
-    };
-    /* false if the course only has @subject and @number, true if it has the rest of the course details*/
-
-    this.wasSynced = synced;
-    return;
-  }
-
-  BasicCourse.prototype.toString = function() {
-    return this.hash;
-  };
-
-  BasicCourse.prototype.update = function(data) {
-    this.data = data;
-    this.prereqs = this.data.prereqs;
-  };
-
-  BasicCourse.prototype.getTermsOffered = function(currentTerm, goBackNYears) {
-    var currentYear, k, month, ret;
-    if (currentTerm == null) {
-      currentTerm = '';
-    }
-    if (goBackNYears == null) {
-      goBackNYears = 0;
-    }
-    currentYear = parseInt(currentTerm.slice(-4, -2), 10);
-    ret = {};
-    for (k in this.data.terms_offered || {}) {
-      /*
-      # We may only want to include terms a course was offered in recent years
-      */
-
-      if (goBackNYears > 0 && currentTerm) {
-        if (parseInt(k.slice(-4, -2), 10) < currentYear - goBackNYears) {
-          continue;
+    BasicCourse.hashCourse = function(course) {
+        if (typeof course === 'string') {
+            return course;
         }
-      }
-      month = k.slice(-2);
-      switch (month) {
-        case '09':
-          ret['fall'] = (ret['fall'] || 0) + 1;
-          break;
-        case '01':
-          ret['spring'] = (ret['spring'] || 0) + 1;
-          break;
-        case '05':
-          ret['summer'] = (ret['summer'] || 0) + 1;
-      }
+        return "" + course.subject + " " + course.number;
+    };
+
+    function BasicCourse(data, synced) {
+        var _ref;
+        this.data = data;
+        if (synced == null) {
+            synced = false;
+        }
+        this.hash = BasicCourse.hashCourse(this.data);
+        _ref = this.data, this.subject = _ref.subject, this.number = _ref.number, this.prereqs = _ref.prereqs;
+        this.state = {
+            required: false,
+            elective: false,
+            selected: false,
+            prereq: false
+        };
+        /* false if the course only has @subject and @number, true if it has the rest of the course details*/
+
+        this.wasSynced = synced;
+        return;
     }
-    return ret;
-  };
 
-  /*
-  # set the course's state and return only
-  # the items in the state that changed
-  */
+    BasicCourse.prototype.toString = function() {
+        return this.hash;
+    };
+
+    BasicCourse.prototype.update = function(data) {
+        this.data = data;
+        this.prereqs = this.data.prereqs;
+    };
+
+    BasicCourse.prototype.getTermsOffered = function(currentTerm, goBackNYears) {
+        var currentYear, k, month, ret;
+        if (currentTerm == null) {
+            currentTerm = '';
+        }
+        if (goBackNYears == null) {
+            goBackNYears = 0;
+        }
+        currentYear = parseInt(currentTerm.slice(-4, -2), 10);
+        ret = {};
+        for (k in this.data.terms_offered || {}) {
+            /*
+            # We may only want to include terms a course was offered in recent years
+            */
+
+            if (goBackNYears > 0 && currentTerm) {
+                if (parseInt(k.slice(-4, -2), 10) < currentYear - goBackNYears) {
+                    continue;
+                }
+            }
+            month = k.slice(-2);
+            switch (month) {
+                case '09':
+                    ret['fall'] = (ret['fall'] || 0) + 1;
+                    break;
+                case '01':
+                    ret['spring'] = (ret['spring'] || 0) + 1;
+                    break;
+                case '05':
+                    ret['summer'] = (ret['summer'] || 0) + 1;
+            }
+        }
+        return ret;
+    };
+
+    /*
+    # set the course's state and return only
+    # the items in the state that changed
+    */
 
 
-  BasicCourse.prototype.setState = function(state) {
-    var ret, s, v;
-    ret = {};
-    for (s in state) {
-      v = state[s];
-      if (this.state[s] !== v) {
-        ret[s] = v;
-        this.state[s] = v;
-      }
-    }
-    return ret;
-  };
+    BasicCourse.prototype.setState = function(state) {
+        var ret, s, v;
+        ret = {};
+        for (s in state) {
+            v = state[s];
+            if (this.state[s] !== v) {
+                ret[s] = v;
+                this.state[s] = v;
+            }
+        }
+        return ret;
+    };
 
-  return BasicCourse;
+    return BasicCourse;
 
 })();
 
@@ -3828,78 +3840,78 @@ BasicCourse = (function() {
 
 
 CourseButton = (function(_super) {
-  __extends(CourseButton, _super);
+    __extends(CourseButton, _super);
 
-  function CourseButton(data) {
-    CourseButton.__super__.constructor.call(this, data);
-    this.getButton();
-    return;
-  }
-
-  CourseButton.prototype.setState = function(state, ops) {
-    var changedState, s, v;
-    if (ops == null) {
-      ops = {};
+    function CourseButton(data) {
+        CourseButton.__super__.constructor.call(this, data);
+        this.getButton();
+        return;
     }
-    changedState = CourseButton.__super__.setState.call(this, state);
-    if (!ops.forceUpdate) {
-      state = changedState;
-    }
-    /*
-    # update the classes on the button if it exists
-    */
 
-    if (!this.elm) {
-      return state;
-    }
-    for (s in state) {
-      v = state[s];
-      if (v) {
-        this.$elm.addClass(s);
-      } else {
-        this.$elm.removeClass(s);
-      }
-    }
-    return state;
-  };
+    CourseButton.prototype.setState = function(state, ops) {
+        var changedState, s, v;
+        if (ops == null) {
+            ops = {};
+        }
+        changedState = CourseButton.__super__.setState.call(this, state);
+        if (!ops.forceUpdate) {
+            state = changedState;
+        }
+        /*
+        # update the classes on the button if it exists
+        */
 
-  CourseButton.prototype.getButton = function() {
-    if (this.elm) {
-      return this.elm;
-    }
-    this.$elm = $("<div class='course' subject='" + this.subject + "' number='" + this.number + "'><div class='annotation'></div><div class='number'>" + this.subject + " " + this.number + "</div></div>");
-    this.setTooltip(titleCaps(this.data.title));
-    this.$elm.disableSelection();
-    this.elm = this.$elm[0];
-    this.elm.course = this;
-    /*
-    # make sure to initialize the state.  We may have changed it before we created the button element!
-    */
+        if (!this.elm) {
+            return state;
+        }
+        for (s in state) {
+            v = state[s];
+            if (v) {
+                this.$elm.addClass(s);
+            } else {
+                this.$elm.removeClass(s);
+            }
+        }
+        return state;
+    };
 
-    this.setState(this.state);
-    return this.elm;
-  };
+    CourseButton.prototype.getButton = function() {
+        if (this.elm) {
+            return this.elm;
+        }
+        this.$elm = $("<div class='course' subject='" + this.subject + "' number='" + this.number + "'><div class='annotation'></div><div class='number'>" + this.subject + " " + this.number + "</div></div>");
+        this.setTooltip(titleCaps(this.data.title));
+        this.$elm.disableSelection();
+        this.elm = this.$elm[0];
+        this.elm.course = this;
+        /*
+        # make sure to initialize the state.  We may have changed it before we created the button element!
+        */
 
-  CourseButton.prototype.removeButton = function() {
-    if (!this.elm) {
-      return;
-    }
-    /* make sure we remove the circular ref so we can be garbage collected*/
+        this.setState(this.state);
+        return this.elm;
+    };
 
-    this.elm.course = null;
-    this.$elm.remove();
-    this.elm = this.$elm = null;
-  };
+    CourseButton.prototype.removeButton = function() {
+        if (!this.elm) {
+            return;
+        }
+        /* make sure we remove the circular ref so we can be garbage collected*/
 
-  CourseButton.prototype.setTooltip = function(tip) {
-    if (tip) {
-      this.$elm.attr({
-        title: tip
-      });
-    }
-  };
+        this.elm.course = null;
+        this.$elm.remove();
+        this.elm = this.$elm = null;
+    };
 
-  return CourseButton;
+    CourseButton.prototype.setTooltip = function(tip) {
+        if (tip) {
+            this.$elm.attr({
+                title: tip
+            });
+        }
+    };
+
+    return CourseButton;
 
 })(BasicCourse);
 
@@ -3909,92 +3921,92 @@ CourseButton = (function(_super) {
 
 
 CourseStateButton = (function(_super) {
-  __extends(CourseStateButton, _super);
+    __extends(CourseStateButton, _super);
 
-  function CourseStateButton(data) {
-    CourseStateButton.__super__.constructor.call(this, data);
-    this.getButton();
-    return;
-  }
+    function CourseStateButton(data) {
+        CourseStateButton.__super__.constructor.call(this, data);
+        this.getButton();
+        return;
+    }
 
-  CourseStateButton.prototype.getButton = function() {
-    if (this.elm) {
-      return this.elm;
-    }
-    this.$elm = $("<div class='course-status'>\n        <input type='radio' name='state' value='none' id='course-notincluded' /><label for='course-notincluded'>Not Included</label>\n        <input type='radio' name='state' value='required' id='course-required' /><label for='course-required'>Required</label>\n        <input type='radio' name='state' value='elective' id='course-elective' /><label for='course-elective'>Elective</label>\n</div>");
-    this.$elm.buttonset();
-    this.elm = this.$elm[0];
-  };
+    CourseStateButton.prototype.getButton = function() {
+        if (this.elm) {
+            return this.elm;
+        }
+        this.$elm = $("<div class='course-status'>\n        <input type='radio' name='state' value='none' id='course-notincluded' /><label for='course-notincluded'>Not Included</label>\n        <input type='radio' name='state' value='required' id='course-required' /><label for='course-required'>Required</label>\n        <input type='radio' name='state' value='elective' id='course-elective' /><label for='course-elective'>Elective</label>\n</div>");
+        this.$elm.buttonset();
+        this.elm = this.$elm[0];
+    };
 
-  CourseStateButton.prototype.setState = function(state, ops) {
-    var changedState,
-      _this = this;
-    if (ops == null) {
-      ops = {};
-    }
-    changedState = CourseStateButton.__super__.setState.call(this, state);
-    if (!ops.forceUpdate) {
-      state = changedState;
-    }
+    CourseStateButton.prototype.setState = function(state, ops) {
+        var changedState,
+            _this = this;
+        if (ops == null) {
+            ops = {};
+        }
+        changedState = CourseStateButton.__super__.setState.call(this, state);
+        if (!ops.forceUpdate) {
+            state = changedState;
+        }
+        /*
+        # update the classes on the button if it exists
+        */
+
+        if ((!this.elm || Object.keys(state).length === 0) && !ops.forceUpdate) {
+            return state;
+        }
+        this.$elm.find('input').attr('checked', false);
+        if (this.state.required) {
+            this.$elm.find('input[value=required]').attr('checked', true);
+        } else if (this.state.elective) {
+            this.$elm.find('input[value=elective]').attr('checked', true);
+        } else {
+            this.$elm.find('input[value=none]').attr('checked', true);
+        }
+        /*
+        #TODO I don't know why i need to do this...
+        */
+
+        window.setTimeout((function() {
+            return _this.$elm.buttonset('refresh');
+        }), 0);
+        return state;
+    };
+
+    CourseStateButton.prototype.removeButton = function() {
+        if (!this.elm) {
+            return;
+        }
+        /* make sure we remove the circular ref so we can be garbage collected*/
+
+        this.elm.course = null;
+        this.$elm.remove();
+        this.elm = this.$elm = null;
+    };
+
     /*
-    # update the classes on the button if it exists
+    # set to be 'elective' or 'nonelective' options
+    # only.  setRestrictions(null) removes the restrictions
     */
 
-    if ((!this.elm || Object.keys(state).length === 0) && !ops.forceUpdate) {
-      return state;
-    }
-    this.$elm.find('input').attr('checked', false);
-    if (this.state.required) {
-      this.$elm.find('input[value=required]').attr('checked', true);
-    } else if (this.state.elective) {
-      this.$elm.find('input[value=elective]').attr('checked', true);
-    } else {
-      this.$elm.find('input[value=none]').attr('checked', true);
-    }
-    /*
-    #TODO I don't know why i need to do this...
-    */
 
-    window.setTimeout((function() {
-      return _this.$elm.buttonset('refresh');
-    }), 0);
-    return state;
-  };
+    CourseStateButton.prototype.setRestrictions = function(restriction) {
+        switch (restriction) {
+            case 'elective':
+                this.$elm.find('input[value=elective]').button('enable');
+                this.$elm.find('input[value=required]').button('disable');
+                break;
+            case 'nonelective':
+                this.$elm.find('input[value=elective]').button('disable');
+                this.$elm.find('input[value=required]').button('enable');
+                break;
+            default:
+                this.$elm.find('input[value=elective]').button('enable');
+                this.$elm.find('input[value=required]').button('enable');
+        }
+    };
 
-  CourseStateButton.prototype.removeButton = function() {
-    if (!this.elm) {
-      return;
-    }
-    /* make sure we remove the circular ref so we can be garbage collected*/
-
-    this.elm.course = null;
-    this.$elm.remove();
-    this.elm = this.$elm = null;
-  };
-
-  /*
-  # set to be 'elective' or 'nonelective' options
-  # only.  setRestrictions(null) removes the restrictions
-  */
-
-
-  CourseStateButton.prototype.setRestrictions = function(restriction) {
-    switch (restriction) {
-      case 'elective':
-        this.$elm.find('input[value=elective]').button('enable');
-        this.$elm.find('input[value=required]').button('disable');
-        break;
-      case 'nonelective':
-        this.$elm.find('input[value=elective]').button('disable');
-        this.$elm.find('input[value=required]').button('enable');
-        break;
-      default:
-        this.$elm.find('input[value=elective]').button('enable');
-        this.$elm.find('input[value=required]').button('enable');
-    }
-  };
-
-  return CourseStateButton;
+    return CourseStateButton;
 
 })(BasicCourse);
 
@@ -4004,474 +4016,474 @@ CourseStateButton = (function(_super) {
 
 
 Electives = (function() {
-  function Electives(data) {
-    this.title = data.title, this.requirements = data.requirements, this.number = data.number;
-    this.data = data.data || {};
-    /*
-    # make sure we don't just use the courses object that was passed in,
-    # we want to shallow copy so we actually have an internal copy!
-    */
+    function Electives(data) {
+        this.title = data.title, this.requirements = data.requirements, this.number = data.number;
+        this.data = data.data || {};
+        /*
+        # make sure we don't just use the courses object that was passed in,
+        # we want to shallow copy so we actually have an internal copy!
+        */
 
-    this.courses = dupObject(data.courses || {});
-    this.state = {};
-    if (this.requirements == null) {
-      this.requirements = {
-        units: 1.5,
-        unitLabel: 'units'
-      };
+        this.courses = dupObject(data.courses || {});
+        this.state = {};
+        if (this.requirements == null) {
+            this.requirements = {
+                units: 1.5,
+                unitLabel: 'units'
+            };
+        }
+        this.subject = this.title;
+        /* give us a random number so we never hash-collide with other electives blocks with the same name*/
+
+        this.number = this.number || Math.random().toFixed(8);
+        this.hash = BasicCourse.hashCourse(this);
+        return;
     }
-    this.subject = this.title;
-    /* give us a random number so we never hash-collide with other electives blocks with the same name*/
 
-    this.number = this.number || Math.random().toFixed(8);
-    this.hash = BasicCourse.hashCourse(this);
-    return;
-  }
-
-  Electives.prototype.toString = function() {
-    return this.hash;
-  };
-
-  Electives.prototype.addCourse = function(course) {
-    this.courses[course] = course;
-  };
-
-  Electives.prototype.removeCourse = function(course) {
-    delete this.courses[course];
-  };
-
-  Electives.prototype.setState = function(state) {
-    var ret, s, v;
-    ret = {};
-    for (s in state) {
-      v = state[s];
-      if (this.state[s] !== v) {
-        ret[s] = v;
-        this.state[s] = v;
-      }
-    }
-    return ret;
-  };
-
-  Electives.prototype.update = function(data) {
-    var k, v;
-    for (k in data) {
-      v = data[k];
-      this[k] = v;
-    }
-    this.hash = BasicCourse.hashCourse(this);
-  };
-
-  Electives.prototype.getValues = function() {
-    return {
-      title: this.title,
-      requirements: this.requirements,
-      number: this.number,
-      courses: this.courses
+    Electives.prototype.toString = function() {
+        return this.hash;
     };
-  };
 
-  return Electives;
+    Electives.prototype.addCourse = function(course) {
+        this.courses[course] = course;
+    };
+
+    Electives.prototype.removeCourse = function(course) {
+        delete this.courses[course];
+    };
+
+    Electives.prototype.setState = function(state) {
+        var ret, s, v;
+        ret = {};
+        for (s in state) {
+            v = state[s];
+            if (this.state[s] !== v) {
+                ret[s] = v;
+                this.state[s] = v;
+            }
+        }
+        return ret;
+    };
+
+    Electives.prototype.update = function(data) {
+        var k, v;
+        for (k in data) {
+            v = data[k];
+            this[k] = v;
+        }
+        this.hash = BasicCourse.hashCourse(this);
+    };
+
+    Electives.prototype.getValues = function() {
+        return {
+            title: this.title,
+            requirements: this.requirements,
+            number: this.number,
+            courses: this.courses
+        };
+    };
+
+    return Electives;
 
 })();
 
 ElectivesButton = (function(_super) {
-  __extends(ElectivesButton, _super);
+    __extends(ElectivesButton, _super);
 
-  function ElectivesButton(data, manager) {
-    this.manager = manager;
-    ElectivesButton.__super__.constructor.call(this, data);
-    this.selectable = true;
-    this.getButton();
-  }
+    function ElectivesButton(data, manager) {
+        this.manager = manager;
+        ElectivesButton.__super__.constructor.call(this, data);
+        this.selectable = true;
+        this.getButton();
+    }
 
-  ElectivesButton.prototype.setState = function(state, ops) {
-    var changedState, s, v;
-    if (ops == null) {
-      ops = {};
-    }
-    changedState = ElectivesButton.__super__.setState.call(this, state);
-    if (!ops.forceUpdate) {
-      state = changedState;
-    }
+    ElectivesButton.prototype.setState = function(state, ops) {
+        var changedState, s, v;
+        if (ops == null) {
+            ops = {};
+        }
+        changedState = ElectivesButton.__super__.setState.call(this, state);
+        if (!ops.forceUpdate) {
+            state = changedState;
+        }
+        /*
+        # update the classes on the button if it exists
+        */
+
+        if (!this.elm) {
+            return state;
+        }
+        for (s in state) {
+            v = state[s];
+            if (v) {
+                this.$elm.addClass(s);
+            } else {
+                this.$elm.removeClass(s);
+            }
+        }
+        return state;
+    };
+
+    ElectivesButton.prototype.getButton = function() {
+        var course, hash, _ref;
+        if (this.elm) {
+            return this.elm;
+        }
+        this.$elm = $("<div class=\"electives-block\" subject=\"" + this.subject + "\" number=\"" + this.number + "\">\n        <div class=\"title\">" + this.title + "</div>\n        <div class=\"requirement\">At least " + this.requirements.units + " " + this.requirements.unitLabel + "</div>\n        <div class=\"courses-list\"><span class=\"droptext\">Drop Here to Add Courses</span></div>\n</div>");
+        this.elm = this.$elm[0];
+        this.elm.course = this;
+        this.$coursesDiv = this.$elm.find('.courses-list');
+        /*
+        # populate with all the courses in our course list, creating buttons
+        # if they have none
+        */
+
+        _ref = this.courses;
+        for (hash in _ref) {
+            course = _ref[hash];
+            this.addCourse(course);
+        }
+        return this.elm;
+    };
+
+    ElectivesButton.prototype.addCourse = function(course) {
+        ElectivesButton.__super__.addCourse.call(this, course);
+        if (!course.elm) {
+            course = this.courses[BasicCourse.hashCourse(course)] = new CourseButton(course.data);
+        }
+        this.$coursesDiv.append(course.elm);
+        this.updateDropTextVisibility();
+    };
+
+    ElectivesButton.prototype.removeCourse = function(course, ops) {
+        var $elm;
+        if (ops == null) {
+            ops = {
+                detach: true
+            };
+        }
+        if (ops.detach) {
+            $elm = this.courses[BasicCourse.hashCourse(course)].$elm;
+            if ($elm) {
+                $elm.detach();
+            }
+        }
+        ElectivesButton.__super__.removeCourse.call(this, course);
+        this.updateDropTextVisibility();
+    };
+
+    ElectivesButton.prototype.removeButton = function(ops) {
+        var course;
+        if (ops == null) {
+            ops = {
+                detach: true
+            };
+        }
+        if (!this.elm) {
+            return;
+        }
+        for (course in this.courses) {
+            this.removeCourse(course, ops);
+        }
+        /* make sure we remove the circular ref so we can be garbage collected*/
+
+        this.elm.course = null;
+        this.$elm.remove();
+        this.elm = this.$elm = null;
+    };
+
+    ElectivesButton.prototype.update = function(data) {
+        var elm, _i, _len, _ref;
+        ElectivesButton.__super__.update.call(this, data);
+        /*
+        # make sure our internal courses list is up to date
+        */
+
+        this.courses = {};
+        _ref = this.$elm.find('.courses-list').children();
+        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+            elm = _ref[_i];
+            if (elm.course) {
+                this.courses[elm.course] = elm.course;
+            }
+        }
+        this.$elm.find('.title').html(this.title);
+        this.$elm.find('.requirement').html("At least " + this.requirements.units + " " + this.requirements.unitLabel);
+        this.$elm.attr({
+            subject: this.subject,
+            number: this.number
+        });
+        this.updateDropTextVisibility();
+    };
+
     /*
-    # update the classes on the button if it exists
+    # hides the drop text if we have children and shows it otherwise
     */
 
-    if (!this.elm) {
-      return state;
-    }
-    for (s in state) {
-      v = state[s];
-      if (v) {
-        this.$elm.addClass(s);
-      } else {
-        this.$elm.removeClass(s);
-      }
-    }
-    return state;
-  };
 
-  ElectivesButton.prototype.getButton = function() {
-    var course, hash, _ref;
-    if (this.elm) {
-      return this.elm;
-    }
-    this.$elm = $("<div class=\"electives-block\" subject=\"" + this.subject + "\" number=\"" + this.number + "\">\n        <div class=\"title\">" + this.title + "</div>\n        <div class=\"requirement\">At least " + this.requirements.units + " " + this.requirements.unitLabel + "</div>\n        <div class=\"courses-list\"><span class=\"droptext\">Drop Here to Add Courses</span></div>\n</div>");
-    this.elm = this.$elm[0];
-    this.elm.course = this;
-    this.$coursesDiv = this.$elm.find('.courses-list');
-    /*
-    # populate with all the courses in our course list, creating buttons
-    # if they have none
-    */
+    ElectivesButton.prototype.updateDropTextVisibility = function() {
+        if (Object.keys(this.courses).length === 0) {
+            this.$elm.find('.droptext').show();
+        } else {
+            this.$elm.find('.droptext').hide();
+        }
+    };
 
-    _ref = this.courses;
-    for (hash in _ref) {
-      course = _ref[hash];
-      this.addCourse(course);
-    }
-    return this.elm;
-  };
-
-  ElectivesButton.prototype.addCourse = function(course) {
-    ElectivesButton.__super__.addCourse.call(this, course);
-    if (!course.elm) {
-      course = this.courses[BasicCourse.hashCourse(course)] = new CourseButton(course.data);
-    }
-    this.$coursesDiv.append(course.elm);
-    this.updateDropTextVisibility();
-  };
-
-  ElectivesButton.prototype.removeCourse = function(course, ops) {
-    var $elm;
-    if (ops == null) {
-      ops = {
-        detach: true
-      };
-    }
-    if (ops.detach) {
-      $elm = this.courses[BasicCourse.hashCourse(course)].$elm;
-      if ($elm) {
-        $elm.detach();
-      }
-    }
-    ElectivesButton.__super__.removeCourse.call(this, course);
-    this.updateDropTextVisibility();
-  };
-
-  ElectivesButton.prototype.removeButton = function(ops) {
-    var course;
-    if (ops == null) {
-      ops = {
-        detach: true
-      };
-    }
-    if (!this.elm) {
-      return;
-    }
-    for (course in this.courses) {
-      this.removeCourse(course, ops);
-    }
-    /* make sure we remove the circular ref so we can be garbage collected*/
-
-    this.elm.course = null;
-    this.$elm.remove();
-    this.elm = this.$elm = null;
-  };
-
-  ElectivesButton.prototype.update = function(data) {
-    var elm, _i, _len, _ref;
-    ElectivesButton.__super__.update.call(this, data);
-    /*
-    # make sure our internal courses list is up to date
-    */
-
-    this.courses = {};
-    _ref = this.$elm.find('.courses-list').children();
-    for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-      elm = _ref[_i];
-      if (elm.course) {
-        this.courses[elm.course] = elm.course;
-      }
-    }
-    this.$elm.find('.title').html(this.title);
-    this.$elm.find('.requirement').html("At least " + this.requirements.units + " " + this.requirements.unitLabel);
-    this.$elm.attr({
-      subject: this.subject,
-      number: this.number
-    });
-    this.updateDropTextVisibility();
-  };
-
-  /*
-  # hides the drop text if we have children and shows it otherwise
-  */
-
-
-  ElectivesButton.prototype.updateDropTextVisibility = function() {
-    if (Object.keys(this.courses).length === 0) {
-      this.$elm.find('.droptext').show();
-    } else {
-      this.$elm.find('.droptext').hide();
-    }
-  };
-
-  return ElectivesButton;
+    return ElectivesButton;
 
 })(Electives);
 
 ElectivesButtonEditor = (function(_super) {
-  __extends(ElectivesButtonEditor, _super);
+    __extends(ElectivesButtonEditor, _super);
 
-  function ElectivesButtonEditor(data, manager) {
-    this.manager = manager;
-    ElectivesButtonEditor.__super__.constructor.call(this, data);
-    this.selectable = true;
-    this.getButton();
-  }
+    function ElectivesButtonEditor(data, manager) {
+        this.manager = manager;
+        ElectivesButtonEditor.__super__.constructor.call(this, data);
+        this.selectable = true;
+        this.getButton();
+    }
 
-  ElectivesButtonEditor.prototype.setState = function(state, ops) {
-    var changedState, s, v;
-    if (ops == null) {
-      ops = {};
-    }
-    changedState = ElectivesButtonEditor.__super__.setState.call(this, state);
-    if (!ops.forceUpdate) {
-      state = changedState;
-    }
-    /*
-    # update the classes on the button if it exists
-    */
+    ElectivesButtonEditor.prototype.setState = function(state, ops) {
+        var changedState, s, v;
+        if (ops == null) {
+            ops = {};
+        }
+        changedState = ElectivesButtonEditor.__super__.setState.call(this, state);
+        if (!ops.forceUpdate) {
+            state = changedState;
+        }
+        /*
+        # update the classes on the button if it exists
+        */
 
-    if (!this.elm) {
-      return state;
-    }
-    for (s in state) {
-      v = state[s];
-      if (v) {
-        this.$elm.addClass(s);
-      } else {
-        this.$elm.removeClass(s);
-      }
-    }
-    return state;
-  };
-
-  ElectivesButtonEditor.prototype.getButton = function() {
-    var course, hash, update, _ref,
-      _this = this;
-    if (this.elm) {
-      return this.elm;
-    }
-    this.$elm = $("<li class='elective-editable'>\n    <button class='delete-elective' title='Delete Electives Block'></button>\n    <div class='title'>Title: <input type='text' value='" + this.title + "' class='ui-state-default ui-combobox-input ui-widget ui-widget-content ui-corner-all'></input></div>\n    <div class='requirements'>At least <input type='text' value='" + this.requirements.units + "' class='ui-state-default ui-combobox-input ui-widget ui-widget-content ui-corner-all'></input> " + this.requirements.unitLabel + "</div>\n    Elective Courses: <div class='dropbox courses-list'><span class='droptext'>Use the Year Chart to Add Courses</span></div>\n</li>");
-    this.elm = this.$elm[0];
-    this.$coursesDiv = this.$elm.find('.courses-list');
-    this.$elm.find('.delete-elective').button({
-      icons: {
-        primary: 'ui-icon-trash'
-      },
-      text: false
-    });
-    this.$elm.find('.delete-elective').click(function() {
-      if (_this.manager) {
-        _this.manager.removeElective(_this);
-      }
-    });
-    /*
-    # populate with all the courses in our course list, creating buttons
-    # if they have none
-    */
-
-    _ref = this.courses;
-    for (hash in _ref) {
-      course = _ref[hash];
-      this.addCourse(course);
-    }
-    /*
-    # set up callbacks for when we've been edited
-    */
-
-    update = function(event) {
-      if (_this.manager) {
-        _this.manager.updateElectivesButton(_this);
-      }
+        if (!this.elm) {
+            return state;
+        }
+        for (s in state) {
+            v = state[s];
+            if (v) {
+                this.$elm.addClass(s);
+            } else {
+                this.$elm.removeClass(s);
+            }
+        }
+        return state;
     };
-    this.$elm.find('.title input').change(update).keyup(function() {
-      return window.setTimeout(update, 0);
-    });
-    this.$elm.find('.requirements input').change(update).keyup(function() {
-      return window.setTimeout(update, 0);
-    });
-    return this.elm;
-  };
 
-  ElectivesButtonEditor.prototype.addCourse = function(course) {
-    ElectivesButtonEditor.__super__.addCourse.call(this, course);
-    if (!course.elm) {
-      course = this.courses[BasicCourse.hashCourse(course)] = new CourseButton(course.data);
-    }
-    this.$coursesDiv.append(course.elm);
-    this.updateDropTextVisibility();
-  };
+    ElectivesButtonEditor.prototype.getButton = function() {
+        var course, hash, update, _ref,
+            _this = this;
+        if (this.elm) {
+            return this.elm;
+        }
+        this.$elm = $("<li class='elective-editable'>\n    <button class='delete-elective' title='Delete Electives Block'></button>\n    <div class='title'>Title: <input type='text' value='" + this.title + "' class='ui-state-default ui-combobox-input ui-widget ui-widget-content ui-corner-all'></input></div>\n    <div class='requirements'>At least <input type='text' value='" + this.requirements.units + "' class='ui-state-default ui-combobox-input ui-widget ui-widget-content ui-corner-all'></input> " + this.requirements.unitLabel + "</div>\n    Elective Courses: <div class='dropbox courses-list'><span class='droptext'>Use the Year Chart to Add Courses</span></div>\n</li>");
+        this.elm = this.$elm[0];
+        this.$coursesDiv = this.$elm.find('.courses-list');
+        this.$elm.find('.delete-elective').button({
+            icons: {
+                primary: 'ui-icon-trash'
+            },
+            text: false
+        });
+        this.$elm.find('.delete-elective').click(function() {
+            if (_this.manager) {
+                _this.manager.removeElective(_this);
+            }
+        });
+        /*
+        # populate with all the courses in our course list, creating buttons
+        # if they have none
+        */
 
-  ElectivesButtonEditor.prototype.removeCourse = function(course, ops) {
-    var $elm;
-    if (ops == null) {
-      ops = {
-        detach: true
-      };
-    }
-    if (ops.detach) {
-      $elm = this.courses[BasicCourse.hashCourse(course)].$elm;
-      if ($elm) {
-        $elm.detach();
-      }
-    }
-    ElectivesButtonEditor.__super__.removeCourse.call(this, course);
-    this.updateDropTextVisibility();
-  };
+        _ref = this.courses;
+        for (hash in _ref) {
+            course = _ref[hash];
+            this.addCourse(course);
+        }
+        /*
+        # set up callbacks for when we've been edited
+        */
 
-  ElectivesButtonEditor.prototype.removeButton = function(ops) {
-    var course;
-    if (ops == null) {
-      ops = {
-        detach: true
-      };
-    }
-    if (!this.elm) {
-      return;
-    }
-    for (course in this.courses) {
-      this.removeCourse(course, ops);
-    }
-    /* make sure we remove the circular ref so we can be garbage collected*/
+        update = function(event) {
+            if (_this.manager) {
+                _this.manager.updateElectivesButton(_this);
+            }
+        };
+        this.$elm.find('.title input').change(update).keyup(function() {
+            return window.setTimeout(update, 0);
+        });
+        this.$elm.find('.requirements input').change(update).keyup(function() {
+            return window.setTimeout(update, 0);
+        });
+        return this.elm;
+    };
 
-    this.elm.course = null;
-    this.$elm.remove();
-    this.elm = this.$elm = null;
-  };
+    ElectivesButtonEditor.prototype.addCourse = function(course) {
+        ElectivesButtonEditor.__super__.addCourse.call(this, course);
+        if (!course.elm) {
+            course = this.courses[BasicCourse.hashCourse(course)] = new CourseButton(course.data);
+        }
+        this.$coursesDiv.append(course.elm);
+        this.updateDropTextVisibility();
+    };
 
-  ElectivesButtonEditor.prototype.update = function(data) {
-    ElectivesButtonEditor.__super__.update.call(this, data);
-    this.$elm.find('.title input').val(this.title);
-    this.$elm.find('.requirements .input').val(this.requirements.units);
-    this.updateDropTextVisibility();
-  };
+    ElectivesButtonEditor.prototype.removeCourse = function(course, ops) {
+        var $elm;
+        if (ops == null) {
+            ops = {
+                detach: true
+            };
+        }
+        if (ops.detach) {
+            $elm = this.courses[BasicCourse.hashCourse(course)].$elm;
+            if ($elm) {
+                $elm.detach();
+            }
+        }
+        ElectivesButtonEditor.__super__.removeCourse.call(this, course);
+        this.updateDropTextVisibility();
+    };
 
-  /*
-  # returns the values of @title and @requirement, updating
-  # them if they differ from the values in @elm
-  */
+    ElectivesButtonEditor.prototype.removeButton = function(ops) {
+        var course;
+        if (ops == null) {
+            ops = {
+                detach: true
+            };
+        }
+        if (!this.elm) {
+            return;
+        }
+        for (course in this.courses) {
+            this.removeCourse(course, ops);
+        }
+        /* make sure we remove the circular ref so we can be garbage collected*/
+
+        this.elm.course = null;
+        this.$elm.remove();
+        this.elm = this.$elm = null;
+    };
+
+    ElectivesButtonEditor.prototype.update = function(data) {
+        ElectivesButtonEditor.__super__.update.call(this, data);
+        this.$elm.find('.title input').val(this.title);
+        this.$elm.find('.requirements .input').val(this.requirements.units);
+        this.updateDropTextVisibility();
+    };
+
+    /*
+    # returns the values of @title and @requirement, updating
+    # them if they differ from the values in @elm
+    */
 
 
-  ElectivesButtonEditor.prototype.getValues = function() {
-    this.title = this.$elm.find('.title input').val();
-    this.requirements.units = this.$elm.find('.requirements input').val();
-    return ElectivesButtonEditor.__super__.getValues.call(this);
-  };
+    ElectivesButtonEditor.prototype.getValues = function() {
+        this.title = this.$elm.find('.title input').val();
+        this.requirements.units = this.$elm.find('.requirements input').val();
+        return ElectivesButtonEditor.__super__.getValues.call(this);
+    };
 
-  /*
-  # hides the drop text if we have children and shows it otherwise
-  */
+    /*
+    # hides the drop text if we have children and shows it otherwise
+    */
 
 
-  ElectivesButtonEditor.prototype.updateDropTextVisibility = function() {
-    if (Object.keys(this.courses).length === 0) {
-      this.$elm.find('.droptext').show();
-    } else {
-      this.$elm.find('.droptext').hide();
-    }
-  };
+    ElectivesButtonEditor.prototype.updateDropTextVisibility = function() {
+        if (Object.keys(this.courses).length === 0) {
+            this.$elm.find('.droptext').show();
+        } else {
+            this.$elm.find('.droptext').hide();
+        }
+    };
 
-  return ElectivesButtonEditor;
+    return ElectivesButtonEditor;
 
 })(Electives);
 
 CoopButtonEditor = (function() {
-  function CoopButtonEditor(data, manager) {
-    this.data = data;
-    this.manager = manager;
-    this.hash = this.data.id = "" + (Math.random().toFixed(8).slice(3));
-    this.getButton();
-    this.update();
-    return;
-  }
-
-  CoopButtonEditor.prototype.getButton = function() {
-    var update,
-      _this = this;
-    if (this.elm) {
-      return this.elm;
+    function CoopButtonEditor(data, manager) {
+        this.data = data;
+        this.manager = manager;
+        this.hash = this.data.id = "" + (Math.random().toFixed(8).slice(3));
+        this.getButton();
+        this.update();
+        return;
     }
-    this.$elm = $("<li class='coop-editable'>\n<button class='delete-elective' title='Delete Electives Block'></button>\n<div class='title'>Label: <input type='text' value='' class='ui-state-default ui-combobox-input ui-widget ui-widget-content ui-corner-all'></input></div>\n<div class='requirements'>\nStart Year: <select name='startyear' title=\"Start Year\"><option value='1' selected=\"true\">1</option><option value='2'>2</option><option value='3'>3</option><option value='4'>4</option></select>\nEnd Year: <select name='endyear' title=\"Start Year\"><option value='1'>1</option><option value='2'>2</option><option value='3'>3</option><option value='4' selected=\"true\">4</option></select>\n<h4>Link to More Information</h4>\n<p>(This is where you will be redirected when you click on the co-op banner.)</p>\n<input name='infolink' type='text' value='' class='ui-state-default ui-combobox-input ui-widget ui-widget-content ui-corner-all'></input>\n</div>\n</li>");
-    this.elm = this.$elm[0];
-    this.$coursesDiv = this.$elm.find('.courses-list');
-    this.$elm.find('.delete-elective').button({
-      icons: {
-        primary: 'ui-icon-trash'
-      },
-      text: false
-    });
-    this.$elm.find('.delete-elective').click(function() {
-      if (_this.manager) {
-        _this.manager.removeCoop(_this);
-      }
-    });
-    /*
-    # set up callbacks for when we've been edited
-    */
 
-    update = function(event) {
-      _this.data['label'] = _this.$elm.find('.title input').val();
-      _this.data['start-year'] = _this.$elm.find('[name=startyear]').val();
-      _this.data['end-year'] = _this.$elm.find('[name=endyear]').val();
-      _this.data['url'] = _this.$elm.find('[name=infolink]').val();
+    CoopButtonEditor.prototype.getButton = function() {
+        var update,
+            _this = this;
+        if (this.elm) {
+            return this.elm;
+        }
+        this.$elm = $("<li class='coop-editable'>\n<button class='delete-elective' title='Delete Electives Block'></button>\n<div class='title'>Label: <input type='text' value='' class='ui-state-default ui-combobox-input ui-widget ui-widget-content ui-corner-all'></input></div>\n<div class='requirements'>\nStart Year: <select name='startyear' title=\"Start Year\"><option value='1' selected=\"true\">1</option><option value='2'>2</option><option value='3'>3</option><option value='4'>4</option></select>\nEnd Year: <select name='endyear' title=\"Start Year\"><option value='1'>1</option><option value='2'>2</option><option value='3'>3</option><option value='4' selected=\"true\">4</option></select>\n<h4>Link to More Information</h4>\n<p>(This is where you will be redirected when you click on the co-op banner.)</p>\n<input name='infolink' type='text' value='' class='ui-state-default ui-combobox-input ui-widget ui-widget-content ui-corner-all'></input>\n</div>\n</li>");
+        this.elm = this.$elm[0];
+        this.$coursesDiv = this.$elm.find('.courses-list');
+        this.$elm.find('.delete-elective').button({
+            icons: {
+                primary: 'ui-icon-trash'
+            },
+            text: false
+        });
+        this.$elm.find('.delete-elective').click(function() {
+            if (_this.manager) {
+                _this.manager.removeCoop(_this);
+            }
+        });
+        /*
+        # set up callbacks for when we've been edited
+        */
+
+        update = function(event) {
+            _this.data['label'] = _this.$elm.find('.title input').val();
+            _this.data['start-year'] = _this.$elm.find('[name=startyear]').val();
+            _this.data['end-year'] = _this.$elm.find('[name=endyear]').val();
+            _this.data['url'] = _this.$elm.find('[name=infolink]').val();
+        };
+        /*
+        # text boxes only change when they blur, so also register on keyup
+        */
+
+        this.$elm.find('.title input').change(update).keyup(function() {
+            return window.setTimeout(update, 0);
+        });
+        this.$elm.find('[name=infolink]').change(update).keyup(function() {
+            return window.setTimeout(update, 0);
+        });
+        this.$elm.find('[name=startyear]');
+        this.$elm.find('[name=startyear]').change(update);
+        this.$elm.find('[name=endyear]').change(update);
+        return this.elm;
     };
-    /*
-    # text boxes only change when they blur, so also register on keyup
-    */
 
-    this.$elm.find('.title input').change(update).keyup(function() {
-      return window.setTimeout(update, 0);
-    });
-    this.$elm.find('[name=infolink]').change(update).keyup(function() {
-      return window.setTimeout(update, 0);
-    });
-    this.$elm.find('[name=startyear]');
-    this.$elm.find('[name=startyear]').change(update);
-    this.$elm.find('[name=endyear]').change(update);
-    return this.elm;
-  };
+    CoopButtonEditor.prototype.removeButton = function(ops) {
+        if (ops == null) {
+            ops = {
+                detach: true
+            };
+        }
+        if (!this.elm) {
+            return;
+        }
+        this.$elm.remove();
+        this.elm = this.$elm = null;
+    };
 
-  CoopButtonEditor.prototype.removeButton = function(ops) {
-    if (ops == null) {
-      ops = {
-        detach: true
-      };
-    }
-    if (!this.elm) {
-      return;
-    }
-    this.$elm.remove();
-    this.elm = this.$elm = null;
-  };
+    CoopButtonEditor.prototype.update = function(data) {
+        if (data) {
+            this.data = data;
+        }
+        /*
+        # if @data == {}, we want to instantiate the defaults, not undefined
+        */
 
-  CoopButtonEditor.prototype.update = function(data) {
-    if (data) {
-      this.data = data;
-    }
-    /*
-    # if @data == {}, we want to instantiate the defaults, not undefined
-    */
+        this.$elm.find('.title input').val(this.data['label'] || '');
+        this.$elm.find('[name=startyear]').val(this.data['start-year'] || 1);
+        this.$elm.find('[name=endyear]').val(this.data['end-year'] || 4);
+        this.$elm.find('[name=infolink]').val(this.data['url'] || '');
+    };
 
-    this.$elm.find('.title input').val(this.data['label'] || '');
-    this.$elm.find('[name=startyear]').val(this.data['start-year'] || 1);
-    this.$elm.find('[name=endyear]').val(this.data['end-year'] || 4);
-    this.$elm.find('[name=infolink]').val(this.data['url'] || '');
-  };
-
-  return CoopButtonEditor;
+    return CoopButtonEditor;
 
 })();
 
@@ -4483,930 +4495,930 @@ CoopButtonEditor = (function() {
 
 
 Graph = (function() {
-  function Graph() {
-    /* whether we've regenerated our adjacency matrices since the last update*/
+    function Graph() {
+        /* whether we've regenerated our adjacency matrices since the last update*/
 
-    this.dirty = true;
-    this.nodes = {};
-    this.edges = {};
-    this.clusters = {};
-    /*
-    # list of objects {'start-year': ..., 'end-year': ..., 'label': ..., 'id': ...}
-    # coops will show up as the banners attribute of the root graph when converted to Dot
-    # format.
-    */
+        this.dirty = true;
+        this.nodes = {};
+        this.edges = {};
+        this.clusters = {};
+        /*
+        # list of objects {'start-year': ..., 'end-year': ..., 'label': ..., 'id': ...}
+        # coops will show up as the banners attribute of the root graph when converted to Dot
+        # format.
+        */
 
-    this.coops = [];
-  }
+        this.coops = [];
+    }
 
-  Graph.prototype.toJSON = function(stringify) {
-    var c, cluster, edge, elective, node, o, obj, ret, _, _base, _ref, _ref1, _ref2, _ref3, _ref4, _ref5, _ref6, _ref7;
-    if (stringify == null) {
-      stringify = true;
-    }
-    ret = {
-      nodes: [],
-      edges: [],
-      clusters: [],
-      title: this.title,
-      creation_date: (_ref = new Date) != null ? _ref.toJSON() : void 0
-    };
-    _ref1 = this.nodes;
-    for (_ in _ref1) {
-      node = _ref1[_];
-      ret.nodes.push({
-        course: {
-          subject: node.course.subject,
-          number: node.course.number,
-          state: node.course.state,
-          data: {
-            title: titleCaps((_ref2 = node.course.data) != null ? _ref2.title : void 0),
-            description: ((_ref3 = node.course.data) != null ? _ref3.description : void 0) || '',
-            terms_offered: (typeof (_base = node.course).getTermsOffered === "function" ? _base.getTermsOffered(this.mostRecentTerm, 2) : void 0) || {}
-          }
-        },
-        year: node.year
-      });
-    }
-    _ref4 = this.edges;
-    for (_ in _ref4) {
-      edge = _ref4[_];
-      ret.edges.push({
-        edge: ['' + edge.edge[0], '' + edge.edge[1]],
-        properties: edge.properties || {}
-      });
-    }
-    _ref5 = this.clusters;
-    for (_ in _ref5) {
-      cluster = _ref5[_];
-      elective = cluster.cluster;
-      obj = {
-        cluster: {
-          subject: elective.subject,
-          number: elective.number,
-          title: elective.title,
-          requirements: {
-            units: elective.requirements.units,
-            unitLabel: elective.requirements.unitLabel
-          },
-          data: {}
-        },
-        year: cluster.year,
-        courses: (function() {
-          var _i, _len, _ref6, _results;
-          _ref6 = cluster.courses;
-          _results = [];
-          for (_i = 0, _len = _ref6.length; _i < _len; _i++) {
-            c = _ref6[_i];
-            _results.push({
-              subject: c.subject,
-              number: c.number
+    Graph.prototype.toJSON = function(stringify) {
+        var c, cluster, edge, elective, node, o, obj, ret, _, _base, _ref, _ref1, _ref2, _ref3, _ref4, _ref5, _ref6, _ref7;
+        if (stringify == null) {
+            stringify = true;
+        }
+        ret = {
+            nodes: [],
+            edges: [],
+            clusters: [],
+            title: this.title,
+            creation_date: (_ref = new Date) != null ? _ref.toJSON() : void 0
+        };
+        _ref1 = this.nodes;
+        for (_ in _ref1) {
+            node = _ref1[_];
+            ret.nodes.push({
+                course: {
+                    subject: node.course.subject,
+                    number: node.course.number,
+                    state: node.course.state,
+                    data: {
+                        title: titleCaps((_ref2 = node.course.data) != null ? _ref2.title : void 0),
+                        description: ((_ref3 = node.course.data) != null ? _ref3.description : void 0) || '',
+                        terms_offered: (typeof (_base = node.course).getTermsOffered === "function" ? _base.getTermsOffered(this.mostRecentTerm, 2) : void 0) || {}
+                    }
+                },
+                year: node.year
             });
-          }
-          return _results;
-        })()
-      };
-      if ((_ref6 = elective.data) != null ? _ref6.description : void 0) {
-        obj.cluster.data.description = elective.data.description;
-      }
-      if ((_ref7 = elective.data) != null ? _ref7.url : void 0) {
-        obj.cluster.data.url = elective.data.url;
-      }
-      ret.clusters.push(obj);
-    }
-    ret.coops = (function() {
-      var _i, _len, _ref8, _results;
-      _ref8 = this.coops;
-      _results = [];
-      for (_i = 0, _len = _ref8.length; _i < _len; _i++) {
-        o = _ref8[_i];
-        _results.push(dupObject(o));
-      }
-      return _results;
-    }).call(this);
-    if (stringify) {
-      return JSON.stringify(ret);
-    }
-    return ret;
-  };
-
-  Graph.prototype.fromJSON = function(str, ops) {
-    var cluster, data, edge, hash, node, _i, _j, _k, _len, _len1, _len2, _ref, _ref1, _ref2;
-    if (ops == null) {
-      ops = {};
-    }
-    this.dirty = true;
-    data = JSON.parse(str);
-    _ref = data.nodes;
-    for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-      node = _ref[_i];
-      hash = BasicCourse.hashCourse(node.course);
-      this.nodes[hash] = node;
-    }
-    _ref1 = data.edges;
-    for (_j = 0, _len1 = _ref1.length; _j < _len1; _j++) {
-      edge = _ref1[_j];
-      this.edges[edge.edge] = edge;
-    }
-    _ref2 = data.clusters;
-    for (_k = 0, _len2 = _ref2.length; _k < _len2; _k++) {
-      cluster = _ref2[_k];
-      hash = BasicCourse.hashCourse(cluster.cluster);
-      this.clusters[hash] = cluster;
-    }
-    this.title = data.title;
-    this.coops = data.coops || [];
-    return this;
-  };
-
-  Graph.prototype.clearAll = function() {
-    /*
-    # whether we've regenerated our adjacency matrices since the last update
-    */
-
-    this.dirty = true;
-    this.nodes = {};
-    this.edges = {};
-    this.clusters = {};
-    this.coops = [];
-  };
-
-  Graph.prototype.addNode = function(course, ops) {
-    if (ops == null) {
-      ops = {};
-    }
-    this.dirty = true;
-    this.nodes[course] = {
-      course: course,
-      year: ops.year,
-      term: ops.term
-    };
-  };
-
-  Graph.prototype.removeNode = function(course) {
-    this.dirty = true;
-    delete this.nodes[course];
-  };
-
-  Graph.prototype.addEdge = function(edge, ops) {
-    if (ops == null) {
-      ops = {};
-    }
-    this.dirty = true;
-    this.edges[edge] = {
-      edge: edge,
-      properties: ops.properties || {}
-    };
-  };
-
-  Graph.prototype.removeEdge = function(edge) {
-    this.dirty = true;
-    delete this.edges[edge];
-  };
-
-  /*
-  # @edges and @clusters may be updated dynamically without
-  # changing @edges.  This function finds any edges that refer to nodes
-  # not in @nodes and removes them
-  */
-
-
-  Graph.prototype.pruneOrphanedEdges = function() {
-    var edge, hash, _ref, _results;
-    _ref = this.edges;
-    _results = [];
-    for (hash in _ref) {
-      edge = _ref[hash];
-      if ((!this.nodes[edge.edge[0]]) || (!this.nodes[edge.edge[1]])) {
-        _results.push(this.removeEdge(hash));
-      } else {
-        _results.push(void 0);
-      }
-    }
-    return _results;
-  };
-
-  /*
-  # generates edges based on the prereqs
-  # of each node.  The generated edges are compared
-  # with the existing edges.  If an edge has properties.autoGenerated falsy
-  # it is preserved.
-  */
-
-
-  Graph.prototype.generateEdges = function(ops) {
-    var c, course, edge, hash, i, j, list, mat, node, numDeleted, optimizedMat, originalEdges, p, row, v, _, _i, _j, _k, _len, _len1, _len2, _ref, _ref1, _ref2, _ref3;
-    if (ops == null) {
-      ops = {
-        optimize: true
-      };
-    }
-    originalEdges = this.edges;
-    this.edges = {};
-    /*
-    # find all edges given by prerequisites
-    */
-
-    _ref = this.nodes;
-    for (_ in _ref) {
-      node = _ref[_];
-      course = node.course;
-      if (course.prereqs != null) {
-        _ref1 = PrereqUtils.flattenPrereqs(course.prereqs);
-        for (_i = 0, _len = _ref1.length; _i < _len; _i++) {
-          c = _ref1[_i];
-          p = BasicCourse.hashCourse(c);
-          if (this.nodes[p]) {
-            edge = [p, BasicCourse.hashCourse(course)];
-            this.edges[edge] = {
-              edge: edge,
-              properties: {
-                autoGenerated: true
-              }
+        }
+        _ref4 = this.edges;
+        for (_ in _ref4) {
+            edge = _ref4[_];
+            ret.edges.push({
+                edge: ['' + edge.edge[0], '' + edge.edge[1]],
+                properties: edge.properties || {}
+            });
+        }
+        _ref5 = this.clusters;
+        for (_ in _ref5) {
+            cluster = _ref5[_];
+            elective = cluster.cluster;
+            obj = {
+                cluster: {
+                    subject: elective.subject,
+                    number: elective.number,
+                    title: elective.title,
+                    requirements: {
+                        units: elective.requirements.units,
+                        unitLabel: elective.requirements.unitLabel
+                    },
+                    data: {}
+                },
+                year: cluster.year,
+                courses: (function() {
+                    var _i, _len, _ref6, _results;
+                    _ref6 = cluster.courses;
+                    _results = [];
+                    for (_i = 0, _len = _ref6.length; _i < _len; _i++) {
+                        c = _ref6[_i];
+                        _results.push({
+                            subject: c.subject,
+                            number: c.number
+                        });
+                    }
+                    return _results;
+                })()
             };
-          }
-        }
-      }
-    }
-    if (ops.optimize) {
-      numDeleted = 0;
-      _ref2 = this._generateAdjacencyMatrix(), mat = _ref2.mat, list = _ref2.list;
-      optimizedMat = this._optimizeEdges(mat);
-      /*
-      # find everything in our original matrix that isn't
-      # in our optimized matrix and delete it
-      */
-
-      for (i = _j = 0, _len1 = mat.length; _j < _len1; i = ++_j) {
-        row = mat[i];
-        for (j = _k = 0, _len2 = row.length; _k < _len2; j = ++_k) {
-          v = row[j];
-          if (v) {
-            if (!optimizedMat[i][j]) {
-              numDeleted += 1;
-              edge = [list[i], list[j]];
-              delete this.edges[edge];
+            if ((_ref6 = elective.data) != null ? _ref6.description : void 0) {
+                obj.cluster.data.description = elective.data.description;
             }
-          }
-        }
-      }
-      console.log(numDeleted, 'edges deleted');
-    }
-    /*
-    # now that we have pruned the excess edges,
-    # restore the corresponding original edges, since they may have style
-    # information/be coreqs, etc.
-    */
-
-    for (hash in this.edges) {
-      /*
-      # If this edge existed before, preserve all its original properties,
-      # but if this is the first time it is created, keep the default
-      # properties (don't override them with undefined)
-      */
-
-      this.edges[hash] = originalEdges[hash] || this.edges[hash];
-    }
-    /*
-    # restore any edges that weren't autogenerated that may have been pruned
-    */
-
-    for (hash in originalEdges) {
-      edge = originalEdges[hash];
-      if (!((_ref3 = edge.properties) != null ? _ref3.autoGenerated : void 0)) {
-        this.edges[hash] = edge;
-      }
-    }
-    return this.edges;
-  };
-
-  Graph.prototype.toDot = function() {
-    var cluster, course, courses, createAnonymousSubgraph, edge, edgeObj, elective, graph, hash, i, index, labelWidth, levels, list, marker, mat, node, prevMarker, rankSubgraph, subgraph, term, termClust, termSubgraph, termSubgraphs, year, yearSubgraph, yearSubgraphs, _, _i, _j, _k, _l, _len, _len1, _len2, _m, _n, _o, _p, _ref, _ref1, _ref2, _ref3, _ref4, _ref5, _ref6, _ref7, _ref8;
-    createAnonymousSubgraph = function(parent) {
-      var subgraph;
-      subgraph = graph.addSubgraph(null, parent);
-      subgraph.attrs['rank'] = 'same';
-      return subgraph;
-    };
-    /*
-    #
-    # Start creating the graph
-    #
-    */
-
-    graph = new DotGraph();
-    /*
-    # set up the root properties
-    */
-
-    graph.rootGraph.type = 'digraph';
-    graph.rootGraph.attrs['rankdir'] = 'LR';
-    if (this.title) {
-      graph.rootGraph.attrs['label'] = "" + this.title;
-      graph.rootGraph.attrs['_title'] = "" + this.title;
-      graph.rootGraph.attrs['labelloc'] = "top";
-      graph.rootGraph.attrs['labelfontsize'] = 30;
-    }
-    /*
-    # make sure coops show up as an attribute of the root graph
-    */
-
-    graph.rootGraph.attrs['banners'] = JSON.stringify(this.coops);
-    /*
-    #
-    # Initialize each year with 3 terms
-    #
-    */
-
-    yearSubgraphs = {};
-    termSubgraphs = {};
-    for (year = _i = 1; _i <= 4; year = ++_i) {
-      yearSubgraph = graph.addSubgraph("year" + year);
-      yearSubgraphs[year] = yearSubgraph;
-      termSubgraphs[year] = {};
-      for (term = _j = 1; _j <= 3; term = ++_j) {
-        termSubgraph = createAnonymousSubgraph(yearSubgraph);
-        termSubgraph.attrs['rank'] = 'same';
-        termSubgraphs[year][term] = termSubgraph;
-        /*
-        # each term has an invisible node to keep the spacing
-        # this node needs to be added before all others so it doesn't interfere
-        */
-
-        marker = "YEAR" + year + "TERM" + term;
-        termSubgraph.nodes[marker] = true;
-        graph.nodes[marker] = {
-          attrs: {
-            _year: year,
-            _term: term,
-            style: 'invis',
-            shape: 'none',
-            label: '',
-            fixedsize: 'false',
-            height: 0,
-            width: 1
-          }
-        };
-      }
-    }
-    /*
-    # add the edges
-    */
-
-    _ref = this.edges;
-    for (_ in _ref) {
-      edge = _ref[_];
-      edgeObj = {
-        edge: edge.edge,
-        attrs: {}
-      };
-      if (((_ref1 = edge.properties) != null ? _ref1.style : void 0) === 'invis') {
-        edgeObj.attrs['style'] = 'invis';
-      }
-      if ((_ref2 = edge.properties) != null ? _ref2.coreq : void 0) {
-        edgeObj.attrs['arrowhead'] = 'none';
-        /* coreqs should be placed as near to eachother as possible*/
-
-        edgeObj.attrs['weight'] = 5;
-      }
-      graph.edges[edge.edge] = [edgeObj];
-    }
-    /*
-    # add the nodes
-    */
-
-    _ref3 = this.nodes;
-    for (_ in _ref3) {
-      node = _ref3[_];
-      course = node.course;
-      hash = BasicCourse.hashCourse(course);
-      graph.nodes[hash] = {
-        attrs: {
-          _name: hash,
-          _title: titleCaps((_ref4 = course.data) != null ? _ref4.title : void 0),
-          _year: node.year,
-          shape: 'box',
-          style: 'rounded'
-        }
-      };
-    }
-    /*
-    # add all the rank=same subgraphs based on the number of terms are required
-    */
-
-    for (year = _k = 1; _k <= 4; year = ++_k) {
-      _ref5 = this._generateAdjacencyMatrix({
-        filterByYear: year
-      }), mat = _ref5.mat, list = _ref5.list;
-      levels = this._stratify(mat);
-      for (i = _l = 0, _len = levels.length; _l < _len; i = ++_l) {
-        termClust = levels[i];
-        /* the term is i+1*/
-
-        rankSubgraph = termSubgraphs[year][i + 1];
-        for (_m = 0, _len1 = termClust.length; _m < _len1; _m++) {
-          index = termClust[_m];
-          course = list[index];
-          /* subgraphs just have a list of nodes, they never store node attributes*/
-
-          rankSubgraph.nodes[course] = true;
-        }
-      }
-    }
-    /*
-    # add all the clusters
-    */
-
-    _ref6 = this.clusters;
-    for (_ in _ref6) {
-      cluster = _ref6[_];
-      year = cluster.year, courses = cluster.courses;
-      elective = cluster.cluster;
-      /*
-      # if we have no children, add ourselves as a regular node
-      */
-
-      if (courses.length === 0) {
-        subgraph = termSubgraphs[year][1];
-        hash = BasicCourse.hashCourse(elective);
-        graph.nodes[hash] = {
-          attrs: {
-            _elective: true,
-            _title: "" + elective.title + " (" + elective.requirements.units + " " + elective.requirements.unitLabel + ")",
-            _year: year,
-            shape: 'box',
-            style: 'rounded,filled',
-            color: 'invis',
-            fillcolor: 'gray'
-          }
-        };
-        subgraph.nodes[elective] = true;
-      } else {
-        /*
-        # if we have children, we must create a new group
-        */
-
-        subgraph = graph.addSubgraph("cluster" + (Math.random().toFixed(8).slice(3)));
-        subgraph.attrs = {
-          style: 'rounded,filled',
-          color: 'gray',
-          label: "" + elective.title + " (" + elective.requirements.units + " " + elective.requirements.unitLabel + ")",
-          _title: "" + elective.title + " (" + elective.requirements.units + " " + elective.requirements.unitLabel + ")",
-          _electivesBlock: true
-        };
-        for (_n = 0, _len2 = courses.length; _n < _len2; _n++) {
-          course = courses[_n];
-          hash = BasicCourse.hashCourse(course);
-          subgraph.nodes[hash] = true;
-          graph.nodes[hash].attrs['color'] = 'white';
-          graph.nodes[hash].attrs['style'] = 'rounded,filled';
-          graph.nodes[hash].attrs['_inElectivesBlock'] = true;
-        }
-      }
-    }
-    /*
-    # clean up any excess term markers.
-    # to ensure proper spacing, an invisible node is placed in
-    # each term.  We should cleanup any term that only has the
-    # marker node in it, lest we have a bunch of blank columns
-    # in our chart.
-    */
-
-    prevMarker = null;
-    for (year = _o = 1; _o <= 4; year = ++_o) {
-      for (term = _p = 1; _p <= 3; term = ++_p) {
-        termSubgraph = termSubgraphs[year][term];
-        /*
-        # each term has an invisible node to keep the spacing
-        # this node needs to be added before all others so it doesn't interfere
-        */
-
-        marker = "YEAR" + year + "TERM" + term;
-        if (Object.keys(termSubgraph.nodes).length > 1 || term === 1) {
-          if (prevMarker) {
-            edge = [prevMarker, marker];
-            graph.edges[edge] = [
-              {
-                edge: edge,
-                attrs: {
-                  style: 'invis'
-                }
-              }
-            ];
-          }
-          prevMarker = marker;
-        } else {
-          graph.removeNode(marker);
-          graph.removeSubgraph(termSubgraph);
-        }
-      }
-    }
-    /*
-    # We need to size every node manually since viz.js cannot process html labels.
-    */
-
-    _ref7 = graph.nodes;
-    for (hash in _ref7) {
-      node = _ref7[hash];
-      /*
-      # invisible nodes should be ignored
-      */
-
-      if ((_ref8 = node.attrs['style']) != null ? _ref8.match(/invis/) : void 0) {
-        node.attrs['label'] = '';
-        continue;
-      }
-      node.attrs['height'] = 42 / 72;
-      labelWidth = Math.max(strWidthInEn(node.attrs['_title']), strWidthInEn(node.attrs['_name']));
-      node.attrs['width'] = (labelWidth * 6.0 + 20) / 72;
-      node.attrs['fixedsize'] = true;
-    }
-    return astToStr(graph.generateAst());
-  };
-
-  Graph.prototype._generateAdjacencyMatrix = function(ops) {
-    var adjacencyEntry, createRow, e, edge, n, nodeList, outEdges, ret, _, _ref, _ref1,
-      _this = this;
-    if (ops == null) {
-      ops = {};
-    }
-    /*
-    # returns 2 if coreq, 1 if truthy and 0 otherwise
-    */
-
-    adjacencyEntry = function(n) {
-      if (n === 'coreq') {
-        return 2;
-      }
-      return +(!!n);
-    };
-    /*
-    # returns a row of the adjacency matrix corresponding to
-    # the object e's keys
-    */
-
-    createRow = function(e) {
-      var n;
-      return (function() {
-        var _i, _len, _results;
-        _results = [];
-        for (_i = 0, _len = nodeList.length; _i < _len; _i++) {
-          n = nodeList[_i];
-          _results.push(adjacencyEntry(e[n]));
-        }
-        return _results;
-      })();
-    };
-    if (ops.filterByYear != null) {
-      nodeList = Object.keys(this.nodes).filter(function(n) {
-        return _this.nodes[n].year === ops.filterByYear;
-      });
-    } else {
-      nodeList = Object.keys(this.nodes);
-    }
-    /*
-    # for each node, generate a list of all the out edges it has
-    */
-
-    outEdges = {};
-    _ref = this.edges;
-    for (_ in _ref) {
-      e = _ref[_];
-      edge = e.edge;
-      outEdges[edge[0]] = outEdges[edge[0]] || {};
-      outEdges[edge[0]][edge[1]] = true;
-      /*
-      # keep track if we are a coreq edge
-      */
-
-      if ((_ref1 = e.properties) != null ? _ref1.coreq : void 0) {
-        outEdges[edge[0]][edge[1]] = 'coreq';
-      }
-    }
-    /*
-    # build the actual matrix
-    */
-
-    ret = (function() {
-      var _i, _len, _results;
-      _results = [];
-      for (_i = 0, _len = nodeList.length; _i < _len; _i++) {
-        n = nodeList[_i];
-        _results.push(createRow(outEdges[n] || {}));
-      }
-      return _results;
-    })();
-    /*
-    # if there are no nodes we should still return a 2-dim matrix
-    */
-
-    if (ret.length === 0) {
-      ret.push([]);
-    }
-    return {
-      mat: ret,
-      list: nodeList
-    };
-  };
-
-  /*
-  # computes powers of the adjacency matrix to find the span of each node
-  */
-
-
-  Graph.prototype._matrixSpan = function(mat) {
-    var i, iters, size, _i;
-    size = mat[0].length;
-    if (size <= 1) {
-      return mat;
-    }
-    iters = Math.ceil(Math.log(size) / Math.log(2));
-    for (i = _i = 0; 0 <= iters ? _i < iters : _i > iters; i = 0 <= iters ? ++_i : --_i) {
-      mat = numeric.add(numeric.dot(mat, mat), mat);
-    }
-    return numeric.gt(mat, 0);
-  };
-
-  /*
-  # returns a pruned adjaency matrix.  If there is more
-  # than one route from a->b, only the longer one is kept
-  */
-
-
-  Graph.prototype._optimizeEdges = function(mat) {
-    var existsOtherRoute, i, j, mat_span, mat_transpose, node, nodes, predicessors, ret, span, v, _i, _j, _k, _l, _len, _len1, _len2, _ref, _results;
-    ret = numeric.clone(mat);
-    mat_transpose = numeric.transpose(mat);
-    mat_span = this._matrixSpan(mat);
-    nodes = (function() {
-      _results = [];
-      for (var _i = 0, _ref = mat[0].length; 0 <= _ref ? _i < _ref : _i > _ref; 0 <= _ref ? _i++ : _i--){ _results.push(_i); }
-      return _results;
-    }).apply(this);
-    /*
-    # the idea is, suppose we have a->b->d->c and a->c
-    # If node=c, then we have immediate predecessors a,d, but d
-    # is in the span of a, so the edge a->c is redundant since
-    # there exists a longer path a->..->c
-    */
-
-    for (_j = 0, _len = nodes.length; _j < _len; _j++) {
-      node = nodes[_j];
-      predicessors = mat_transpose[node];
-      /*
-      # loops through our predicessors
-      */
-
-      for (i = _k = 0, _len1 = predicessors.length; _k < _len1; i = ++_k) {
-        v = predicessors[i];
-        if (!(v > 0 && i !== node)) {
-          continue;
-        }
-        span = mat_span[i];
-        existsOtherRoute = false;
-        for (j = _l = 0, _len2 = span.length; _l < _len2; j = ++_l) {
-          v = span[j];
-          if (v > 0) {
-            if (predicessors[j] > 0) {
-              existsOtherRoute = true;
-              break;
+            if ((_ref7 = elective.data) != null ? _ref7.url : void 0) {
+                obj.cluster.data.url = elective.data.url;
             }
-          }
+            ret.clusters.push(obj);
         }
-        if (existsOtherRoute) {
-          ret[i][node] = 0;
-        }
-      }
-    }
-    return ret;
-  };
-
-  /*
-  # returns a list of lists of nodes
-  # where if a->b then a is in a lower
-  # level than b. We will attempt
-  # to split them into at most maxLevels number of levels based
-  # on arrow direction and returns the stratification.
-  # e.g. "a->b->c, d" would split into [a,d] then [b] then [c]
-  #
-  # coreqs arrows are first collapsed into a single node so they
-  # should always end up on the same level
-  */
-
-
-  Graph.prototype._stratify = function(mat, maxLevels, coreqsOnSameLevel) {
-    var collapsedMat, coreqAdj, i, j, mask, oreqCol, oreqRow, rep, repMat, repRanks, reps, row, stratify, unflatten, val, zeroedSubmatrix, _i, _j, _k, _l, _len, _len1, _len2, _m, _ref, _ref1,
-      _this = this;
-    if (maxLevels == null) {
-      maxLevels = 3;
-    }
-    if (coreqsOnSameLevel == null) {
-      coreqsOnSameLevel = true;
-    }
-    if (mat[0].length === 0) {
-      return [];
-    }
-    /*
-    # puts everything of a particular rank on its own array
-    */
-
-    unflatten = function(ranks) {
-      var i, levels, rank, _i, _len;
-      levels = (function() {
-        var _i, _results;
-        _results = [];
-        for (i = _i = 0; _i < 3; i = ++_i) {
-          _results.push([]);
-        }
-        return _results;
-      })();
-      for (i = _i = 0, _len = ranks.length; _i < _len; i = ++_i) {
-        rank = ranks[i];
-        levels[rank].push(i);
-      }
-      return levels;
-    };
-    stratify = function(mat, maxLevels) {
-      var forwardSpan, i, incrementRanks, l, level, mat_span, needUpdating, nodesOfCurrentLevel, numNodes, ranks, _i, _ref;
-      numNodes = mat[0].length;
-      mat_span = _this._matrixSpan(mat);
-      ranks = (function() {
-        var _i, _results;
-        _results = [];
-        for (i = _i = 0; 0 <= numNodes ? _i < numNodes : _i > numNodes; i = 0 <= numNodes ? ++_i : --_i) {
-          _results.push(0);
-        }
-        return _results;
-      })();
-      incrementRanks = function(nodes) {
-        var v, _i, _len, _results;
-        _results = [];
-        for (i = _i = 0, _len = nodes.length; _i < _len; i = ++_i) {
-          v = nodes[i];
-          if (v > 0) {
-            _results.push(ranks[i] += 1);
-          }
-        }
-        return _results;
-      };
-      /*
-      # `nodes` is a boolean list.  forwardSpan generates a boolean
-      # list of all nodes reachable in one step by the ones listed in `nodes`
-      */
-
-      forwardSpan = function(nodes) {
-        var ret, v, _i, _len;
-        ret = (function() {
-          var _i, _results;
-          _results = [];
-          for (i = _i = 0; 0 <= numNodes ? _i < numNodes : _i > numNodes; i = 0 <= numNodes ? ++_i : --_i) {
-            _results.push(false);
-          }
-          return _results;
-        })();
-        for (i = _i = 0, _len = nodes.length; _i < _len; i = ++_i) {
-          v = nodes[i];
-          if (!(v > 0)) {
-            continue;
-          }
-          /*
-          # mat_span[i] is precisely the nodes reachable by v
-          */
-
-          numeric.oreq(ret, mat_span[i]);
+        ret.coops = (function() {
+            var _i, _len, _ref8, _results;
+            _ref8 = this.coops;
+            _results = [];
+            for (_i = 0, _len = _ref8.length; _i < _len; _i++) {
+                o = _ref8[_i];
+                _results.push(dupObject(o));
+            }
+            return _results;
+        }).call(this);
+        if (stringify) {
+            return JSON.stringify(ret);
         }
         return ret;
-      };
-      /*
-      # iteratively bump up the level of each relevant node
-      */
-
-      for (level = _i = 0, _ref = maxLevels - 1; 0 <= _ref ? _i < _ref : _i > _ref; level = 0 <= _ref ? ++_i : --_i) {
-        nodesOfCurrentLevel = (function() {
-          var _j, _len, _results;
-          _results = [];
-          for (_j = 0, _len = ranks.length; _j < _len; _j++) {
-            l = ranks[_j];
-            _results.push(l === level);
-          }
-          return _results;
-        })();
-        needUpdating = forwardSpan(nodesOfCurrentLevel);
-        incrementRanks(needUpdating);
-      }
-      return ranks;
     };
-    if (!coreqsOnSameLevel) {
-      return unflatten(stratify(mat, maxLevels));
-    }
-    /*
-    # if we want coreqs on the same levels, we do the following:
-    #     * identify all connected components of coreqs
-    #     * pick a representative from each component
-    #     * create a new adjacency matrix consisting only
-    #     of representatives by collapsing goreqs
-    #     to a single node (while preserving edges)
-    #     * rank in the usual way
-    #     * assign ranks to the non-representatives
-    */
+
+    Graph.prototype.fromJSON = function(str, ops) {
+        var cluster, data, edge, hash, node, _i, _j, _k, _len, _len1, _len2, _ref, _ref1, _ref2;
+        if (ops == null) {
+            ops = {};
+        }
+        this.dirty = true;
+        data = JSON.parse(str);
+        _ref = data.nodes;
+        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+            node = _ref[_i];
+            hash = BasicCourse.hashCourse(node.course);
+            this.nodes[hash] = node;
+        }
+        _ref1 = data.edges;
+        for (_j = 0, _len1 = _ref1.length; _j < _len1; _j++) {
+            edge = _ref1[_j];
+            this.edges[edge.edge] = edge;
+        }
+        _ref2 = data.clusters;
+        for (_k = 0, _len2 = _ref2.length; _k < _len2; _k++) {
+            cluster = _ref2[_k];
+            hash = BasicCourse.hashCourse(cluster.cluster);
+            this.clusters[hash] = cluster;
+        }
+        this.title = data.title;
+        this.coops = data.coops || [];
+        return this;
+    };
+
+    Graph.prototype.clearAll = function() {
+        /*
+        # whether we've regenerated our adjacency matrices since the last update
+        */
+
+        this.dirty = true;
+        this.nodes = {};
+        this.edges = {};
+        this.clusters = {};
+        this.coops = [];
+    };
+
+    Graph.prototype.addNode = function(course, ops) {
+        if (ops == null) {
+            ops = {};
+        }
+        this.dirty = true;
+        this.nodes[course] = {
+            course: course,
+            year: ops.year,
+            term: ops.term
+        };
+    };
+
+    Graph.prototype.removeNode = function(course) {
+        this.dirty = true;
+        delete this.nodes[course];
+    };
+
+    Graph.prototype.addEdge = function(edge, ops) {
+        if (ops == null) {
+            ops = {};
+        }
+        this.dirty = true;
+        this.edges[edge] = {
+            edge: edge,
+            properties: ops.properties || {}
+        };
+    };
+
+    Graph.prototype.removeEdge = function(edge) {
+        this.dirty = true;
+        delete this.edges[edge];
+    };
 
     /*
-    # pass in a mask specifying true/false for
-    # whether each row/column should zeroed in the returned
-    # matrix.
+    # @edges and @clusters may be updated dynamically without
+    # changing @edges.  This function finds any edges that refer to nodes
+    # not in @nodes and removes them
     */
 
-    zeroedSubmatrix = function(mat, mask) {
-      var i, m, _i, _len;
-      mat = numeric.clone(mat);
-      for (i = _i = 0, _len = mask.length; _i < _len; i = ++_i) {
-        m = mask[i];
-        if (!m) {
-          numeric.muleq(mat[i], 0);
+
+    Graph.prototype.pruneOrphanedEdges = function() {
+        var edge, hash, _ref, _results;
+        _ref = this.edges;
+        _results = [];
+        for (hash in _ref) {
+            edge = _ref[hash];
+            if ((!this.nodes[edge.edge[0]]) || (!this.nodes[edge.edge[1]])) {
+                _results.push(this.removeEdge(hash));
+            } else {
+                _results.push(void 0);
+            }
+        }
+        return _results;
+    };
+
+    /*
+    # generates edges based on the prereqs
+    # of each node.  The generated edges are compared
+    # with the existing edges.  If an edge has properties.autoGenerated falsy
+    # it is preserved.
+    */
+
+
+    Graph.prototype.generateEdges = function(ops) {
+        var c, course, edge, hash, i, j, list, mat, node, numDeleted, optimizedMat, originalEdges, p, row, v, _, _i, _j, _k, _len, _len1, _len2, _ref, _ref1, _ref2, _ref3;
+        if (ops == null) {
+            ops = {
+                optimize: true
+            };
+        }
+        originalEdges = this.edges;
+        this.edges = {};
+        /*
+        # find all edges given by prerequisites
+        */
+
+        _ref = this.nodes;
+        for (_ in _ref) {
+            node = _ref[_];
+            course = node.course;
+            if (course.prereqs != null) {
+                _ref1 = PrereqUtils.flattenPrereqs(course.prereqs);
+                for (_i = 0, _len = _ref1.length; _i < _len; _i++) {
+                    c = _ref1[_i];
+                    p = BasicCourse.hashCourse(c);
+                    if (this.nodes[p]) {
+                        edge = [p, BasicCourse.hashCourse(course)];
+                        this.edges[edge] = {
+                            edge: edge,
+                            properties: {
+                                autoGenerated: true
+                            }
+                        };
+                    }
+                }
+            }
+        }
+        if (ops.optimize) {
+            numDeleted = 0;
+            _ref2 = this._generateAdjacencyMatrix(), mat = _ref2.mat, list = _ref2.list;
+            optimizedMat = this._optimizeEdges(mat);
+            /*
+            # find everything in our original matrix that isn't
+            # in our optimized matrix and delete it
+            */
+
+            for (i = _j = 0, _len1 = mat.length; _j < _len1; i = ++_j) {
+                row = mat[i];
+                for (j = _k = 0, _len2 = row.length; _k < _len2; j = ++_k) {
+                    v = row[j];
+                    if (v) {
+                        if (!optimizedMat[i][j]) {
+                            numDeleted += 1;
+                            edge = [list[i], list[j]];
+                            delete this.edges[edge];
+                        }
+                    }
+                }
+            }
+            console.log(numDeleted, 'edges deleted');
+        }
+        /*
+        # now that we have pruned the excess edges,
+        # restore the corresponding original edges, since they may have style
+        # information/be coreqs, etc.
+        */
+
+        for (hash in this.edges) {
+            /*
+            # If this edge existed before, preserve all its original properties,
+            # but if this is the first time it is created, keep the default
+            # properties (don't override them with undefined)
+            */
+
+            this.edges[hash] = originalEdges[hash] || this.edges[hash];
+        }
+        /*
+        # restore any edges that weren't autogenerated that may have been pruned
+        */
+
+        for (hash in originalEdges) {
+            edge = originalEdges[hash];
+            if (!((_ref3 = edge.properties) != null ? _ref3.autoGenerated : void 0)) {
+                this.edges[hash] = edge;
+            }
+        }
+        return this.edges;
+    };
+
+    Graph.prototype.toDot = function() {
+        var cluster, course, courses, createAnonymousSubgraph, edge, edgeObj, elective, graph, hash, i, index, labelWidth, levels, list, marker, mat, node, prevMarker, rankSubgraph, subgraph, term, termClust, termSubgraph, termSubgraphs, year, yearSubgraph, yearSubgraphs, _, _i, _j, _k, _l, _len, _len1, _len2, _m, _n, _o, _p, _ref, _ref1, _ref2, _ref3, _ref4, _ref5, _ref6, _ref7, _ref8;
+        createAnonymousSubgraph = function(parent) {
+            var subgraph;
+            subgraph = graph.addSubgraph(null, parent);
+            subgraph.attrs['rank'] = 'same';
+            return subgraph;
+        };
+        /*
+        #
+        # Start creating the graph
+        #
+        */
+
+        graph = new DotGraph();
+        /*
+        # set up the root properties
+        */
+
+        graph.rootGraph.type = 'digraph';
+        graph.rootGraph.attrs['rankdir'] = 'LR';
+        if (this.title) {
+            graph.rootGraph.attrs['label'] = "" + this.title;
+            graph.rootGraph.attrs['_title'] = "" + this.title;
+            graph.rootGraph.attrs['labelloc'] = "top";
+            graph.rootGraph.attrs['labelfontsize'] = 30;
+        }
+        /*
+        # make sure coops show up as an attribute of the root graph
+        */
+
+        graph.rootGraph.attrs['banners'] = JSON.stringify(this.coops);
+        /*
+        #
+        # Initialize each year with 3 terms
+        #
+        */
+
+        yearSubgraphs = {};
+        termSubgraphs = {};
+        for (year = _i = 1; _i <= 4; year = ++_i) {
+            yearSubgraph = graph.addSubgraph("year" + year);
+            yearSubgraphs[year] = yearSubgraph;
+            termSubgraphs[year] = {};
+            for (term = _j = 1; _j <= 3; term = ++_j) {
+                termSubgraph = createAnonymousSubgraph(yearSubgraph);
+                termSubgraph.attrs['rank'] = 'same';
+                termSubgraphs[year][term] = termSubgraph;
+                /*
+                # each term has an invisible node to keep the spacing
+                # this node needs to be added before all others so it doesn't interfere
+                */
+
+                marker = "YEAR" + year + "TERM" + term;
+                termSubgraph.nodes[marker] = true;
+                graph.nodes[marker] = {
+                    attrs: {
+                        _year: year,
+                        _term: term,
+                        style: 'invis',
+                        shape: 'none',
+                        label: '',
+                        fixedsize: 'false',
+                        height: 0,
+                        width: 1
+                    }
+                };
+            }
+        }
+        /*
+        # add the edges
+        */
+
+        _ref = this.edges;
+        for (_ in _ref) {
+            edge = _ref[_];
+            edgeObj = {
+                edge: edge.edge,
+                attrs: {}
+            };
+            if (((_ref1 = edge.properties) != null ? _ref1.style : void 0) === 'invis') {
+                edgeObj.attrs['style'] = 'invis';
+            }
+            if ((_ref2 = edge.properties) != null ? _ref2.coreq : void 0) {
+                edgeObj.attrs['arrowhead'] = 'none';
+                /* coreqs should be placed as near to eachother as possible*/
+
+                edgeObj.attrs['weight'] = 5;
+            }
+            graph.edges[edge.edge] = [edgeObj];
+        }
+        /*
+        # add the nodes
+        */
+
+        _ref3 = this.nodes;
+        for (_ in _ref3) {
+            node = _ref3[_];
+            course = node.course;
+            hash = BasicCourse.hashCourse(course);
+            graph.nodes[hash] = {
+                attrs: {
+                    _name: hash,
+                    _title: titleCaps((_ref4 = course.data) != null ? _ref4.title : void 0),
+                    _year: node.year,
+                    shape: 'box',
+                    style: 'rounded'
+                }
+            };
+        }
+        /*
+        # add all the rank=same subgraphs based on the number of terms are required
+        */
+
+        for (year = _k = 1; _k <= 4; year = ++_k) {
+            _ref5 = this._generateAdjacencyMatrix({
+                filterByYear: year
+            }), mat = _ref5.mat, list = _ref5.list;
+            levels = this._stratify(mat);
+            for (i = _l = 0, _len = levels.length; _l < _len; i = ++_l) {
+                termClust = levels[i];
+                /* the term is i+1*/
+
+                rankSubgraph = termSubgraphs[year][i + 1];
+                for (_m = 0, _len1 = termClust.length; _m < _len1; _m++) {
+                    index = termClust[_m];
+                    course = list[index];
+                    /* subgraphs just have a list of nodes, they never store node attributes*/
+
+                    rankSubgraph.nodes[course] = true;
+                }
+            }
+        }
+        /*
+        # add all the clusters
+        */
+
+        _ref6 = this.clusters;
+        for (_ in _ref6) {
+            cluster = _ref6[_];
+            year = cluster.year, courses = cluster.courses;
+            elective = cluster.cluster;
+            /*
+            # if we have no children, add ourselves as a regular node
+            */
+
+            if (courses.length === 0) {
+                subgraph = termSubgraphs[year][1];
+                hash = BasicCourse.hashCourse(elective);
+                graph.nodes[hash] = {
+                    attrs: {
+                        _elective: true,
+                        _title: "" + elective.title + " (" + elective.requirements.units + " " + elective.requirements.unitLabel + ")",
+                        _year: year,
+                        shape: 'box',
+                        style: 'rounded,filled',
+                        color: 'invis',
+                        fillcolor: 'gray'
+                    }
+                };
+                subgraph.nodes[elective] = true;
+            } else {
+                /*
+                # if we have children, we must create a new group
+                */
+
+                subgraph = graph.addSubgraph("cluster" + (Math.random().toFixed(8).slice(3)));
+                subgraph.attrs = {
+                    style: 'rounded,filled',
+                    color: 'gray',
+                    label: "" + elective.title + " (" + elective.requirements.units + " " + elective.requirements.unitLabel + ")",
+                    _title: "" + elective.title + " (" + elective.requirements.units + " " + elective.requirements.unitLabel + ")",
+                    _electivesBlock: true
+                };
+                for (_n = 0, _len2 = courses.length; _n < _len2; _n++) {
+                    course = courses[_n];
+                    hash = BasicCourse.hashCourse(course);
+                    subgraph.nodes[hash] = true;
+                    graph.nodes[hash].attrs['color'] = 'white';
+                    graph.nodes[hash].attrs['style'] = 'rounded,filled';
+                    graph.nodes[hash].attrs['_inElectivesBlock'] = true;
+                }
+            }
+        }
+        /*
+        # clean up any excess term markers.
+        # to ensure proper spacing, an invisible node is placed in
+        # each term.  We should cleanup any term that only has the
+        # marker node in it, lest we have a bunch of blank columns
+        # in our chart.
+        */
+
+        prevMarker = null;
+        for (year = _o = 1; _o <= 4; year = ++_o) {
+            for (term = _p = 1; _p <= 3; term = ++_p) {
+                termSubgraph = termSubgraphs[year][term];
+                /*
+                # each term has an invisible node to keep the spacing
+                # this node needs to be added before all others so it doesn't interfere
+                */
+
+                marker = "YEAR" + year + "TERM" + term;
+                if (Object.keys(termSubgraph.nodes).length > 1 || term === 1) {
+                    if (prevMarker) {
+                        edge = [prevMarker, marker];
+                        graph.edges[edge] = [
+                            {
+                                edge: edge,
+                                attrs: {
+                                    style: 'invis'
+                                }
+                            }
+                        ];
+                    }
+                    prevMarker = marker;
+                } else {
+                    graph.removeNode(marker);
+                    graph.removeSubgraph(termSubgraph);
+                }
+            }
+        }
+        /*
+        # We need to size every node manually since viz.js cannot process html labels.
+        */
+
+        _ref7 = graph.nodes;
+        for (hash in _ref7) {
+            node = _ref7[hash];
+            /*
+            # invisible nodes should be ignored
+            */
+
+            if ((_ref8 = node.attrs['style']) != null ? _ref8.match(/invis/) : void 0) {
+                node.attrs['label'] = '';
+                continue;
+            }
+            node.attrs['height'] = 42 / 72;
+            labelWidth = Math.max(strWidthInEn(node.attrs['_title']), strWidthInEn(node.attrs['_name']));
+            node.attrs['width'] = (labelWidth * 6.0 + 20) / 72;
+            node.attrs['fixedsize'] = true;
+        }
+        return astToStr(graph.generateAst());
+    };
+
+    Graph.prototype._generateAdjacencyMatrix = function(ops) {
+        var adjacencyEntry, createRow, e, edge, n, nodeList, outEdges, ret, _, _ref, _ref1,
+            _this = this;
+        if (ops == null) {
+            ops = {};
+        }
+        /*
+        # returns 2 if coreq, 1 if truthy and 0 otherwise
+        */
+
+        adjacencyEntry = function(n) {
+            if (n === 'coreq') {
+                return 2;
+            }
+            return +(!!n);
+        };
+        /*
+        # returns a row of the adjacency matrix corresponding to
+        # the object e's keys
+        */
+
+        createRow = function(e) {
+            var n;
+            return (function() {
+                var _i, _len, _results;
+                _results = [];
+                for (_i = 0, _len = nodeList.length; _i < _len; _i++) {
+                    n = nodeList[_i];
+                    _results.push(adjacencyEntry(e[n]));
+                }
+                return _results;
+            })();
+        };
+        if (ops.filterByYear != null) {
+            nodeList = Object.keys(this.nodes).filter(function(n) {
+                return _this.nodes[n].year === ops.filterByYear;
+            });
         } else {
-          numeric.muleq(mat[i], mask);
+            nodeList = Object.keys(this.nodes);
         }
-      }
-      return mat;
+        /*
+        # for each node, generate a list of all the out edges it has
+        */
+
+        outEdges = {};
+        _ref = this.edges;
+        for (_ in _ref) {
+            e = _ref[_];
+            edge = e.edge;
+            outEdges[edge[0]] = outEdges[edge[0]] || {};
+            outEdges[edge[0]][edge[1]] = true;
+            /*
+            # keep track if we are a coreq edge
+            */
+
+            if ((_ref1 = e.properties) != null ? _ref1.coreq : void 0) {
+                outEdges[edge[0]][edge[1]] = 'coreq';
+            }
+        }
+        /*
+        # build the actual matrix
+        */
+
+        ret = (function() {
+            var _i, _len, _results;
+            _results = [];
+            for (_i = 0, _len = nodeList.length; _i < _len; _i++) {
+                n = nodeList[_i];
+                _results.push(createRow(outEdges[n] || {}));
+            }
+            return _results;
+        })();
+        /*
+        # if there are no nodes we should still return a 2-dim matrix
+        */
+
+        if (ret.length === 0) {
+            ret.push([]);
+        }
+        return {
+            mat: ret,
+            list: nodeList
+        };
     };
+
     /*
-    # find the connected components of coreqs so we can pick a
-    # representative from each one
+    # computes powers of the adjacency matrix to find the span of each node
     */
 
-    coreqAdj = numeric.clone(mat);
-    coreqAdj = numeric.eq(coreqAdj, 2);
-    coreqAdj = numeric.or(coreqAdj, numeric.transpose(coreqAdj));
-    coreqAdj = this._matrixSpan(coreqAdj);
-    mask = Array.apply(null, Array(coreqAdj[0].length)).map(function() {
-      return true;
-    });
-    reps = Array.apply(null, Array(coreqAdj[0].length)).map(function(_, i) {
-      return i;
-    });
-    for (i = _i = 0, _len = coreqAdj.length; _i < _len; i = ++_i) {
-      row = coreqAdj[i];
-      if (!mask[i]) {
-        continue;
-      }
-      /*
-      # for each row, mask everything that appears except for ourselves.
-      # This forces one representative from each connected component.
-      */
 
-      for (j = _j = 0, _len1 = row.length; _j < _len1; j = ++_j) {
-        val = row[j];
-        if (!(i !== j && val)) {
-          continue;
+    Graph.prototype._matrixSpan = function(mat) {
+        var i, iters, size, _i;
+        size = mat[0].length;
+        if (size <= 1) {
+            return mat;
         }
-        mask[j] = false;
-        reps[j] = i;
-      }
-    }
-    oreqRow = function(mat, row1, row2) {
-      numeric.oreq(mat[row1], mat[row2]);
+        iters = Math.ceil(Math.log(size) / Math.log(2));
+        for (i = _i = 0; 0 <= iters ? _i < iters : _i > iters; i = 0 <= iters ? ++_i : --_i) {
+            mat = numeric.add(numeric.dot(mat, mat), mat);
+        }
+        return numeric.gt(mat, 0);
     };
-    oreqCol = function(mat, col1, col2) {
-      var _k, _len2;
-      for (_k = 0, _len2 = mat.length; _k < _len2; _k++) {
-        row = mat[_k];
-        row[col1] |= row[col2];
-      }
-    };
-    collapsedMat = numeric.clone(mat);
-    for (i = _k = 0, _len2 = reps.length; _k < _len2; i = ++_k) {
-      rep = reps[i];
-      /*
-      # add all the outgoing arrows of anything
-      # in our connected component.
-      */
 
-      oreqRow(collapsedMat, rep, i);
-      /*
-      # add all the incoming arrows of anything
-      # in our connected component.
-      */
-
-      oreqCol(collapsedMat, rep, i);
-    }
     /*
-    # eliminate any self loops that were necessarily introduced
-    # because every rep that is part of a non-trivial component
-    # points to something else in that component.
+    # returns a pruned adjaency matrix.  If there is more
+    # than one route from a->b, only the longer one is kept
     */
 
-    for (i = _l = 0, _ref = collapsedMat[0].length; 0 <= _ref ? _l < _ref : _l > _ref; i = 0 <= _ref ? ++_l : --_l) {
-      collapsedMat[i][i] = 0;
-    }
-    repMat = zeroedSubmatrix(collapsedMat, mask);
-    repRanks = stratify(repMat, maxLevels);
-    for (i = _m = 0, _ref1 = repRanks.length; 0 <= _ref1 ? _m < _ref1 : _m > _ref1; i = 0 <= _ref1 ? ++_m : --_m) {
-      repRanks[i] = repRanks[reps[i]];
-    }
-    return unflatten(repRanks);
-  };
 
-  return Graph;
+    Graph.prototype._optimizeEdges = function(mat) {
+        var existsOtherRoute, i, j, mat_span, mat_transpose, node, nodes, predicessors, ret, span, v, _i, _j, _k, _l, _len, _len1, _len2, _ref, _results;
+        ret = numeric.clone(mat);
+        mat_transpose = numeric.transpose(mat);
+        mat_span = this._matrixSpan(mat);
+        nodes = (function() {
+            _results = [];
+            for (var _i = 0, _ref = mat[0].length; 0 <= _ref ? _i < _ref : _i > _ref; 0 <= _ref ? _i++ : _i--){ _results.push(_i); }
+            return _results;
+        }).apply(this);
+        /*
+        # the idea is, suppose we have a->b->d->c and a->c
+        # If node=c, then we have immediate predecessors a,d, but d
+        # is in the span of a, so the edge a->c is redundant since
+        # there exists a longer path a->..->c
+        */
+
+        for (_j = 0, _len = nodes.length; _j < _len; _j++) {
+            node = nodes[_j];
+            predicessors = mat_transpose[node];
+            /*
+            # loops through our predicessors
+            */
+
+            for (i = _k = 0, _len1 = predicessors.length; _k < _len1; i = ++_k) {
+                v = predicessors[i];
+                if (!(v > 0 && i !== node)) {
+                    continue;
+                }
+                span = mat_span[i];
+                existsOtherRoute = false;
+                for (j = _l = 0, _len2 = span.length; _l < _len2; j = ++_l) {
+                    v = span[j];
+                    if (v > 0) {
+                        if (predicessors[j] > 0) {
+                            existsOtherRoute = true;
+                            break;
+                        }
+                    }
+                }
+                if (existsOtherRoute) {
+                    ret[i][node] = 0;
+                }
+            }
+        }
+        return ret;
+    };
+
+    /*
+    # returns a list of lists of nodes
+    # where if a->b then a is in a lower
+    # level than b. We will attempt
+    # to split them into at most maxLevels number of levels based
+    # on arrow direction and returns the stratification.
+    # e.g. "a->b->c, d" would split into [a,d] then [b] then [c]
+    #
+    # coreqs arrows are first collapsed into a single node so they
+    # should always end up on the same level
+    */
+
+
+    Graph.prototype._stratify = function(mat, maxLevels, coreqsOnSameLevel) {
+        var collapsedMat, coreqAdj, i, j, mask, oreqCol, oreqRow, rep, repMat, repRanks, reps, row, stratify, unflatten, val, zeroedSubmatrix, _i, _j, _k, _l, _len, _len1, _len2, _m, _ref, _ref1,
+            _this = this;
+        if (maxLevels == null) {
+            maxLevels = 3;
+        }
+        if (coreqsOnSameLevel == null) {
+            coreqsOnSameLevel = true;
+        }
+        if (mat[0].length === 0) {
+            return [];
+        }
+        /*
+        # puts everything of a particular rank on its own array
+        */
+
+        unflatten = function(ranks) {
+            var i, levels, rank, _i, _len;
+            levels = (function() {
+                var _i, _results;
+                _results = [];
+                for (i = _i = 0; _i < 3; i = ++_i) {
+                    _results.push([]);
+                }
+                return _results;
+            })();
+            for (i = _i = 0, _len = ranks.length; _i < _len; i = ++_i) {
+                rank = ranks[i];
+                levels[rank].push(i);
+            }
+            return levels;
+        };
+        stratify = function(mat, maxLevels) {
+            var forwardSpan, i, incrementRanks, l, level, mat_span, needUpdating, nodesOfCurrentLevel, numNodes, ranks, _i, _ref;
+            numNodes = mat[0].length;
+            mat_span = _this._matrixSpan(mat);
+            ranks = (function() {
+                var _i, _results;
+                _results = [];
+                for (i = _i = 0; 0 <= numNodes ? _i < numNodes : _i > numNodes; i = 0 <= numNodes ? ++_i : --_i) {
+                    _results.push(0);
+                }
+                return _results;
+            })();
+            incrementRanks = function(nodes) {
+                var v, _i, _len, _results;
+                _results = [];
+                for (i = _i = 0, _len = nodes.length; _i < _len; i = ++_i) {
+                    v = nodes[i];
+                    if (v > 0) {
+                        _results.push(ranks[i] += 1);
+                    }
+                }
+                return _results;
+            };
+            /*
+            # `nodes` is a boolean list.  forwardSpan generates a boolean
+            # list of all nodes reachable in one step by the ones listed in `nodes`
+            */
+
+            forwardSpan = function(nodes) {
+                var ret, v, _i, _len;
+                ret = (function() {
+                    var _i, _results;
+                    _results = [];
+                    for (i = _i = 0; 0 <= numNodes ? _i < numNodes : _i > numNodes; i = 0 <= numNodes ? ++_i : --_i) {
+                        _results.push(false);
+                    }
+                    return _results;
+                })();
+                for (i = _i = 0, _len = nodes.length; _i < _len; i = ++_i) {
+                    v = nodes[i];
+                    if (!(v > 0)) {
+                        continue;
+                    }
+                    /*
+                    # mat_span[i] is precisely the nodes reachable by v
+                    */
+
+                    numeric.oreq(ret, mat_span[i]);
+                }
+                return ret;
+            };
+            /*
+            # iteratively bump up the level of each relevant node
+            */
+
+            for (level = _i = 0, _ref = maxLevels - 1; 0 <= _ref ? _i < _ref : _i > _ref; level = 0 <= _ref ? ++_i : --_i) {
+                nodesOfCurrentLevel = (function() {
+                    var _j, _len, _results;
+                    _results = [];
+                    for (_j = 0, _len = ranks.length; _j < _len; _j++) {
+                        l = ranks[_j];
+                        _results.push(l === level);
+                    }
+                    return _results;
+                })();
+                needUpdating = forwardSpan(nodesOfCurrentLevel);
+                incrementRanks(needUpdating);
+            }
+            return ranks;
+        };
+        if (!coreqsOnSameLevel) {
+            return unflatten(stratify(mat, maxLevels));
+        }
+        /*
+        # if we want coreqs on the same levels, we do the following:
+        #     * identify all connected components of coreqs
+        #     * pick a representative from each component
+        #     * create a new adjacency matrix consisting only
+        #     of representatives by collapsing goreqs
+        #     to a single node (while preserving edges)
+        #     * rank in the usual way
+        #     * assign ranks to the non-representatives
+        */
+
+        /*
+        # pass in a mask specifying true/false for
+        # whether each row/column should zeroed in the returned
+        # matrix.
+        */
+
+        zeroedSubmatrix = function(mat, mask) {
+            var i, m, _i, _len;
+            mat = numeric.clone(mat);
+            for (i = _i = 0, _len = mask.length; _i < _len; i = ++_i) {
+                m = mask[i];
+                if (!m) {
+                    numeric.muleq(mat[i], 0);
+                } else {
+                    numeric.muleq(mat[i], mask);
+                }
+            }
+            return mat;
+        };
+        /*
+        # find the connected components of coreqs so we can pick a
+        # representative from each one
+        */
+
+        coreqAdj = numeric.clone(mat);
+        coreqAdj = numeric.eq(coreqAdj, 2);
+        coreqAdj = numeric.or(coreqAdj, numeric.transpose(coreqAdj));
+        coreqAdj = this._matrixSpan(coreqAdj);
+        mask = Array.apply(null, Array(coreqAdj[0].length)).map(function() {
+            return true;
+        });
+        reps = Array.apply(null, Array(coreqAdj[0].length)).map(function(_, i) {
+            return i;
+        });
+        for (i = _i = 0, _len = coreqAdj.length; _i < _len; i = ++_i) {
+            row = coreqAdj[i];
+            if (!mask[i]) {
+                continue;
+            }
+            /*
+            # for each row, mask everything that appears except for ourselves.
+            # This forces one representative from each connected component.
+            */
+
+            for (j = _j = 0, _len1 = row.length; _j < _len1; j = ++_j) {
+                val = row[j];
+                if (!(i !== j && val)) {
+                    continue;
+                }
+                mask[j] = false;
+                reps[j] = i;
+            }
+        }
+        oreqRow = function(mat, row1, row2) {
+            numeric.oreq(mat[row1], mat[row2]);
+        };
+        oreqCol = function(mat, col1, col2) {
+            var _k, _len2;
+            for (_k = 0, _len2 = mat.length; _k < _len2; _k++) {
+                row = mat[_k];
+                row[col1] |= row[col2];
+            }
+        };
+        collapsedMat = numeric.clone(mat);
+        for (i = _k = 0, _len2 = reps.length; _k < _len2; i = ++_k) {
+            rep = reps[i];
+            /*
+            # add all the outgoing arrows of anything
+            # in our connected component.
+            */
+
+            oreqRow(collapsedMat, rep, i);
+            /*
+            # add all the incoming arrows of anything
+            # in our connected component.
+            */
+
+            oreqCol(collapsedMat, rep, i);
+        }
+        /*
+        # eliminate any self loops that were necessarily introduced
+        # because every rep that is part of a non-trivial component
+        # points to something else in that component.
+        */
+
+        for (i = _l = 0, _ref = collapsedMat[0].length; 0 <= _ref ? _l < _ref : _l > _ref; i = 0 <= _ref ? ++_l : --_l) {
+            collapsedMat[i][i] = 0;
+        }
+        repMat = zeroedSubmatrix(collapsedMat, mask);
+        repRanks = stratify(repMat, maxLevels);
+        for (i = _m = 0, _ref1 = repRanks.length; 0 <= _ref1 ? _m < _ref1 : _m > _ref1; i = 0 <= _ref1 ? ++_m : --_m) {
+            repRanks[i] = repRanks[reps[i]];
+        }
+        return unflatten(repRanks);
+    };
+
+    return Graph;
 
 })();
 
@@ -5421,204 +5433,204 @@ Graph = (function() {
 
 
 DownloadManager = (function() {
-  DownloadManager.prototype.DOWNLOAD_SCRIPT = 'download.php';
+    DownloadManager.prototype.DOWNLOAD_SCRIPT = 'download.php';
 
-  function DownloadManager(filename, data, mimetype) {
-    this.filename = filename;
-    this.data = data;
-    this.mimetype = mimetype != null ? mimetype : 'application/octet-stream';
-    this.downloadDataUriBased = __bind(this.downloadDataUriBased, this);
-    this.downloadBlobBased = __bind(this.downloadBlobBased, this);
-    this.downloadServerBased = __bind(this.downloadServerBased, this);
-    this.testDataUriAvailability = __bind(this.testDataUriAvailability, this);
-    this.testBlobAvailability = __bind(this.testBlobAvailability, this);
-    this.testServerAvailability = __bind(this.testServerAvailability, this);
-    this.download = __bind(this.download, this);
+    function DownloadManager(filename, data, mimetype) {
+        this.filename = filename;
+        this.data = data;
+        this.mimetype = mimetype != null ? mimetype : 'application/octet-stream';
+        this.downloadDataUriBased = __bind(this.downloadDataUriBased, this);
+        this.downloadBlobBased = __bind(this.downloadBlobBased, this);
+        this.downloadServerBased = __bind(this.downloadServerBased, this);
+        this.testDataUriAvailability = __bind(this.testDataUriAvailability, this);
+        this.testBlobAvailability = __bind(this.testBlobAvailability, this);
+        this.testServerAvailability = __bind(this.testServerAvailability, this);
+        this.download = __bind(this.download, this);
+        /*
+        # a null status means no checks have been performed on whether that method will work
+        */
+
+        this.downloadMethodAvailable = {
+            serverBased: null,
+            blobBased: null,
+            dataUriBased: null
+        };
+        return;
+    }
+
     /*
-    # a null status means no checks have been performed on whether that method will work
+    # run through each download method and if it works,
+    # use that method to download the graph. @downloadMethodAvailable
+    # starts as all null and will be set to true or false after a test has been run
     */
 
-    this.downloadMethodAvailable = {
-      serverBased: null,
-      blobBased: null,
-      dataUriBased: null
-    };
-    return;
-  }
 
-  /*
-  # run through each download method and if it works,
-  # use that method to download the graph. @downloadMethodAvailable
-  # starts as all null and will be set to true or false after a test has been run
-  */
-
-
-  DownloadManager.prototype.download = function() {
-    if (this.downloadMethodAvailable.serverBased === null) {
-      this.testServerAvailability(this.download);
-      return;
-    }
-    if (this.downloadMethodAvailable.serverBased === true) {
-      this.downloadServerBased();
-      return;
-    }
-    if (this.downloadMethodAvailable.blobBased === null) {
-      this.testBlobAvailability(this.download);
-      return;
-    }
-    if (this.downloadMethodAvailable.blobBased === true) {
-      this.downloadBlobBased();
-      return;
-    }
-    if (this.downloadMethodAvailable.dataUriBased === null) {
-      this.testDataUriAvailability(this.download);
-      return;
-    }
-    if (this.downloadMethodAvailable.dataUriBased === true) {
-      this.downloadDataUriBased();
-      return;
-    }
-  };
-
-  DownloadManager.prototype.testServerAvailability = function(callback) {
-    var _this = this;
-    if (callback == null) {
-      callback = function() {};
-    }
-    $.ajax({
-      url: this.DOWNLOAD_SCRIPT,
-      dataType: 'text',
-      success: function(data, status, response) {
-        if (response.getResponseHeader('Content-Description') === 'File Transfer') {
-          _this.downloadMethodAvailable.serverBased = true;
-        } else {
-          _this.downloadMethodAvailable.serverBased = false;
+    DownloadManager.prototype.download = function() {
+        if (this.downloadMethodAvailable.serverBased === null) {
+            this.testServerAvailability(this.download);
+            return;
         }
-        callback.call(_this);
-      },
-      error: function(data, status, response) {
-        _this.downloadMethodAvailable.serverBased = false;
-        callback.call(_this);
-      }
-    });
-  };
+        if (this.downloadMethodAvailable.serverBased === true) {
+            this.downloadServerBased();
+            return;
+        }
+        if (this.downloadMethodAvailable.blobBased === null) {
+            this.testBlobAvailability(this.download);
+            return;
+        }
+        if (this.downloadMethodAvailable.blobBased === true) {
+            this.downloadBlobBased();
+            return;
+        }
+        if (this.downloadMethodAvailable.dataUriBased === null) {
+            this.testDataUriAvailability(this.download);
+            return;
+        }
+        if (this.downloadMethodAvailable.dataUriBased === true) {
+            this.downloadDataUriBased();
+            return;
+        }
+    };
 
-  DownloadManager.prototype.testBlobAvailability = function(callback) {
-    if (callback == null) {
-      callback = function() {};
-    }
-    if ((window.webkitURL || window.URL) && (window.Blob || window.MozBlobBuilder || window.WebKitBlobBuilder)) {
-      this.downloadMethodAvailable.blobBased = true;
-    } else {
-      this.downloadMethodAvailable.blobBased = true;
-    }
-    callback.call(this);
-  };
-
-  DownloadManager.prototype.testDataUriAvailability = function(callback) {
-    if (callback == null) {
-      callback = function() {};
-    }
-    this.downloadMethodAvailable.dataUriBased = true;
-    callback.call(this);
-  };
-
-  DownloadManager.prototype.downloadServerBased = function() {
-    var form, input1, input2, input3;
-    input1 = $('<input type="hidden"></input>').attr({
-      name: 'filename',
-      value: this.filename
-    });
-    /*
-    # encode our data in base64 so it doesn't get mangled by post (i.e., so '\n' to '\n\r' doesn't happen...)
-    */
-
-    input2 = $('<input type="hidden"></input>').attr({
-      name: 'data',
-      value: btoa(this.data)
-    });
-    input3 = $('<input type="hidden"></input>').attr({
-      name: 'mimetype',
-      value: this.mimetype
-    });
-    /*
-    # target=... is set to our hidden iframe so we don't change the url of our main page
-    */
-
-    form = $('<form action="' + this.DOWNLOAD_SCRIPT + '" method="post" target="downloads_iframe"></form>');
-    form.append(input1).append(input2).append(input3);
-    /*
-    # submit the form and hope for the best!
-    */
-
-    form.appendTo(document.body).submit().remove();
-  };
-
-  DownloadManager.prototype.downloadBlobBased = function(errorCallback) {
-    var bb, blob, buf, bufView, downloadLink, e, i, url, _i, _ref;
-    if (errorCallback == null) {
-      errorCallback = this.download;
-    }
-    try {
-      /*
-      # first convert everything to an arraybuffer so raw bytes in our string
-      # don't get mangled
-      */
-
-      buf = new ArrayBuffer(this.data.length);
-      bufView = new Uint8Array(buf);
-      for (i = _i = 0, _ref = this.data.length; 0 <= _ref ? _i < _ref : _i > _ref; i = 0 <= _ref ? ++_i : --_i) {
-        bufView[i] = this.data.charCodeAt(i) & 0xff;
-      }
-      try {
-        /*
-        # This is the recommended method:
-        */
-
-        blob = new Blob(buf, {
-          type: 'application/octet-stream'
+    DownloadManager.prototype.testServerAvailability = function(callback) {
+        var _this = this;
+        if (callback == null) {
+            callback = function() {};
+        }
+        $.ajax({
+            url: this.DOWNLOAD_SCRIPT,
+            dataType: 'text',
+            success: function(data, status, response) {
+                if (response.getResponseHeader('Content-Description') === 'File Transfer') {
+                    _this.downloadMethodAvailable.serverBased = true;
+                } else {
+                    _this.downloadMethodAvailable.serverBased = false;
+                }
+                callback.call(_this);
+            },
+            error: function(data, status, response) {
+                _this.downloadMethodAvailable.serverBased = false;
+                callback.call(_this);
+            }
         });
-      } catch (_error) {
-        e = _error;
+    };
+
+    DownloadManager.prototype.testBlobAvailability = function(callback) {
+        if (callback == null) {
+            callback = function() {};
+        }
+        if ((window.webkitURL || window.URL) && (window.Blob || window.MozBlobBuilder || window.WebKitBlobBuilder)) {
+            this.downloadMethodAvailable.blobBased = true;
+        } else {
+            this.downloadMethodAvailable.blobBased = true;
+        }
+        callback.call(this);
+    };
+
+    DownloadManager.prototype.testDataUriAvailability = function(callback) {
+        if (callback == null) {
+            callback = function() {};
+        }
+        this.downloadMethodAvailable.dataUriBased = true;
+        callback.call(this);
+    };
+
+    DownloadManager.prototype.downloadServerBased = function() {
+        var form, input1, input2, input3;
+        input1 = $('<input type="hidden"></input>').attr({
+            name: 'filename',
+            value: this.filename
+        });
         /*
-        # The BlobBuilder API has been deprecated in favour of Blob, but older
-        # browsers don't know about the Blob constructor
-        # IE10 also supports BlobBuilder, but since the `Blob` constructor
-        # also works, there's no need to add `MSBlobBuilder`.
+        # encode our data in base64 so it doesn't get mangled by post (i.e., so '\n' to '\n\r' doesn't happen...)
         */
 
-        bb = new (window.WebKitBlobBuilder || window.MozBlobBuilder);
-        bb.append(buf);
-        blob = bb.getBlob('application/octet-stream');
-      }
-      url = (window.webkitURL || window.URL).createObjectURL(blob);
-      downloadLink = $('<a></a>').attr({
-        href: url,
-        download: this.filename
-      });
-      $(document.body).append(downloadLink);
-      /*
-      # trigger the file save dialog
-      */
+        input2 = $('<input type="hidden"></input>').attr({
+            name: 'data',
+            value: btoa(this.data)
+        });
+        input3 = $('<input type="hidden"></input>').attr({
+            name: 'mimetype',
+            value: this.mimetype
+        });
+        /*
+        # target=... is set to our hidden iframe so we don't change the url of our main page
+        */
 
-      downloadLink[0].click();
-      /*
-      # clean up when we're done
-      */
+        form = $('<form action="' + this.DOWNLOAD_SCRIPT + '" method="post" target="downloads_iframe"></form>');
+        form.append(input1).append(input2).append(input3);
+        /*
+        # submit the form and hope for the best!
+        */
 
-      downloadLink.remove();
-    } catch (_error) {
-      e = _error;
-      this.downloadMethodAvailable.blobBased = false;
-      errorCallback.call(this);
-    }
-  };
+        form.appendTo(document.body).submit().remove();
+    };
 
-  DownloadManager.prototype.downloadDataUriBased = function() {
-    document.location.href = "data:application/octet-stream;base64," + btoa(this.data);
-  };
+    DownloadManager.prototype.downloadBlobBased = function(errorCallback) {
+        var bb, blob, buf, bufView, downloadLink, e, i, url, _i, _ref;
+        if (errorCallback == null) {
+            errorCallback = this.download;
+        }
+        try {
+            /*
+            # first convert everything to an arraybuffer so raw bytes in our string
+            # don't get mangled
+            */
 
-  return DownloadManager;
+            buf = new ArrayBuffer(this.data.length);
+            bufView = new Uint8Array(buf);
+            for (i = _i = 0, _ref = this.data.length; 0 <= _ref ? _i < _ref : _i > _ref; i = 0 <= _ref ? ++_i : --_i) {
+                bufView[i] = this.data.charCodeAt(i) & 0xff;
+            }
+            try {
+                /*
+                # This is the recommended method:
+                */
+
+                blob = new Blob(buf, {
+                    type: 'application/octet-stream'
+                });
+            } catch (_error) {
+                e = _error;
+                /*
+                # The BlobBuilder API has been deprecated in favour of Blob, but older
+                # browsers don't know about the Blob constructor
+                # IE10 also supports BlobBuilder, but since the `Blob` constructor
+                # also works, there's no need to add `MSBlobBuilder`.
+                */
+
+                bb = new (window.WebKitBlobBuilder || window.MozBlobBuilder);
+                bb.append(buf);
+                blob = bb.getBlob('application/octet-stream');
+            }
+            url = (window.webkitURL || window.URL).createObjectURL(blob);
+            downloadLink = $('<a></a>').attr({
+                href: url,
+                download: this.filename
+            });
+            $(document.body).append(downloadLink);
+            /*
+            # trigger the file save dialog
+            */
+
+            downloadLink[0].click();
+            /*
+            # clean up when we're done
+            */
+
+            downloadLink.remove();
+        } catch (_error) {
+            e = _error;
+            this.downloadMethodAvailable.blobBased = false;
+            errorCallback.call(this);
+        }
+    };
+
+    DownloadManager.prototype.downloadDataUriBased = function() {
+        document.location.href = "data:application/octet-stream;base64," + btoa(this.data);
+    };
+
+    return DownloadManager;
 
 })();
 
@@ -5628,102 +5640,102 @@ DownloadManager = (function() {
 
 
 FileHandler = {
-  decodeDataURI: function(dataURI) {
-    var content, data, meta;
-    content = dataURI.indexOf(",");
-    meta = dataURI.substr(5, content).toLowerCase();
-    data = decodeURIComponent(dataURI.substr(content + 1));
-    if (/;\s*base64\s*[;,]/.test(meta)) {
-      data = atob(data);
-    }
-    if (/;\s*charset=[uU][tT][fF]-?8\s*[;,]/.test(meta)) {
-      data = decodeURIComponent(escape(data));
-    }
-    return data;
-  },
-  handleFiles: function(files) {
-    var file, reader;
-    file = files[0];
-    reader = new FileReader();
-    reader.onprogress = FileHandler.handleReaderProgress;
-    reader.onloadend = FileHandler.handleReaderLoadEnd;
-    reader.readAsDataURL(file);
-  },
-  handleReaderProgress: function(evt) {
-    var percentLoaded;
-    if (evt.lengthComputable) {
-      percentLoaded = evt.loaded / evt.total;
-    }
-  },
-  handleReaderLoadEnd: function(evt) {
-    var data, e, jsonData, parser, xmlDoc;
-    if (evt.target.error) {
-      throw new Error(evt.target.error + " Error Code: " + evt.target.error.code + " ");
-      return;
-    }
-    data = FileHandler.decodeDataURI(evt.target.result);
-    /*
-    # process the data depending on the file format.  We're going
-    # to do this by trial and error, assuming different formats
-    */
+    decodeDataURI: function(dataURI) {
+        var content, data, meta;
+        content = dataURI.indexOf(",");
+        meta = dataURI.substr(5, content).toLowerCase();
+        data = decodeURIComponent(dataURI.substr(content + 1));
+        if (/;\s*base64\s*[;,]/.test(meta)) {
+            data = atob(data);
+        }
+        if (/;\s*charset=[uU][tT][fF]-?8\s*[;,]/.test(meta)) {
+            data = decodeURIComponent(escape(data));
+        }
+        return data;
+    },
+    handleFiles: function(files) {
+        var file, reader;
+        file = files[0];
+        reader = new FileReader();
+        reader.onprogress = FileHandler.handleReaderProgress;
+        reader.onloadend = FileHandler.handleReaderLoadEnd;
+        reader.readAsDataURL(file);
+    },
+    handleReaderProgress: function(evt) {
+        var percentLoaded;
+        if (evt.lengthComputable) {
+            percentLoaded = evt.loaded / evt.total;
+        }
+    },
+    handleReaderLoadEnd: function(evt) {
+        var data, e, jsonData, parser, xmlDoc;
+        if (evt.target.error) {
+            throw new Error(evt.target.error + " Error Code: " + evt.target.error.code + " ");
+            return;
+        }
+        data = FileHandler.decodeDataURI(evt.target.result);
+        /*
+        # process the data depending on the file format.  We're going
+        # to do this by trial and error, assuming different formats
+        */
 
-    try {
-      try {
-        jsonData = JSON.parse(data);
-        window.courseManager.loadGraph(data);
-      } catch (_error) {
-        e = _error;
-        parser = new DOMParser;
-        xmlDoc = parser.parseFromString(data, 'text/xml');
-        data = decodeURIComponent(xmlDoc.querySelector('coursemapper').textContent);
-        jsonData = JSON.parse(data);
-        window.courseManager.loadGraph(data);
-      }
-    } catch (_error) {
-      e = _error;
-      console.log(e);
-      throw new Error("Not valid JSON or SVG (containing <coursemapper>JSON</coursemapper>) data");
-    }
-  },
-  dragEnter: function(evt) {
-    $('#dropcontainer').show();
-    $('.tabs').hide();
-    $('#forkme').hide();
-    evt.stopPropagation();
-    evt.preventDefault();
-  },
-  dragExit: function(evt) {
-    $('#dropcontainer').hide();
-    $('#dropbox').removeClass('dropbox-hover');
-    $('.tabs').show();
-    $('#forkme').show();
-    if (evt != null) {
-      evt.stopPropagation();
-      evt.preventDefault();
-    }
-  },
-  dragOver: function(evt, b) {
-    if (evt == null) {
-      $('#dropbox').removeClass('dropbox-hover');
-      return;
-    }
-    $('#dropbox').addClass('dropbox-hover');
-    evt.stopPropagation();
-    evt.preventDefault();
-  },
-  drop: function(evt) {
-    var count, files;
-    evt.stopPropagation();
-    evt.preventDefault();
-    files = evt.dataTransfer.files;
-    count = files.length;
-    if (count > 0) {
-      FileHandler.handleFiles(files);
-    }
-    /*
-    # fake the exit of a drag event...
-    */
+        try {
+            try {
+                jsonData = JSON.parse(data);
+                window.courseManager.loadGraph(data);
+            } catch (_error) {
+                e = _error;
+                parser = new DOMParser;
+                xmlDoc = parser.parseFromString(data, 'text/xml');
+                data = decodeURIComponent(xmlDoc.querySelector('coursemapper').textContent);
+                jsonData = JSON.parse(data);
+                window.courseManager.loadGraph(data);
+            }
+        } catch (_error) {
+            e = _error;
+            console.log(e);
+            throw new Error("Not valid JSON or SVG (containing <coursemapper>JSON</coursemapper>) data");
+        }
+    },
+    dragEnter: function(evt) {
+        $('#dropcontainer').show();
+        $('.tabs').hide();
+        $('#forkme').hide();
+        evt.stopPropagation();
+        evt.preventDefault();
+    },
+    dragExit: function(evt) {
+        $('#dropcontainer').hide();
+        $('#dropbox').removeClass('dropbox-hover');
+        $('.tabs').show();
+        $('#forkme').show();
+        if (evt != null) {
+            evt.stopPropagation();
+            evt.preventDefault();
+        }
+    },
+    dragOver: function(evt, b) {
+        if (evt == null) {
+            $('#dropbox').removeClass('dropbox-hover');
+            return;
+        }
+        $('#dropbox').addClass('dropbox-hover');
+        evt.stopPropagation();
+        evt.preventDefault();
+    },
+    drop: function(evt) {
+        var count, files;
+        evt.stopPropagation();
+        evt.preventDefault();
+        files = evt.dataTransfer.files;
+        count = files.length;
+        if (count > 0) {
+            FileHandler.handleFiles(files);
+        }
+        /*
+        # fake the exit of a drag event...
+        */
 
-    FileHandler.dragExit();
-  }
+        FileHandler.dragExit();
+    }
 };
