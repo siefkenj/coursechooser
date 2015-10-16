@@ -10,6 +10,7 @@ in Mathematics, or a Geography degree with a Coastal Studies
 emphasis) requirements flow from one year to the next.
 
 A picture is worth a thousand words:
+![Example Map](https://raw.githubusercontent.com/siefkenj/coursechooser/master/examples/geog-earth-systems-map.png)
 
 
 One of CourseMapper's key features is that it connects to a
