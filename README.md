@@ -71,43 +71,43 @@ The interface is built with jquery and jqueryUI.
 
 The files in js/ do the following things:
 
- [   ] coursechooser.js
-Main logic for the UI
+ * `coursechooser.js`
+  Main logic for the UI
 
- [   ] dotgraph.js
-Javascript code for generating graphviz file formats
+ * `dotgraph.js`
+  Javascript code for generating graphviz file formats
 
- [   ] dotparser.js
-Javascript code for parsing graphviz output
+ * `dotparser.js`
+  Javascript code for parsing graphviz output
 
- [   ] graphview.js
-Code for an interactive student view
+ * `graphview.js`
+  Code for an interactive student view
 
- [   ] jquery.json-2.3.js
- [   ] jquery.ui.combobox.js
-JQueryUI
+ * `jquery.json-2.3.js`
+   `jquery.ui.combobox.js`
+  JQueryUI
 
- [   ] jstorage.js
-JQuery library for local storage
+ * `jstorage.js`
+  JQuery library for local storage
 
- [   ] numeric-1.2.6.js
-Javascript matrix; used for optimizing graph output
+ * `numeric-1.2.6.js`
+  Javascript matrix; used for optimizing graph output
 
- [   ] plugins.js
-Compatibility for older browsers
+ * `plugins.js`
+  Compatibility for older browsers
 
- [   ] script.js
-...empty? Probably don't need this
+ * `script.js`
+  ...empty? Probably don't need this
 
- [   ] svggraph.js
-Javascript to turn parsed graphviz output into SVG
+ * `svggraph.js`
+  Javascript to turn parsed graphviz output into SVG
 
- [   ] viz-2.26.3.js
-graphviz version 2.26.3 compiled to javascript
+ * `viz-2.26.3.js`
+  graphviz version 2.26.3 compiled to javascript
 
- [   ] viz-worker.js
-code to run viz.js as a webworker (so it runs in a separate thread and
-doesn't lock the UI)
+ * `viz-worker.js`
+  code to run viz.js as a webworker (so it runs in a separate thread and
+  doesn't lock the UI)
 
 There is a little bending over backwards to get coursemapper to run
 as a web app.  In particular, to save a file with a proper filename,
